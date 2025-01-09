@@ -582,7 +582,22 @@
   <div id="sales-report" class="sales-report"></div>
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
 
-
+  <!-- Your existing script reference -->
+  <script src="script.js"></script>
+  <!-- Firebase configuration and initialization -->
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
   </script>
 </body>
 </html>

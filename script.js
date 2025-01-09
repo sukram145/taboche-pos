@@ -1,4 +1,49 @@
 
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "your-api-key",
+  authDomain: "your-app.firebaseapp.com",
+  databaseURL: "https://your-app.firebaseio.com",
+  projectId: "your-project-id",
+  storageBucket: "your-app.appspot.com",
+  messagingSenderId: "your-messaging-sender-id",
+  appId: "your-app-id",
+  measurementId: "your-measurement-id"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// Function to add an order
+function addOrder(table, orderId, orderDetails) {
+  database.ref('orders/' + table + '/' + orderId).set(orderDetails);
+}
+
+// Function to update an order
+function updateOrder(table, orderId, updates) {
+  database.ref('orders/' + table + '/' + orderId).update(updates);
+}
+
+// Function to remove an order
+function removeOrder(table, orderId) {
+  database.ref('orders/' + table + '/' + orderId).remove();
+}
+
+// Function to listen for order updates
+function listenForOrderUpdates(table) {
+  database.ref('orders/' + table).on('value', (snapshot) => {
+    const orders = snapshot.val();
+    console.log('Updated orders for ' + table + ':', orders);
+    // Update the UI accordingly
+  });
+}
+
+
+
+
+
+
+
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
 for (let i = 1; i <= 20; i++) {
@@ -733,44 +778,3 @@ document.addEventListener('DOMContentLoaded', () => {
   displaySalesReport(); // Display initial sales report
   updateDateTime(); // Initial call to set the date and time immediately
 });
-
-
-
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-app.firebaseapp.com",
-  databaseURL: "https://your-app.firebaseio.com",
-  projectId: "your-project-id",
-  storageBucket: "your-app.appspot.com",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id",
-  measurementId: "your-measurement-id"
-};
-
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-
-// Function to add an order
-function addOrder(table, orderId, orderDetails) {
-  database.ref('orders/' + table + '/' + orderId).set(orderDetails);
-}
-
-// Function to update an order
-function updateOrder(table, orderId, updates) {
-  database.ref('orders/' + table + '/' + orderId).update(updates);
-}
-
-// Function to remove an order
-function removeOrder(table, orderId) {
-  database.ref('orders/' + table + '/' + orderId).remove();
-}
-
-// Function to listen for order updates
-function listenForOrderUpdates(table) {
-  database.ref('orders/' + table).on('value', (snapshot) => {
-    const orders = snapshot.val();
-    console.log('Updated orders for ' + table + ':', orders);
-    // Update the UI accordingly
-  });
-}
