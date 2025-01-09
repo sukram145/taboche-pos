@@ -1,31 +1,34 @@
-function updateTableStatus(tableId, status) {
-  const tableCard = document.getElementById(tableId);
-  if (status === 'occupied') {
-    tableCard.classList.add('occupied');
-    tableCard.classList.remove('available');
-  } else {
-    tableCard.classList.add('available');
-    tableCard.classList.remove('occupied');
-  }
-}
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
+  authDomain: "taboche-pos.firebaseapp.com",
+  databaseURL: "https://taboche-pos.firebaseio.com",
+  projectId: "taboche-pos",
+  storageBucket: "taboche-pos.appspot.com",
+  messagingSenderId: "902721301924",
+  appId: "1:902721301924:web:c44ef0ade0ac7200ed6531"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+
 
 // Function to add an order
 function addOrder(table, orderId, orderDetails) {
   database.ref('orders/' + table + '/' + orderId).set(orderDetails);
-  console.log('Order added:', table, orderId, orderDetails); // Debug log
 }
 
 // Function to update an order
 function updateOrder(table, orderId, updates) {
   database.ref('orders/' + table + '/' + orderId).update(updates);
-  console.log('Order updated:', table, orderId, updates); // Debug log
 }
 
 // Function to remove an order
 function removeOrder(table, orderId) {
   database.ref('orders/' + table + '/' + orderId).remove();
-  console.log('Order removed:', table, orderId); // Debug log
 }
+
 // Function to listen for order updates
 function listenForOrderUpdates(table) {
   database.ref('orders/' + table).on('value', (snapshot) => {
@@ -35,8 +38,6 @@ function listenForOrderUpdates(table) {
   });
 }
 
-// Example usage: Call this function on all devices
-listenForOrderUpdates('table4');
 
 
 
