@@ -12,8 +12,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-
-
 // Function to add an order
 function addOrder(table, orderId, orderDetails) {
   database.ref('orders/' + table + '/' + orderId).set(orderDetails);
@@ -38,8 +36,8 @@ function listenForOrderUpdates(table) {
   });
 }
 
-
-
+// Example usage
+listenForOrderUpdates('table4');
 
 
 
