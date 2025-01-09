@@ -1,18 +1,18 @@
-
 // Initialize Firebase
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-app.firebaseapp.com",
-  databaseURL: "https://your-app.firebaseio.com",
-  projectId: "your-project-id",
-  storageBucket: "your-app.appspot.com",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id",
-  measurementId: "your-measurement-id"
+  apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
+  authDomain: "taboche-pos.firebaseapp.com",
+  databaseURL: "https://taboche-pos.firebaseio.com",
+  projectId: "taboche-pos",
+  storageBucket: "taboche-pos.appspot.com",
+  messagingSenderId: "902721301924",
+  appId: "1:902721301924:web:c44ef0ade0ac7200ed6531"
 };
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+
+
 
 // Function to add an order
 function addOrder(table, orderId, orderDetails) {
