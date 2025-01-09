@@ -1,33 +1,32 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
-  authDomain: "taboche-pos.firebaseapp.com",
-  databaseURL: "https://taboche-pos.firebaseio.com",
-  projectId: "taboche-pos",
-  storageBucket: "taboche-pos.appspot.com",
-  messagingSenderId: "902721301924",
-  appId: "1:902721301924:web:c44ef0ade0ac7200ed6531"
-};
-
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-
-
+function updateTableStatus(tableId, status) {
+  const tableCard = document.getElementById(tableId);
+  if (status === 'occupied') {
+    tableCard.classList.add('occupied');
+    tableCard.classList.remove('available');
+  } else {
+    tableCard.classList.add('available');
+    tableCard.classList.remove('occupied');
+  }
+}
 
 // Function to add an order
 function addOrder(table, orderId, orderDetails) {
   database.ref('orders/' + table + '/' + orderId).set(orderDetails);
+  console.log('Order added:', table, orderId, orderDetails); // Debug log
 }
 
 // Function to update an order
 function updateOrder(table, orderId, updates) {
   database.ref('orders/' + table + '/' + orderId).update(updates);
+  console.log('Order updated:', table, orderId, updates); // Debug log
 }
 
 // Function to remove an order
 function removeOrder(table, orderId) {
   database.ref('orders/' + table + '/' + orderId).remove();
+  console.log('Order removed:', table, orderId); // Debug log
 }
-
+// Function to listen for order updates
 function listenForOrderUpdates(table) {
   database.ref('orders/' + table).on('value', (snapshot) => {
     const orders = snapshot.val();
@@ -36,8 +35,9 @@ function listenForOrderUpdates(table) {
   });
 }
 
-// Example usage
+// Example usage: Call this function on all devices
 listenForOrderUpdates('table4');
+
 
 
 
@@ -429,6 +429,7 @@ function printReceipt() {
 }
 
 
+
 // Function to update sales data
 function updateSalesData(totalPrice, discount) {
   salesData.totalSales += totalPrice;
@@ -437,18 +438,16 @@ function updateSalesData(totalPrice, discount) {
   saveData();
 }
 
-
 // Function to display sales report
 function displaySalesReport() {
   const report = `
     <h3>Sales Report</h3>
-    <p>Total Sales: Rs ${salesData.totalSales.toFixed(2)}</p>
-    <p>Total Discounts: Rs ${salesData.totalDiscounts.toFixed(2)}</p>
+    <p>Total Sales: Rs ${salesData.totalSales}</p>
+    <p>Total Discounts: Rs ${salesData.totalDiscounts}</p>
     <p>Total Orders: ${salesData.totalOrders}</p>
   `;
   document.getElementById('sales-report').innerHTML = report;
 }
-
 
 // Function to reset sales report and total orders
 function resetSalesReport() {
@@ -463,7 +462,6 @@ function resetSalesReport() {
   alert('Sales report and total orders have been reset.');
   saveData();
 }
-
 
 // Function to print sales report
 function printSalesReport() {

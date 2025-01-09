@@ -109,33 +109,28 @@ main {
   gap: 10px;
 }
 
-.table-btn {
-  padding: 10px;
-  border: 1px solid #ccc;
-  background-color: #f4f4f4;
-  cursor: pointer;
-}
-
 .table-card {
   padding: 10px;
   border: 1px solid #ccc;
   background-color: #f4f4f4;
   cursor: pointer;
+  border-radius: 5px; /* Added border-radius for better appearance */
+  transition: transform 0.3s, background-color 0.3s; /* Smooth transition for hover and color changes */
 }
 
 .table-card.occupied {
-  background-color: #ffc107;
+  background-color: #ffc107; /* Yellow for occupied tables */
 }
 
 .table-card.available {
-  background-color: #28a745;
+  background-color: #28a745; /* Green for available tables */
 }
-
 
 .table-card:hover {
   transform: translateY(-5px);
   border-color: #007bff;
 }
+
 
 .order-section {
   flex: 2;
