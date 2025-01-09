@@ -1,4 +1,3 @@
-// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
   authDomain: "taboche-pos.firebaseapp.com",
@@ -11,26 +10,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-
-// Function to add an order
-function addOrder(table, orderId, orderDetails) {
-  database.ref('orders/' + table + '/' + orderId).set(orderDetails);
-  updateTableStatus(table, 'occupied');
-}
-
-// Function to update an order
-function updateOrder(table, orderId, updates) {
-  database.ref('orders/' + table + '/' + orderId).update(updates);
-  console.log('Order updated:', table, orderId, updates);
-}
-
-// Function to remove an order
-function removeOrder(table, orderId) {
-  database.ref('orders/' + table + '/' + orderId).remove();
-  console.log('Order removed:', table, orderId);
-  checkAndResetTableStatus(table);
-}
-
 // Function to update table status
 function updateTableStatus(tableId, status) {
   const tableCard = document.querySelector(`.table-btn-${tableId}`);
@@ -45,31 +24,19 @@ function updateTableStatus(tableId, status) {
   }
 }
 
-// Function to check and reset table status
-function checkAndResetTableStatus(tableId) {
-  database.ref('orders/' + tableId).once('value', (snapshot) => {
-    const orders = snapshot.val();
-    const tableStatus = orders ? 'occupied' : 'available';
-    updateTableStatus(tableId, tableStatus);
-  });
-}
-
 // Function to listen for order updates and update table status
 function listenForOrderUpdates(table) {
   database.ref('orders/' + table).on('value', (snapshot) => {
     const orders = snapshot.val();
     console.log('Updated orders for ' + table + ':', orders);
     
-    // Determine the status based on orders
     const tableStatus = orders ? 'occupied' : 'available';
     
-    // Update the table status
     updateTableStatus(table, tableStatus);
-
-    // Update the order summary
     updateOrderSummary(table, orders);
   });
 }
+
 // Function to update order summary
 function updateOrderSummary(tableId, orders) {
   const orderItems = document.getElementById('order-items');
@@ -90,69 +57,7 @@ function updateOrderSummary(tableId, orders) {
   totalPrice.textContent = total;
 }
 
-// Function to handle table selection
-function selectTable(tableNumber) {
-  document.getElementById('selected-table-display').textContent = tableNumber;
-  listenForOrderUpdates(`table${tableNumber}`);
-}
-
-// Function to show login dialog
-function showLoginDialog() {
-  // Implement login functionality here
-}
-
-// Function to toggle sidebar
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('active');
-}
-
-// Function to filter menu items by category
-function filterCategory(category) {
-  const menuItems = document.querySelectorAll('.menu-item');
-  menuItems.forEach(item => {
-    if (item.getAttribute('data-category') === category || category === 'all') {
-      item.style.display = 'block';
-    } else {
-      item.style.display = 'none';
-    }
-  });
-}
-
-// Function to search menu items
-function searchMenu() {
-  const searchValue = document.getElementById('search').value.toLowerCase();
-  const menuItems = document.querySelectorAll('.menu-item');
-  menuItems.forEach(item => {
-    if (item.textContent.toLowerCase().includes(searchValue)) {
-      item.style.display = 'block';
-    } else {
-      item.style.display = 'none';
-    }
-  });
-}
-
-// Function to handle checkout
-function checkout() {
-  const tableNumber = document.getElementById('selected-table-display').textContent;
-  if (tableNumber === 'None') {
-    alert('Please select a table to checkout.');
-    return;
-  }
-  // Implement checkout functionality here
-  console.log(`Checking out table ${tableNumber}`);
-}
-
-// Function to handle cash payment
-function payWithCash() {
-  // Implement cash payment functionality here
-}
-
-// Function to handle card payment
-function payWithCard() {
-  // Implement card payment functionality here
-}
-
-// Example usage: Listening for updates on multiple tables
+// Listening for updates on multiple tables
 listenForOrderUpdates('table1');
 listenForOrderUpdates('table2');
 listenForOrderUpdates('table3');
@@ -161,6 +66,10 @@ listenForOrderUpdates('table3');
 document.querySelector('.table-btn-1').onclick = () => addOrder('table1', 'orderId1', { item: 'Pepperoni Pizza', quantity: 2, status: 'pending' });
 document.querySelector('.table-btn-2').onclick = () => addOrder('table2', 'orderId2', { item: 'Margherita Pizza', quantity: 1, status: 'pending' });
 document.querySelector('.table-btn-3').onclick = () => addOrder('table3', 'orderId3', { item: 'Cheeseburger', quantity: 3, status: 'pending' });
+
+
+
+
 
 
 
