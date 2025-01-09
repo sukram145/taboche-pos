@@ -1,4 +1,3 @@
-// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
   authDomain: "taboche-pos.firebaseapp.com",
@@ -11,6 +10,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+
+
 
 // Function to add an order
 function addOrder(table, orderId, orderDetails) {
@@ -27,7 +28,6 @@ function removeOrder(table, orderId) {
   database.ref('orders/' + table + '/' + orderId).remove();
 }
 
-// Function to listen for order updates
 function listenForOrderUpdates(table) {
   database.ref('orders/' + table).on('value', (snapshot) => {
     const orders = snapshot.val();
@@ -38,6 +38,7 @@ function listenForOrderUpdates(table) {
 
 // Example usage
 listenForOrderUpdates('table4');
+
 
 
 
@@ -428,7 +429,6 @@ function printReceipt() {
 }
 
 
-
 // Function to update sales data
 function updateSalesData(totalPrice, discount) {
   salesData.totalSales += totalPrice;
@@ -437,16 +437,18 @@ function updateSalesData(totalPrice, discount) {
   saveData();
 }
 
+
 // Function to display sales report
 function displaySalesReport() {
   const report = `
     <h3>Sales Report</h3>
-    <p>Total Sales: Rs ${salesData.totalSales}</p>
-    <p>Total Discounts: Rs ${salesData.totalDiscounts}</p>
+    <p>Total Sales: Rs ${salesData.totalSales.toFixed(2)}</p>
+    <p>Total Discounts: Rs ${salesData.totalDiscounts.toFixed(2)}</p>
     <p>Total Orders: ${salesData.totalOrders}</p>
   `;
   document.getElementById('sales-report').innerHTML = report;
 }
+
 
 // Function to reset sales report and total orders
 function resetSalesReport() {
@@ -461,6 +463,7 @@ function resetSalesReport() {
   alert('Sales report and total orders have been reset.');
   saveData();
 }
+
 
 // Function to print sales report
 function printSalesReport() {
