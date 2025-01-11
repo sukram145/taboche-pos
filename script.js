@@ -1,3 +1,4 @@
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
   authDomain: "taboche-pos.firebaseapp.com",
@@ -10,6 +11,25 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+
+// Function to update datetime display
+function updateDateTime() {
+  const datetimeElem = document.getElementById('datetime');
+  if (datetimeElem) {
+    const now = new Date();
+    const formattedDate = now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+    datetimeElem.textContent = formattedDate;
+  }
+}
+setInterval(updateDateTime, 1000);
+
+// JavaScript for sidebar toggle
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('active');
+}
+
+
 // Function to update table status
 function updateTableStatus(tableId, status) {
   const tableCard = document.querySelector(`.table-btn-${tableId}`);
@@ -67,11 +87,21 @@ document.querySelector('.table-btn-1').onclick = () => addOrder('table1', 'order
 document.querySelector('.table-btn-2').onclick = () => addOrder('table2', 'orderId2', { item: 'Margherita Pizza', quantity: 1, status: 'pending' });
 document.querySelector('.table-btn-3').onclick = () => addOrder('table3', 'orderId3', { item: 'Cheeseburger', quantity: 3, status: 'pending' });
 
+// Define addOrder function
+function addOrder(tableId, orderId, orderDetails) {
+  database.ref('orders/' + tableId + '/' + orderId).set(orderDetails)
+    .then(() => {
+      console.log('Order added successfully');
+    })
+    .catch((error) => {
+      console.error('Error adding order: ', error);
+    });
+}
 
-
-
-
-
+// Initial setup
+document.addEventListener('DOMContentLoaded', () => {
+  updateDateTime(); // Initial call to set the date and time immediately
+});
 
 
 
@@ -124,6 +154,19 @@ function selectTable(table) {
   }
   updateOrderSummary();
 }
+
+// Function to filter categories
+function filterCategory(category) {
+  const menuItems = document.querySelectorAll('.menu-item');
+  menuItems.forEach(item => {
+    if (item.getAttribute('data-category') === category || category === 'all') {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
 
 function addToOrder(name, price) {
   if (selectedTable === "None") {
@@ -523,54 +566,85 @@ function scheduleMidnightReset() {
   }, timeToMidnight);
 }
 
-// Sidebar navigation functions
-function goToHome() {
-  window.location.href = 'home.html';
-}
 
-function getCategories() {
-  window.location.href = '.category.html';
-}
-
-function getSalesReports() {
-  window.location.href = 'salesreports.html';
-}
-
-function  gosettings   () {
-  window.location.href = 'settings.html';
-}
-
-// Function to update datetime display
-function updateDateTime() {
-  const datetimeElem = document.getElementById('datetime');
-  if (datetimeElem) {
-    const now = new Date();
-    const formattedDate = now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-    datetimeElem.textContent = formattedDate;
-  }
-}
-setInterval(updateDateTime, 1000);
-
-// JavaScript for sidebar toggle
+// Function to toggle sidebar visibility
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
+  const content = document.getElementById('content');
   sidebar.classList.toggle('active');
+  content.classList.toggle('active');
 }
 
-// JavaScript for filtering categories
-function filterCategory(category) {
-  const menuItems = document.querySelectorAll('.menu-item');
-  menuItems.forEach(item => {
-    if (item.dataset.category === category || category === 'All') {
-      item.style.display = 'block';
-    } else {
-      item.style.display = 'none';
-    }
-  });
+
+
+// Sidebar navigation functions
+function showContent(sectionId) {
+  document.getElementById('content').innerHTML = `
+    <div class="dialog">
+        <div class="dialog-content">
+            <span class="close-btn" onclick="closeDialog()">&times;</span>
+            <h2>${sectionId.replace('-', ' ').toUpperCase()}</h2>
+            ${getSectionContent(sectionId)}
+        </div>
+    </div>
+  `;
+  document.querySelector('.dialog').style.display = 'block';
 }
 
-// Category and Item Management
+function closeDialog() {
+  document.querySelector('.dialog').style.display = 'none';
+}
 
+function toggleDropdown() {
+  const dropdown = document.querySelector(".dropdown-btn");
+  dropdown.classList.toggle("active");
+  const container = dropdown.nextElementSibling;
+  container.style.display = container.style.display === "block" ? "none" : "block";
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("active");
+}
+// Function to get section content based on the sectionId
+function getSectionContent(sectionId) {
+  switch (sectionId) {
+    case 'menu-management':
+      return `
+        <h3>Menu Management</h3>
+        <button onclick="showAddCategoryDialog()">Add Category</button>
+        <button onclick="showRemoveCategoryDialog()">Remove Category</button>
+        <button onclick="showAddItemDialog()">Add Item</button>
+        <button onclick="showRemoveItemDialog()">Remove Item</button>
+        <div id="menu-management-content"></div>
+      `;
+    case 'add-item':
+      return `
+        <h3>Add Item</h3>
+        <input type="text" id="new-item-name" placeholder="Item Name" required>
+        <input type="number" id="new-item-price" placeholder="Price" required>
+        <select id="new-item-category"></select>
+        <input type="file" id="new-item-image" required>
+        <button onclick="addItem()">Add Item</button>
+      `;
+    case 'remove-item':
+      return `
+        <h3>Remove Item</h3>
+        <select id="item-select"></select>
+        <button onclick="removeItem()">Remove Item</button>
+      `;
+    case 'sales-reports':
+      return displaySalesReports();
+    case 'settings':
+      return displaySettings();
+    case 'admin-panel':
+      return displayAdminPanel();
+    default:
+      return `<p>Home content...</p>`;
+  }
+}
+
+// Dialog Management
 function showAddCategoryDialog() {
   document.getElementById('add-category-dialog').style.display = 'block';
 }
@@ -606,41 +680,181 @@ function closeRemoveItemDialog() {
   document.getElementById('remove-item-dialog').style.display = 'none';
 }
 
-function addCategory() {
-  const newCategory = document.getElementById('new-category').value.trim();
-  if (newCategory) {
-    const categories = getCategories();
-    categories.push(newCategory);
-    saveCategories(categories);
-    
-    const categoryButton = document.createElement('button');
-    categoryButton.textContent = newCategory;
-    categoryButton.onclick = () => filterCategory(newCategory);
-    document.querySelector('.categories').appendChild(categoryButton);
-    
-    alert('Category added successfully');
-    closeAddCategoryDialog();
+// Additional functions for advanced features
+function displaySalesReports() {
+  return `
+    <h3>Sales Reports</h3>
+    <button onclick="generateSalesReport()">Generate Report</button>
+    <div id="sales-report-content"></div>
+  `;
+}
+
+function displaySettings() {
+  return `
+    <h3>Settings</h3>
+    <form id="settings-form">
+      <label for="store-name">Store Name:</label>
+      <input type="text" id="store-name" required>
+      <label for="currency">Currency:</label>
+      <input type="text" id="currency" required>
+      <label for="tax-rate">Tax Rate (%):</label>
+      <input type="number" id="tax-rate" step="0.01" required>
+      <label for="contact-email">Contact Email:</label>
+      <input type="email" id="contact-email" required>
+      <button type="button" onclick="updateSettings()">Update Settings</button>
+    </form>
+    <div id="settings-feedback"></div>
+  `;
+}
+
+function displayAdminPanel() {
+  return `
+    <h3>Admin Panel</h3>
+    <button onclick="manageUsers()">Manage Users</button>
+    <div id="user-management-content"></div>
+  `;
+}
+
+// Advanced Settings Update
+function updateSettings() {
+  const storeName = document.getElementById('store-name').value.trim();
+  const currency = document.getElementById('currency').value.trim();
+  const taxRate = parseFloat(document.getElementById('tax-rate').value.trim());
+  const contactEmail = document.getElementById('contact-email').value.trim();
+
+  // Validate input fields
+  if (!storeName || !currency || isNaN(taxRate) || !contactEmail) {
+    showFeedback('Please fill in all fields correctly.', 'error');
+    return;
+  }
+
+  // Save settings to local storage
+  const settings = { storeName, currency, taxRate, contactEmail };
+  localStorage.setItem('settings', JSON.stringify(settings));
+
+  // Show feedback to the user
+  showFeedback('Settings updated successfully!', 'success');
+  displayUpdatedSettings(settings);
+}
+
+// Function to display feedback
+function showFeedback(message, type) {
+  const feedbackElem = document.getElementById('settings-feedback');
+  feedbackElem.textContent = message;
+  feedbackElem.className = type; // Use CSS classes for styling based on type (success/error)
+  setTimeout(() => feedbackElem.textContent = '', 3000); // Clear message after 3 seconds
+}
+
+// Function to display updated settings
+function displayUpdatedSettings(settings) {
+  // Display the updated settings in a user-friendly way
+  const content = `
+    <h4>Updated Settings</h4>
+    <p><strong>Store Name:</strong> ${settings.storeName}</p>
+    <p><strong>Currency:</strong> ${settings.currency}</p>
+    <p><strong>Tax Rate:</strong> ${settings.taxRate}%</p>
+    <p><strong>Contact Email:</strong> ${settings.contactEmail}</p>
+  `;
+  document.getElementById('settings-feedback').innerHTML = content;
+}
+
+// Function to load settings on page load
+function loadSettings() {
+  const settings = JSON.parse(localStorage.getItem('settings')) || {};
+  if (settings.storeName) {
+    document.getElementById('store-name').value = settings.storeName;
+    document.getElementById('currency').value = settings.currency;
+    document.getElementById('tax-rate').value = settings.taxRate;
+    document.getElementById('contact-email').value = settings.contactEmail;
   }
 }
 
-function removeCategory() {
-  const categorySelect = document.getElementById('category-select');
-  const selectedCategory = categorySelect.value;
-  let categories = getCategories();
-  categories = categories.filter(category => category !== selectedCategory);
-  saveCategories(categories);
-  
-  const buttons = document.querySelectorAll('.categories button');
-  buttons.forEach(button => {
-    if (button.textContent === selectedCategory) {
-      button.remove();
-    }
-  });
-  
-  alert('Category removed successfully');
-  closeRemoveCategoryDialog();
+// Call loadSettings when the page loads
+document.addEventListener('DOMContentLoaded', loadSettings);
+
+
+
+// Implement the functions to handle these actions
+function generateSalesReport() {
+  const salesReportContent = document.getElementById('sales-report-content');
+  salesReportContent.innerHTML = '<p>Generating sales report...</p>';
+
+  // Simulating report generation with a timeout
+  setTimeout(() => {
+    const totalSales = salesData.totalSales;
+    const totalDiscounts = salesData.totalDiscounts;
+    const totalOrders = salesData.totalOrders;
+
+    // Calculate sales by category
+    const categorySales = calculateCategorySales();
+
+    // Generate report content
+    const report = `
+      <h3>Sales Report</h3>
+      <p><strong>Total Sales:</strong> Rs ${totalSales.toFixed(2)}</p>
+      <p><strong>Total Discounts:</strong> Rs ${totalDiscounts.toFixed(2)}</p>
+      <p><strong>Total Orders:</strong> ${totalOrders}</p>
+      <h4>Sales by Category</h4>
+      <ul>
+        ${Object.entries(categorySales).map(([category, amount]) => `<li>${category}: Rs ${amount.toFixed(2)}</li>`).join('')}
+      </ul>
+      <button onclick="printSalesReport()">Print Report</button>
+    `;
+
+    salesReportContent.innerHTML = report;
+  }, 2000);
 }
 
+// Function to calculate sales by category
+function calculateCategorySales() {
+  const items = getItemsFromStorage();
+  const categorySales = {};
+
+  for (const table of Object.values(tables)) {
+    for (const [itemName, itemDetails] of Object.entries(table.order)) {
+      const item = items.find(i => i.name === itemName);
+      if (item) {
+        const category = item.category;
+        if (!categorySales[category]) {
+          categorySales[category] = 0;
+        }
+        categorySales[category] += itemDetails.price * itemDetails.quantity;
+      }
+    }
+  }
+
+  return categorySales;
+}
+
+// Function to print the sales report
+function printSalesReport() {
+  const salesReportContent = document.getElementById('sales-report-content').innerHTML;
+  const printWindow = window.open('', '', 'height=600,width=800');
+  printWindow.document.write('<html><head><title>Sales Report</title></head><body>');
+  printWindow.document.write(salesReportContent);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+}
+
+
+function updateSettings() {
+  const storeName = document.getElementById('store-name').value;
+  const currency = document.getElementById('currency').value;
+  alert(`Settings updated: Store Name - ${storeName}, Currency - ${currency}`);
+  // Add logic to update settings
+}
+
+function manageUsers() {
+  const userManagementContent = document.getElementById('user-management-content');
+  userManagementContent.innerHTML = '<p>Managing users...</p>';
+  // Add logic to manage users
+  setTimeout(() => {
+    userManagementContent.innerHTML = '<p>User management actions completed.</p>';
+  }, 2000);
+}
+
+// Category and Item Management
 function addItem() {
   const itemName = document.getElementById('new-item-name').value.trim();
   const itemPrice = parseFloat(document.getElementById('new-item-price').value.trim());
@@ -656,7 +870,7 @@ function addItem() {
         category: itemCategory,
         image: e.target.result
       };
-      const items = getItems();
+      const items = getItemsFromStorage();
       items.push(newItem);
       saveItems(items);
       
@@ -673,7 +887,6 @@ function addItem() {
       addMenuItemListener(itemElement);
       
       alert('Item added successfully');
-      closeAddItemDialog();
     };
     reader.readAsDataURL(itemImage);
   }
@@ -682,7 +895,7 @@ function addItem() {
 function removeItem() {
   const itemSelect = document.getElementById('item-select');
   const selectedItemName = itemSelect.value;
-  let items = getItems();
+  let items = getItemsFromStorage();
   items = items.filter(item => item.name !== selectedItemName);
   saveItems(items);
   
@@ -694,40 +907,22 @@ function removeItem() {
   });
   
   alert('Item removed successfully');
-  closeRemoveItemDialog();
 }
 
-// Function to populate category options
-function populateCategoryOptions() {
-  const categorySelect = document.getElementById('category-select');
-  categorySelect.innerHTML = '';
-  const categories = getCategories();
-  categories.forEach(category => {
-    const option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
-    categorySelect.appendChild(option);
-  });
+// Local storage functions for items
+function getItemsFromStorage() {
+  return JSON.parse(localStorage.getItem('items')) || [];
 }
 
-// Function to populate category select
-function populateCategorySelect() {
-  const categorySelect = document.getElementById('new-item-category');
-  categorySelect.innerHTML = '';
-  const categories = getCategories();
-  categories.forEach(category => {
-    const option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
-    categorySelect.appendChild(option);
-  });
+function saveItems(items) {
+  localStorage.setItem('items', JSON.stringify(items));
 }
 
 // Function to populate item options
 function populateItemOptions() {
   const itemSelect = document.getElementById('item-select');
   itemSelect.innerHTML = '';
-  const items = getItems();
+  const items = getItemsFromStorage();
   items.forEach(item => {
     const option = document.createElement('option');
     option.value = item.name;
@@ -754,7 +949,7 @@ function addMenuItemListener(item) {
 }
 
 // Functions to get and save categories to localStorage
-function getCategories() {
+function getCategoriesFromStorage() {
   return JSON.parse(localStorage.getItem('categories')) || [];
 }
 
@@ -762,28 +957,10 @@ function saveCategories(categories) {
   localStorage.setItem('categories', JSON.stringify(categories));
 }
 
-// Functions to get and save items to localStorage
-function getItems() {
-  return JSON.parse(localStorage.getItem('items')) || [];
-}
-
-function saveItems(items) {
-  localStorage.setItem('items', JSON.stringify(items));
-}
-
-// Functions to get and save sales reports to localStorage
-function getSalesReports() {
-  return JSON.parse(localStorage.getItem('salesReports')) || [];
-}
-
-function saveSalesReports(reports) {
-  localStorage.setItem('salesReports', JSON.stringify(reports));
-}
-
 // Initial setup
 document.addEventListener('DOMContentLoaded', () => {
   // Load categories and items from localStorage
-  const categories = getCategories();
+  const categories = getCategoriesFromStorage();
   categories.forEach(category => {
     const categoryButton = document.createElement('button');
     categoryButton.textContent = category;
@@ -791,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.categories').appendChild(categoryButton);
   });
   
-  const items = getItems();
+  const items = getItemsFromStorage();
   items.forEach(item => {
     const itemElement = document.createElement('div');
     itemElement.className = 'menu-item';
@@ -803,11 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <p>${item.name} - Rs ${item.price}</p>
     `;
     document.getElementById('menu').appendChild(itemElement);
-    addMenuItemListener(itemElement);
   });
 
   addMenuItemListeners();
-  renderTables();
-  displaySalesReport(); // Display initial sales report
-  updateDateTime(); // Initial call to set the date and time immediately
 });

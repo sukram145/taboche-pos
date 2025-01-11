@@ -21,42 +21,92 @@ header {
 .datetime {
   font-size: 1.2em;
 }
+
+/* Sidebar styles */
 .sidebar {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 250px;
   height: 100%;
-  background-color: #333;
-  z-index: 1000;
-  overflow-y: auto;
-  transition: transform 0.3s ease;
+  position: fixed;
+  left: -250px; /* Initially hide the sidebar */
+  top: 0;
+  background-color: #111;
+  padding-top: 20px;
+  transition: left 0.3s ease; /* Add transition effect */
 }
 
 .sidebar.active {
+  left: 0; /* Show the sidebar when active */
+}
+
+.sidebar a, .dropdown-btn {
+  padding: 10px 15px;
+  text-decoration: none;
+  color: white;
   display: block;
-  transform: translateX(0);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.dropdown-container {
+  display: none;
+  background-color: #262626;
+  padding-left: 8px;
+}
+
+.dropdown-btn.active + .dropdown-container {
+  display: block;
+}
+
+#content {
+  margin-left: 260px;
+  padding: 20px;
+  transition: margin-left 0.3s ease; /* Add transition effect */
+}
+
+#content.active {
+  margin-left: 0; /* Adjust content margin when sidebar is hidden */
+}
+
+/* Dialog styles */
+.dialog {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.dialog-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
 }
 
 .close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 1.5em;
-  cursor: pointer;
-  color: white;
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 
-.sidebar a {
-  display: block;
-  padding: 15px;
-  color: white;
+.close-btn:hover,
+.close-btn:focus {
+  color: black;
   text-decoration: none;
-}
-
-.sidebar a:hover {
-  background-color: #575757;
+  cursor: pointer;
 }
 
 
@@ -145,7 +195,7 @@ main {
 
 .search-bar input {
   width: 100%;
-  padding: 15px;
+  height: 30px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 1em;
@@ -187,7 +237,7 @@ main {
 
 .menu-item img {
   width: 80px; /* Adjust size as needed */
-  height: 80px; /* Make height proportional to width */
+  height: 200px; /* Make height proportional to width */
   object-fit: cover; /* Ensures the image covers the specified area without distortion */
   border-radius: 10px; /* Adds rounded corners for a more polished look */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
@@ -377,30 +427,12 @@ main {
   margin-top: 20px;
 }
 
-@media (max-width: 768px) {
-  .menu-item {
-    width: 20%;
-  }
 
-  .categories {
-    flex-direction: column;
+@media screen and (max-width: 600px) {
+  body {
+      font-size: 14px;
   }
-
-  .categories button {
-    margin: 5px 0;
-  }
-}
-
-@media (max-width: 100px) {
-  .menu-item {
-    width: 100%;
-  }
-
-  .order-summary {
-    margin-top: 0;
-  }
-
-  .flex-container {
-    flex-direction: column;
+  .container {
+      width: 100%;
   }
 }

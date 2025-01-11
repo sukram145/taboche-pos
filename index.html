@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Professional Restaurant POS</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Firebase App (the core Firebase SDK) -->
@@ -11,26 +12,44 @@
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
 </head>
 <body>
-
   <header>
     <div class="logo">Taboche POS</div>
     <div class="datetime" id="datetime">Loading...</div>
     <div class="user-info">
-      <span id="user-role">Guest</span>
+      <span id="user-role">Admin</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
-    <div class="hamburger-menu" onclick="toggleSidebar()">
-      &#9776;
-    </div>
- 
+    <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
+
   <div class="sidebar" id="sidebar">
-    <button class="close-btn" onclick="toggleSidebar()">&times;</button>
-    <a href="#">Home</a>
-    <a href="#">menu management</a>
-    <a href="#">sales reports</a>
-    <a href="#">Settings</a>
+      <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+      <a href="#" id="home-btn" onclick="showContent('home')">Home</a>
+      <button class="dropdown-btn" onclick="showContent('menu-management')">Menu Management 
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-container">
+        <a href="#" id="add-item-btn" onclick="showContent('add-item')">Add Item</a>
+        <a href="#" id="remove-item-btn" onclick="showContent('remove-item')">Remove Item</a>
+      </div>
+      <a href="#" id="sales-reports-btn" onclick="showContent('sales-reports')">Sales Reports</a>
+      <a href="#" id="settings-btn" onclick="showContent('settings')">Settings</a>
+      <a href="#" id="admin-panel-btn" onclick="showContent('admin-panel')">Admin Panel</a>
+      <a href="#" id="order-management-btn" onclick="showContent('order-management')">Order Management</a>
+      <a href="#" id="payment-management-btn" onclick="showContent('payment-management')">Payment Management</a>
   </div>
+
+  <div id="content">
+      <!-- Dynamic content will be injected here -->
+       
+       
+  </div>
+  
+
+
+
+
+
   <div class="pos-container">
     <div class="table-management">
       <h2>Table Management</h2>
@@ -552,6 +571,7 @@
         <button class="checkout-btn" onclick="showPaymentDialog()">Checkout</button>
       </div>
     </main>
+    
       <div id="payment-dialog" class="dialog" style="display: none;">
     <div class="dialog-content">
       <span class="close" onclick="closePaymentDialog()">&times;</span>
@@ -565,6 +585,8 @@
           <button onclick="addPayment('Card')">Card</button>
           <button onclick="addPayment('Mobile Payment')">Mobile Payment</button>
         </div>
+
+        
         <ul id="payment-summary"></ul>
         <div class="change">
           <strong>Change:</strong> Rs <span id="change-amount">0</span>
