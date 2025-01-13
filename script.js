@@ -1,3 +1,4 @@
+// Firebase configuration and initialization
 const firebaseConfig = {
   apiKey: "AIzaSyA74YCQAfmUdu96AKIk41uSdiMS6imJz6E",
   authDomain: "taboche-pos.firebaseapp.com",
@@ -9,87 +10,123 @@ const firebaseConfig = {
   measurementId: "G-00TEQG2H1Z"
 };
 
-
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+console.log("Firebase initialized successfully.");
 
-function updateDateTime() {
-  const datetimeElem = document.getElementById('datetime');
-  if (datetimeElem) {
-    const now = new Date();
-    const formattedDate = now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-    datetimeElem.textContent = formattedDate;
+// Function to show content based on the selected option
+function showContent(id) {
+  console.log(`Showing content for ID: ${id}`);
+  const content = document.getElementById('content');
+  let contentHtml = '';
+
+  switch(id) {
+    case 'home':
+      contentHtml = '<h1>Home</h1><p>Welcome to the Taboche POS Home Page.</p>';
+      break;
+    case 'add-item':
+      contentHtml = `
+        <h1>Add Item</h1>
+        <form id="add-item-form">
+          <label for="new-item-name">Item Name:</label>
+          <input type="text" id="new-item-name" required><br>
+          <label for="new-item-price">Item Price (Rs):</label>
+          <input type="number" id="new-item-price" required><br>
+          <label for="new-item-category">Item Category:</label>
+          <input type="text" id="new-item-category" required><br>
+          <label for="new-item-image">Item Image:</label>
+          <input type="file" id="new-item-image" accept="image/*" required><br>
+          <button type="button" onclick="addItem()">Add Item</button>
+        </form>
+      `;
+      break;
+    case 'remove-item':
+      contentHtml = `
+        <h1>Remove Item</h1>
+        <label for="item-select">Select Item to Remove:</label>
+        <select id="item-select"></select><br>
+        <button type="button" onclick="removeItem()">Remove Item</button>
+      `;
+      populateItemOptions();
+      break;
+    case 'edit-item':
+      contentHtml = `
+        <h1>Edit Item</h1>
+        <label for="edit-item-select">Select Item to Edit:</label>
+        <select id="edit-item-select"></select><br>
+        <button type="button" onclick="editItem()">Edit Item</button>
+        <div id="edit-item-details"></div>
+      `;
+      populateItemOptions('edit-item-select');
+      break;
+    case 'sales-reports':
+      contentHtml = '<h1>Sales Reports</h1><p>View your sales reports here.</p>';
+      break;
+    case 'settings':
+      contentHtml = `
+        <h1>Settings</h1>
+        <form id="settings-form">
+          <label for="store-name">Store Name:</label>
+          <input type="text" id="store-name" required><br>
+          <label for="currency">Currency:</label>
+          <input type="text" id="currency" required><br>
+          <button type="button" onclick="updateSettings()">Update Settings</button>
+        </form>
+      `;
+      break;
+    case 'admin-panel':
+      contentHtml = '<h1>Admin Panel</h1><p>Manage your admin settings here.</p>';
+      break;
+    default:
+      contentHtml = `<h1>${id}</h1>`;
   }
+
+  content.innerHTML = contentHtml;
+  console.log(`Content for ${id} injected into the page.`);
 }
-setInterval(updateDateTime, 1000);
 
-
-// JavaScript for sidebar toggle
+// Function to toggle the sidebar
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   sidebar.classList.toggle('active');
 }
 
-
-// Function to update table status
-function updateTableStatus(tableId, status) {
-  const tableCard = document.querySelector(`.table-btn-${tableId}`);
-  if (tableCard) {
-    if (status === 'occupied') {
-      tableCard.classList.add('occupied');
-      tableCard.classList.remove('available');
-    } else {
-      tableCard.classList.add('available');
-      tableCard.classList.remove('occupied');
-    }
-  }
+// Function to toggle the dropdown in the sidebar
+function toggleDropdown() {
+  const dropdownContainer = document.querySelector('.dropdown-container');
+  dropdownContainer.classList.toggle('active');
 }
 
-// Function to listen for order updates and update table status
-function listenForOrderUpdates(table) {
-  database.ref('orders/' + table).on('value', (snapshot) => {
-    const orders = snapshot.val();
-    console.log('Updated orders for ' + table + ':', orders);
-    
-    const tableStatus = orders ? 'occupied' : 'available';
-    
-    updateTableStatus(table, tableStatus);
-    updateOrderSummary(table, orders);
-  });
+// Function to show login dialog (placeholder)
+function showLoginDialog() {
+  alert('Show login dialog');
 }
 
-// Function to update order summary
-function updateOrderSummary(tableId, orders) {
-  const orderItems = document.getElementById('order-items');
-  const totalPrice = document.getElementById('total-price');
-  orderItems.innerHTML = '';
-  let total = 0;
-
-  if (orders) {
-    Object.keys(orders).forEach(orderId => {
-      const order = orders[orderId];
-      const li = document.createElement('li');
-      li.textContent = `${order.item} x${order.quantity}`;
-      orderItems.appendChild(li);
-      total += order.quantity; // Assuming each item costs 1 unit for simplicity
-    });
-  }
-
-  totalPrice.textContent = total;
+// Function to add item (placeholder)
+function addItem() {
+  alert('Item added');
 }
 
-// Listening for updates on multiple tables
-listenForOrderUpdates('table1');
-listenForOrderUpdates('table2');
-listenForOrderUpdates('table3');
+// Function to remove item (placeholder)
+function removeItem() {
+  alert('Item removed');
+}
 
+// Function to edit item (placeholder)
+function editItem() {
+  alert('Item edited');
+}
 
+// Function to populate item options (placeholder)
+function populateItemOptions(selectId) {
+  alert('Populate item options');
+}
 
-// Initial setup
-document.addEventListener('DOMContentLoaded', () => {
-  updateDateTime(); // Initial call to set the date and time immediately
-});
+// Function to update settings (placeholder)
+function updateSettings() {
+  alert('Settings updated');
+}
 
 
 
