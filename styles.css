@@ -1,28 +1,35 @@
+/* Base styles (applied to all devices) */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  background-color: #f7f7f7;
+  background-color: #f4f4f9;
+  color: #333;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
-  background-color: #333;
+  padding: 20px 40px;
+  background-color: #292b2c;
   color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-in-out;
 }
 
 .logo {
-  font-size: 2em;
+  font-size: 2em; /* Smaller font size */
   font-weight: bold;
+  letter-spacing: 1px;
+  animation: slideInLeft 1s ease-in-out;
 }
 
 .datetime {
-  font-size: 1.2em;
+  font-size: 1em; /* Smaller font size */
+  font-weight: 300;
+  animation: slideInRight 1s ease-in-out;
 }
 
-/* Sidebar styles */
 .sidebar {
   width: 250px;
   height: 100%;
@@ -49,6 +56,8 @@ header {
   text-align: left;
   cursor: pointer;
   outline: none;
+  animation: fadeIn 0.5s ease; /* Add fade-in animation */
+  font-size: 0.9em; /* Smaller font size */
 }
 
 .dropdown-container {
@@ -59,6 +68,7 @@ header {
 
 .dropdown-btn.active + .dropdown-container {
   display: block;
+  animation: slideDown 0.5s ease; /* Add slide-down animation */
 }
 
 #content {
@@ -71,71 +81,12 @@ header {
   margin-left: 0; /* Adjust content margin when sidebar is hidden */
 }
 
-/* Dialog styles */
-.dialog {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.5);
-}
-
-.dialog-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 500px;
-  border-radius: 5px;
-  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
-}
-
-.close-btn {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-
-.logout-btn {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  border-radius: 5px;
-}
-
-.logout-btn:hover {
-  background-color: #0056b3;
-}
-
-.pos-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
 main {
   display: flex;
   flex: 1;
-  flex-direction: row; /* Changed from column to row for horizontal alignment */
+  flex-direction: row;
   padding: 20px;
-  gap: 20px; /* Added gap between order section and order summary */
+  gap: 20px;
 }
 
 .flex-container {
@@ -153,6 +104,7 @@ main {
   margin: 20px 0;
   min-width: 320px;
 }
+
 .tables-dashboard {
   display: flex;
   flex-wrap: wrap;
@@ -164,6 +116,13 @@ main {
   border: 1px solid #ccc;
   background-color: #f4f4f4;
   cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.table-btn:hover {
+  background-color: #ddd;
+  transform: translateY(-3px);
 }
 
 .table-card {
@@ -171,16 +130,19 @@ main {
   border: 1px solid #ccc;
   background-color: #f4f4f4;
   cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  border-radius: 10px;
 }
 
 .table-card.occupied {
-  background-color: #ffc107;
+  background-color: #ff0707;
+  color: white;
 }
 
 .table-card.available {
   background-color: #28a745;
+  color: white;
 }
-
 
 .table-card:hover {
   transform: translateY(-5px);
@@ -192,39 +154,52 @@ main {
   display: flex;
   flex-direction: column;
 }
-
 .search-bar input {
   width: 100%;
   height: 30px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 1em;
+  font-size: 0.9em; /* Smaller font size */
+  padding: 5px 10px;
+  transition: border-color 0.3s ease;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
 }
 
 .categories {
   display: flex;
   justify-content: space-around;
   margin: 20px 0;
+  overflow-x: auto;  /* Enable horizontal scrolling */
+  white-space: nowrap;  /* Prevent line breaks */
+  padding: 10px 0;
 }
 
 .categories button {
-  padding: 10px 20px;
+  display: inline-block;  /* Ensure buttons are inline-block for scrolling */
+  padding: 10px 15px;
   background-color: #666;
   color: white;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
   border-radius: 5px;
+  font-size: 0.9em;
+  margin: 0 5px;  /* Add margin between buttons */
 }
 
 .categories button:hover {
   background-color: #555;
+  transform: translateY(-3px);
 }
+
 
 .menu {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px; /* Smaller gap */
   justify-content: center;
 }
 
@@ -232,26 +207,21 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 10px; /* Add some space around the items */
+  margin: 5px; /* Smaller margin */
 }
 
 .menu-item img {
-  width: 80px; /* Adjust size as needed */
-  height: 200px; /* Make height proportional to width */
-  object-fit: cover; /* Ensures the image covers the specified area without distortion */
-  border-radius: 10px; /* Adds rounded corners for a more polished look */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+  width: 100px; /* Smaller width */
+  height: 80px; /* Smaller height */
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
-
 
 .menu-item:hover {
   transform: translateY(-5px);
   border-color: #007bff;
-}
-
-.menu-item img {
-  width: 100%;
-  border-radius: 10px 10px 0 0;
 }
 
 .order-summary {
@@ -291,24 +261,40 @@ main {
 
 .total {
   margin-top: 20px;
-  font-size: 1.4em;
+  font-size: 1.2em; /* Smaller font size */
   display: flex;
   justify-content: space-between;
 }
 
 .checkout-btn, .finalize-btn, .complete-btn {
-  padding: 15px 30px;
-  background: #007bff;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
   border-radius: 5px;
   margin: 20px 0;
+  font-size: 0.9em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-btn, .finalize-btn, .complete-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 5px;
+  margin: 20px 0;
+  font-size: 0.9em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .checkout-btn:hover, .finalize-btn:hover, .complete-btn:hover {
   background-color: #0056b3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .dialog {
@@ -330,6 +316,17 @@ main {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   width: 80%;
   max-width: 500px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(-10px);
+  opacity: 0;
+  animation: fadeInDialog 0.5s forwards;
+}
+
+@keyframes fadeInDialog {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .close {
@@ -338,13 +335,19 @@ main {
   right: 10px;
   font-size: 1.5em;
   cursor: pointer;
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.close:hover {
+  color: #ff0000;
 }
 
 .payment-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
+  background: linear-gradient(135deg, #ffffff, #f0f0f0);
   color: #000;
   padding: 20px;
   border-radius: 10px;
@@ -360,25 +363,31 @@ main {
 }
 
 .discount-section input {
-  padding: 15px;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 120px;
-  font-size: 1em;
+  width: 100px;
+  font-size: 0.9em;
+  transition: border-color 0.3s ease;
+}
+
+.discount-section input:focus {
+  border-color: #007bff;
 }
 
 .discount-section button {
   padding: 10px 20px;
-  background: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
   border-radius: 5px;
 }
 
 .discount-section button:hover {
   background-color: #0056b3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .payments {
@@ -386,24 +395,48 @@ main {
   text-align: center;
 }
 
-#payment-methods {
+.payment-methods {
   display: flex;
   justify-content: center;
   gap: 15px;
+  margin-bottom: 20px;
 }
 
-#payment-methods button {
-  padding: 15px 30px;
-  background: #007bff;
-  color: white;
+.payment-methods button {
+  padding: 10px 20px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
   border-radius: 5px;
+  font-size: 0.9em;
+  color: white;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-#payment-methods button:hover {
-  background-color: #0056b3;
+.payment-methods .cash-btn {
+  background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.payment-methods .cash-btn:hover {
+  background-color: #218838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.payment-methods .card-btn {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.payment-methods .card-btn:hover {
+  background-color: #e0a800;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.payment-methods .mobile-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.payment-methods .mobile-btn:hover {
+  background-color: #138496;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 #payment-summary {
@@ -418,21 +451,66 @@ main {
 }
 
 .change {
-  font-size: 1.4em;
+  font-size: 1.2em;
   margin: 20px 0;
   color: green;
+  font-weight: bold;
 }
 
 .insufficient-amount {
   margin-top: 20px;
+  color: red;
+  font-weight: bold;
 }
 
 
+/* Responsive styles */
 @media screen and (max-width: 600px) {
   body {
-      font-size: 14px;
+    font-size: 14px;
   }
   .container {
-      width: 100%;
+    width: 100%;
   }
+  main {
+    flex-direction: column;
+    padding: 10px;
+  }
+  .table-management, .order-section, .payment-section {
+    padding: 15px;
+    margin: 10px 0;
+  }
+/* Menu item styles */
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px; /* Smaller margin */
 }
+
+.menu-item img {
+  width: 100px; /* Adjust size as needed */
+  height: 100px; /* Adjust height */
+  object-fit: cover;
+  border-radius: 10px; /* Adds rounded corners for a more polished look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+  transition: transform 0.3s ease, border-color 0.3s ease; /* Add smooth transitions */
+}
+
+.menu-item .item-name, .menu-item .item-price {
+  font-size: 0.9em; /* Smaller font size */
+  text-align: left;
+  margin: 1px 0;
+}
+
+.menu-item .item-price {
+  font-weight: bold;
+}
+
+.menu-item:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+}
+}
+  
+

@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Professional Restaurant POS</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Firebase App (the core Firebase SDK) -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-  <!-- Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
   <header>
@@ -23,30 +21,24 @@
   </header>
 
   <div class="sidebar" id="sidebar">
-      <button class="close-btn" onclick="toggleSidebar()">&times;</button>
-      <a href="#" id="home-btn" onclick="showContent('home')">Home</a>
-      <button class="dropdown-btn" onclick="showContent('menu-management')">Menu Management 
-        <i class="fa fa-caret-down"></i>
-      </button>
-      <div class="dropdown-container">
-        <a href="#" id="add-item-btn" onclick="showContent('add-item')">Add Item</a>
-        <a href="#" id="remove-item-btn" onclick="showContent('remove-item')">Remove Item</a>
-      </div>
-      <a href="#" id="sales-reports-btn" onclick="showContent('sales-reports')">Sales Reports</a>
-      <a href="#" id="settings-btn" onclick="showContent('settings')">Settings</a>
-      <a href="#" id="admin-panel-btn" onclick="showContent('admin-panel')">Admin Panel</a>
-      <a href="#" id="order-management-btn" onclick="showContent('order-management')">Order Management</a>
-      <a href="#" id="payment-management-btn" onclick="showContent('payment-management')">Payment Management</a>
+    <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+    <a href="#" id="home-btn" onclick="showContent('home')">Home</a>
+    <button class="dropdown-btn" onclick="toggleDropdown()">Menu Management 
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-container">
+      <a href="#" id="add-item-btn" onclick="showContent('add-item')">Add Item</a>
+      <a href="#" id="remove-item-btn" onclick="showContent('remove-item')">Remove Item</a>
+      <a href="#" id="edit-item-btn" onclick="showContent('edit-item')">Edit Item</a>
+    </div>
+    <a href="#" id="sales-reports-btn" onclick="showContent('sales-reports')">Sales Reports</a>
+    <a href="#" id="settings-btn" onclick="showContent('settings')">Settings</a>
+    <a href="#" id="admin-panel-btn" onclick="showContent('admin-panel')">Admin Panel</a>
   </div>
 
   <div id="content">
-      <!-- Dynamic content will be injected here -->
-       
-       
+    <!-- Dynamic content will be injected here -->
   </div>
-  
-
-
 
 
 
@@ -94,9 +86,38 @@
           <button onclick="filterCategory('Mojito/Ice Tea')">Mojito/Ice Tea</button>
           <button onclick="filterCategory('Soft Drink')">Soft Drink</button>
           <button onclick="filterCategory('Tea')">Tea</button>
+          <button onclick="filterCategory('Bakery')">Bakery</button>
         </div>
         <div class="menu" id="menu">
           <!-- Sample Items -->
+                <!-- bakery -->
+                <div class="menu-item" data-name="chocolate-muffin" data-price="150" data-category="Bakery" data-section="Bar">
+                  <img src="images/chocolate_muffin.jpg" alt="Chocolate Muffin">
+                  <p>CHOCOLATE MUFFIN - Rs 150</p>
+                </div>
+                <div class="menu-item" data-name="banana-muffin" data-price="150" data-category="Bakery" data-section="Bar">
+                  <img src="images/banana_muffin.jpg" alt="Banana Muffin">
+                  <p>BANANA MUFFIN - Rs 150</p>
+                </div>
+                <div class="menu-item" data-name="brownie-walnut" data-price="200" data-category="Bakery" data-section="Bar">
+                  <img src="images/brownie_walnut.jpg" alt="Brownie Walnut">
+                  <p>BROWNIE WALNUT - Rs 200</p>
+                </div>
+                <div class="menu-item" data-name="apple-pie" data-price="100" data-category="Bakery" data-section="Bar">
+                  <img src="images/apple_pie.jpg" alt="Apple Pie">
+                  <p>APPLE PIE - Rs 100</p>
+                </div>
+                <div class="menu-item" data-name="chicken-pie" data-price="100" data-category="Bakery" data-section="Bar">
+                  <img src="images/chicken_pie.jpg" alt="Chicken Pie">
+                  <p>CHICKEN PIE - Rs 100</p>
+                </div>
+                <div class="menu-item" data-name="mushroom-pie" data-price="100" data-category="Bakery" data-section="Bar">
+                  <img src="images/mushroom_pie.jpg" alt="Mushroom Pie">
+                  <p>MUSHROOM PIE - Rs 100</p>
+                </div>
+                
+            <!-- cig -->
+
           <div class="menu-item" data-name="shikar Ice" data-price="25" data-category="misc" data-section="Bar">
             <img src="images/shikar ICE.jpg" alt="shikar Ice">
             <p>SHIKHAR ICE - Rs 25</p>
@@ -572,40 +593,39 @@
       </div>
     </main>
     
-      <div id="payment-dialog" class="dialog" style="display: none;">
-    <div class="dialog-content">
-      <span class="close" onclick="closePaymentDialog()">&times;</span>
-      <div class="payment-section">
-        <div class="discount-section">
-          <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
-          <button onclick="applyDiscountHandler()">Apply Discount</button>
+    <div id="payment-dialog" class="dialog" style="display: none;">
+      <div class="dialog-content">
+        <span class="close" onclick="closePaymentDialog()">&times;</span>
+        <div class="payment-section">
+          <div class="discount-section">
+            <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
+            <button onclick="applyDiscountHandler()">Apply Discount</button>
+          </div>
+          <div class="payment-methods">
+            <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
+            <button class="card-btn" onclick="addPayment('Card')">Card</button>
+            <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
+          </div>
+          <ul id="payment-summary"></ul>
+          <div class="change">
+            <strong>Change:</strong> Rs <span id="change-amount">0</span>
+          </div>
+          <div class="insufficient-amount" id="insufficient-amount" style="display: none;">
+            <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
+          </div>
+          <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
         </div>
-        <div class="payment-methods">
-          <button onclick="addPayment('Cash')">Cash</button>
-          <button onclick="addPayment('Card')">Card</button>
-          <button onclick="addPayment('Mobile Payment')">Mobile Payment</button>
-        </div>
-
-        
-        <ul id="payment-summary"></ul>
-        <div class="change">
-          <strong>Change:</strong> Rs <span id="change-amount">0</span>
-        </div>
-        <div class="insufficient-amount" id="insufficient-amount" style="color: red; display: none;">
-          <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
-        </div>
-        <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
       </div>
     </div>
-  </div>
-
+    
   <div id="sales-report" class="sales-report"></div>
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
 
 
 
   <!-- Existing script reference -->
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
+
   <!-- Firebase configuration and initialization -->
  
    

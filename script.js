@@ -1,18 +1,19 @@
-// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDW4CuRkoQtLKz1lF0vwzNG1vHC9P_cRgE",
+  apiKey: "AIzaSyA74YCQAfmUdu96AKIk41uSdiMS6imJz6E",
   authDomain: "taboche-pos.firebaseapp.com",
   databaseURL: "https://taboche-pos.firebaseio.com",
   projectId: "taboche-pos",
-  storageBucket: "taboche-pos.appspot.com",
+  storageBucket: "taboche-pos.firebasestorage.app",
   messagingSenderId: "902721301924",
-  appId: "1:902721301924:web:c44ef0ade0ac7200ed6531"
+  appId: "1:902721301924:web:c44ef0ade0ac7200ed6531",
+  measurementId: "G-00TEQG2H1Z"
 };
+
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// Function to update datetime display
+
 function updateDateTime() {
   const datetimeElem = document.getElementById('datetime');
   if (datetimeElem) {
@@ -22,6 +23,7 @@ function updateDateTime() {
   }
 }
 setInterval(updateDateTime, 1000);
+
 
 // JavaScript for sidebar toggle
 function toggleSidebar() {
@@ -82,21 +84,7 @@ listenForOrderUpdates('table1');
 listenForOrderUpdates('table2');
 listenForOrderUpdates('table3');
 
-// Example function to add an order manually (for testing)
-document.querySelector('.table-btn-1').onclick = () => addOrder('table1', 'orderId1', { item: 'Pepperoni Pizza', quantity: 2, status: 'pending' });
-document.querySelector('.table-btn-2').onclick = () => addOrder('table2', 'orderId2', { item: 'Margherita Pizza', quantity: 1, status: 'pending' });
-document.querySelector('.table-btn-3').onclick = () => addOrder('table3', 'orderId3', { item: 'Cheeseburger', quantity: 3, status: 'pending' });
 
-// Define addOrder function
-function addOrder(tableId, orderId, orderDetails) {
-  database.ref('orders/' + tableId + '/' + orderId).set(orderDetails)
-    .then(() => {
-      console.log('Order added successfully');
-    })
-    .catch((error) => {
-      console.error('Error adding order: ', error);
-    });
-}
 
 // Initial setup
 document.addEventListener('DOMContentLoaded', () => {
@@ -212,12 +200,7 @@ function displayOrderItems(orderItems) {
   orderItemsList.innerHTML = ''; // Clear existing items
   let totalPrice = 0;
 
-  for (const [itemName, itemDetails] of Object.entries(orderItems)) {
-    const listItem = document.createElement('li');
-    listItem.textContent = `${itemName} - Rs ${itemDetails.price} x ${itemDetails.quantity}`;
-    orderItemsList.appendChild(listItem);
-    totalPrice += itemDetails.price * itemDetails.quantity;
-  }
+  
 
   document.getElementById('total-price').textContent = totalPrice;
   tables[selectedTable].totalPrice = totalPrice;
@@ -525,17 +508,28 @@ function displaySalesReport() {
   `;
   document.getElementById('sales-report').innerHTML = report;
 }
-
 // Function to reset sales report and total orders
 function resetSalesReport() {
+  console.log('Resetting sales report and total orders...');
+  
   salesData = {
     totalSales: 0,
     totalDiscounts: 0,
     totalOrders: 0
   };
-  document.getElementById('sales-report').innerHTML = '';
-  document.getElementById('order-items').innerHTML = '';
-  document.getElementById('total-price').textContent = '0';
+
+  const salesReportElem = document.getElementById('sales-report');
+  const orderItemsElem = document.getElementById('order-items');
+  const totalPriceElem = document.getElementById('total-price');
+
+  if (salesReportElem && orderItemsElem && totalPriceElem) {
+    salesReportElem.innerHTML = '';
+    orderItemsElem.innerHTML = '';
+    totalPriceElem.textContent = '0';
+  } else {
+    console.error('One or more elements not found.');
+  }
+  
   alert('Sales report and total orders have been reset.');
   saveData();
 }
@@ -567,277 +561,243 @@ function scheduleMidnightReset() {
 }
 
 
-// Function to toggle sidebar visibility
+
+// Function to toggle sidebar
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
-  const content = document.getElementById('content');
   sidebar.classList.toggle('active');
-  content.classList.toggle('active');
 }
 
-
-
-// Sidebar navigation functions
-function showContent(sectionId) {
-  document.getElementById('content').innerHTML = `
-    <div class="dialog">
-        <div class="dialog-content">
-            <span class="close-btn" onclick="closeDialog()">&times;</span>
-            <h2>${sectionId.replace('-', ' ').toUpperCase()}</h2>
-            ${getSectionContent(sectionId)}
-        </div>
-    </div>
-  `;
-  document.querySelector('.dialog').style.display = 'block';
-}
-
-function closeDialog() {
-  document.querySelector('.dialog').style.display = 'none';
-}
-
+// Function to toggle dropdown menu
 function toggleDropdown() {
-  const dropdown = document.querySelector(".dropdown-btn");
-  dropdown.classList.toggle("active");
-  const container = dropdown.nextElementSibling;
-  container.style.display = container.style.display === "block" ? "none" : "block";
+  const dropdown = document.querySelector('.dropdown-container');
+  dropdown.classList.toggle('show');
 }
 
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("active");
-}
-// Function to get section content based on the sectionId
-function getSectionContent(sectionId) {
-  switch (sectionId) {
-    case 'menu-management':
-      return `
-        <h3>Menu Management</h3>
-        <button onclick="showAddCategoryDialog()">Add Category</button>
-        <button onclick="showRemoveCategoryDialog()">Remove Category</button>
-        <button onclick="showAddItemDialog()">Add Item</button>
-        <button onclick="showRemoveItemDialog()">Remove Item</button>
-        <div id="menu-management-content"></div>
-      `;
+// Function to show content based on the selected option
+function showContent(id) {
+  const content = document.getElementById('content');
+  let contentHtml = '';
+
+  switch(id) {
+    case 'home':
+      contentHtml = '<h1>Home</h1><p>Welcome to the Taboche POS Home Page.</p>';
+      break;
     case 'add-item':
-      return `
-        <h3>Add Item</h3>
-        <input type="text" id="new-item-name" placeholder="Item Name" required>
-        <input type="number" id="new-item-price" placeholder="Price" required>
-        <select id="new-item-category"></select>
-        <input type="file" id="new-item-image" required>
-        <button onclick="addItem()">Add Item</button>
+      contentHtml = `
+        <h1>Add Item</h1>
+        <form id="add-item-form">
+          <label for="new-item-name">Item Name:</label>
+          <input type="text" id="new-item-name" required><br>
+          <label for="new-item-price">Item Price (Rs):</label>
+          <input type="number" id="new-item-price" required><br>
+          <label for="new-item-category">Item Category:</label>
+          <input type="text" id="new-item-category" required><br>
+          <label for="new-item-image">Item Image:</label>
+          <input type="file" id="new-item-image" accept="image/*" required><br>
+          <button type="button" onclick="addItem()">Add Item</button>
+        </form>
       `;
+      break;
     case 'remove-item':
-      return `
-        <h3>Remove Item</h3>
-        <select id="item-select"></select>
-        <button onclick="removeItem()">Remove Item</button>
+      contentHtml = `
+        <h1>Remove Item</h1>
+        <label for="item-select">Select Item to Remove:</label>
+        <select id="item-select"></select><br>
+        <button type="button" onclick="removeItem()">Remove Item</button>
       `;
+      populateItemOptions();
+      break;
+    case 'edit-item':
+      contentHtml = `
+        <h1>Edit Item</h1>
+        <label for="edit-item-select">Select Item to Edit:</label>
+        <select id="edit-item-select"></select><br>
+        <button type="button" onclick="editItem()">Edit Item</button>
+        <div id="edit-item-details"></div>
+      `;
+      populateItemOptions('edit-item-select');
+      break;
     case 'sales-reports':
-      return displaySalesReports();
+      contentHtml = '<h1>Sales Reports</h1><p>View your sales reports here.</p>';
+      break;
     case 'settings':
-      return displaySettings();
+      contentHtml = `
+        <h1>Settings</h1>
+        <form id="settings-form">
+          <label for="store-name">Store Name:</label>
+          <input type="text" id="store-name" required><br>
+          <label for="currency">Currency:</label>
+          <input type="text" id="currency" required><br>
+          <button type="button" onclick="updateSettings()">Update Settings</button>
+        </form>
+      `;
+      break;
     case 'admin-panel':
-      return displayAdminPanel();
+      contentHtml = '<h1>Admin Panel</h1><p>Manage your admin settings here.</p>';
+      break;
     default:
-      return `<p>Home content...</p>`;
+      contentHtml = `<h1>${id}</h1>`;
+  }
+
+  content.innerHTML = contentHtml;
+}
+
+// Function to show login dialog
+function showLoginDialog() {
+  alert('Show login dialog');
+}
+
+// Function to update datetime display
+function updateDateTime() {
+  const datetimeElem = document.getElementById('datetime');
+  if (datetimeElem) {
+    const now = new Date();
+    const formattedDate = now.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+    datetimeElem.textContent = formattedDate;
+  }
+}
+setInterval(updateDateTime, 1000);
+
+// Function to add a new item to the menu
+function addItem() {
+  const itemName = document.getElementById('new-item-name').value.trim();
+  const itemPrice = parseFloat(document.getElementById('new-item-price').value.trim());
+  const itemCategory = document.getElementById('new-item-category').value.trim();
+  const itemImage = document.getElementById('new-item-image').files[0];
+  
+  if (itemName && itemPrice && itemCategory && itemImage) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const newItem = {
+        name: itemName,
+        price: itemPrice,
+        category: itemCategory,
+        image: e.target.result
+      };
+      const items = getItemsFromStorage();
+      items.push(newItem);
+      saveItems(items);
+
+      const itemElement = document.createElement('div');
+      itemElement.className = 'menu-item';
+      itemElement.dataset.name = itemName;
+      itemElement.dataset.price = itemPrice;
+      itemElement.dataset.category = itemCategory;
+      itemElement.innerHTML = `
+        <img src="${e.target.result}" alt="${itemName}">
+        <p>${itemName} - Rs ${itemPrice}</p>
+      `;
+      document.getElementById('menu').appendChild(itemElement);
+      addMenuItemListener(itemElement);
+      
+      alert('Item added successfully');
+    };
+    reader.readAsDataURL(itemImage);
   }
 }
 
-// Dialog Management
-function showAddCategoryDialog() {
-  document.getElementById('add-category-dialog').style.display = 'block';
+// Function to remove an item from the menu
+function removeItem() {
+  const itemSelect = document.getElementById('item-select');
+  const selectedItemName = itemSelect.value;
+  let items = getItemsFromStorage();
+  items = items.filter(item => item.name !== selectedItemName);
+  saveItems(items);
+  
+  const menuItems = document.querySelectorAll('.menu-item');
+  menuItems.forEach(item => {
+    if (item.dataset.name === selectedItemName) {
+      item.remove();
+    }
+  });
+  
+  alert('Item removed successfully');
 }
 
-function closeAddCategoryDialog() {
-  document.getElementById('add-category-dialog').style.display = 'none';
-}
-
-function showRemoveCategoryDialog() {
-  populateCategoryOptions();
-  document.getElementById('remove-category-dialog').style.display = 'block';
-}
-
-function closeRemoveCategoryDialog() {
-  document.getElementById('remove-category-dialog').style.display = 'none';
-}
-
-function showAddItemDialog() {
-  populateCategorySelect();
-  document.getElementById('add-item-dialog').style.display = 'block';
-}
-
-function closeAddItemDialog() {
-  document.getElementById('add-item-dialog').style.display = 'none';
-}
-
-function showRemoveItemDialog() {
-  populateItemOptions();
-  document.getElementById('remove-item-dialog').style.display = 'block';
-}
-
-function closeRemoveItemDialog() {
-  document.getElementById('remove-item-dialog').style.display = 'none';
-}
-
-// Additional functions for advanced features
-function displaySalesReports() {
-  return `
-    <h3>Sales Reports</h3>
-    <button onclick="generateSalesReport()">Generate Report</button>
-    <div id="sales-report-content"></div>
-  `;
-}
-
-function displaySettings() {
-  return `
-    <h3>Settings</h3>
-    <form id="settings-form">
-      <label for="store-name">Store Name:</label>
-      <input type="text" id="store-name" required>
-      <label for="currency">Currency:</label>
-      <input type="text" id="currency" required>
-      <label for="tax-rate">Tax Rate (%):</label>
-      <input type="number" id="tax-rate" step="0.01" required>
-      <label for="contact-email">Contact Email:</label>
-      <input type="email" id="contact-email" required>
-      <button type="button" onclick="updateSettings()">Update Settings</button>
-    </form>
-    <div id="settings-feedback"></div>
-  `;
-}
-
-function displayAdminPanel() {
-  return `
-    <h3>Admin Panel</h3>
-    <button onclick="manageUsers()">Manage Users</button>
-    <div id="user-management-content"></div>
-  `;
-}
-
-// Advanced Settings Update
-function updateSettings() {
-  const storeName = document.getElementById('store-name').value.trim();
-  const currency = document.getElementById('currency').value.trim();
-  const taxRate = parseFloat(document.getElementById('tax-rate').value.trim());
-  const contactEmail = document.getElementById('contact-email').value.trim();
-
-  // Validate input fields
-  if (!storeName || !currency || isNaN(taxRate) || !contactEmail) {
-    showFeedback('Please fill in all fields correctly.', 'error');
-    return;
-  }
-
-  // Save settings to local storage
-  const settings = { storeName, currency, taxRate, contactEmail };
-  localStorage.setItem('settings', JSON.stringify(settings));
-
-  // Show feedback to the user
-  showFeedback('Settings updated successfully!', 'success');
-  displayUpdatedSettings(settings);
-}
-
-// Function to display feedback
-function showFeedback(message, type) {
-  const feedbackElem = document.getElementById('settings-feedback');
-  feedbackElem.textContent = message;
-  feedbackElem.className = type; // Use CSS classes for styling based on type (success/error)
-  setTimeout(() => feedbackElem.textContent = '', 3000); // Clear message after 3 seconds
-}
-
-// Function to display updated settings
-function displayUpdatedSettings(settings) {
-  // Display the updated settings in a user-friendly way
-  const content = `
-    <h4>Updated Settings</h4>
-    <p><strong>Store Name:</strong> ${settings.storeName}</p>
-    <p><strong>Currency:</strong> ${settings.currency}</p>
-    <p><strong>Tax Rate:</strong> ${settings.taxRate}%</p>
-    <p><strong>Contact Email:</strong> ${settings.contactEmail}</p>
-  `;
-  document.getElementById('settings-feedback').innerHTML = content;
-}
-
-// Function to load settings on page load
-function loadSettings() {
-  const settings = JSON.parse(localStorage.getItem('settings')) || {};
-  if (settings.storeName) {
-    document.getElementById('store-name').value = settings.storeName;
-    document.getElementById('currency').value = settings.currency;
-    document.getElementById('tax-rate').value = settings.taxRate;
-    document.getElementById('contact-email').value = settings.contactEmail;
-  }
-}
-
-// Call loadSettings when the page loads
-document.addEventListener('DOMContentLoaded', loadSettings);
-
-
-
-// Implement the functions to handle these actions
-function generateSalesReport() {
-  const salesReportContent = document.getElementById('sales-report-content');
-  salesReportContent.innerHTML = '<p>Generating sales report...</p>';
-
-  // Simulating report generation with a timeout
-  setTimeout(() => {
-    const totalSales = salesData.totalSales;
-    const totalDiscounts = salesData.totalDiscounts;
-    const totalOrders = salesData.totalOrders;
-
-    // Calculate sales by category
-    const categorySales = calculateCategorySales();
-
-    // Generate report content
-    const report = `
-      <h3>Sales Report</h3>
-      <p><strong>Total Sales:</strong> Rs ${totalSales.toFixed(2)}</p>
-      <p><strong>Total Discounts:</strong> Rs ${totalDiscounts.toFixed(2)}</p>
-      <p><strong>Total Orders:</strong> ${totalOrders}</p>
-      <h4>Sales by Category</h4>
-      <ul>
-        ${Object.entries(categorySales).map(([category, amount]) => `<li>${category}: Rs ${amount.toFixed(2)}</li>`).join('')}
-      </ul>
-      <button onclick="printSalesReport()">Print Report</button>
-    `;
-
-    salesReportContent.innerHTML = report;
-  }, 2000);
-}
-
-// Function to calculate sales by category
-function calculateCategorySales() {
+// Function to edit an item from the menu
+function editItem() {
+  const itemSelect = document.getElementById('edit-item-select');
+  const selectedItemName = itemSelect.value;
   const items = getItemsFromStorage();
-  const categorySales = {};
+  const item = items.find(item => item.name === selectedItemName);
+  
+  if (item) {
+    const editItemDetails = `
+      <h2>Edit Item Details</h2>
+      <label for="edit-item-name">Item Name:</label>
+      <input type="text" id="edit-item-name" value="${item.name}" required><br>
+      <label for="edit-item-price">Item Price (Rs):</label>
+      <input type="number" id="edit-item-price" value="${item.price}" required><br>
+      <label for="edit-item-category">Item Category:</label>
+      <input type="text" id="edit-item-category" value="${item.category}" required><br>
+      <label for="edit-item-image">Item Image:</label>
+      <input type="file" id="edit-item-image" accept="image/*"><br>
+      <button type="button" onclick="saveEditedItem('${item.name}')">Save Changes</button>
+    `;
+    document.getElementById('edit-item-details').innerHTML = editItemDetails;
+  }
+}
 
-  for (const table of Object.values(tables)) {
-    for (const [itemName, itemDetails] of Object.entries(table.order)) {
-      const item = items.find(i => i.name === itemName);
-      if (item) {
-        const category = item.category;
-        if (!categorySales[category]) {
-          categorySales[category] = 0;
-        }
-        categorySales[category] += itemDetails.price * itemDetails.quantity;
-      }
+// Function to save edited item
+function saveEditedItem(originalName) {
+  const items = getItemsFromStorage();
+  const itemIndex = items.findIndex(item => item.name === originalName);
+  
+  if (itemIndex >= 0) {
+    const editedName = document.getElementById('edit-item-name').value.trim();
+    const editedPrice = parseFloat(document.getElementById('edit-item-price').value.trim());
+    const editedCategory = document.getElementById('edit-item-category').value.trim();
+    const editedImage = document.getElementById('edit-item-image').files[0];
+
+    const editedItem = {
+      name: editedName,
+      price: editedPrice,
+      category: editedCategory,
+      image: items[itemIndex].image // Keep the original image if none is uploaded
+    };
+
+    if (editedImage) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        editedItem.image = e.target.result;
+        items[itemIndex] = editedItem;
+        saveItems(items);
+        alert('Item updated successfully');
+        showContent('edit-item');
+      };
+      reader.readAsDataURL(editedImage);
+    } else {
+      items[itemIndex] = editedItem;
+      saveItems(items);
+      alert('Item updated successfully');
+      showContent('edit-item');
     }
   }
-
-  return categorySales;
 }
 
-// Function to print the sales report
+// Function to display sales reports
+function showSalesReports() {
+  const salesReportsContent = `
+    <h1>Sales Reports</h1>
+    <p>View your sales reports here.</p>
+    <button type="button" onclick="printSalesReport()">Print Sales Report</button>
+  `;
+  document.getElementById('content').innerHTML = salesReportsContent;
+}
+
+// Function to print sales report
 function printSalesReport() {
-  const salesReportContent = document.getElementById('sales-report-content').innerHTML;
+  const printContent = document.getElementById('content').innerHTML;
   const printWindow = window.open('', '', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Sales Report</title></head><body>');
-  printWindow.document.write(salesReportContent);
+  printWindow.document.write('<html><head><title>Print Sales Report</title></head><body>');
+  printWindow.document.write(printContent);
   printWindow.document.write('</body></html>');
   printWindow.document.close();
   printWindow.print();
 }
 
-
+// Function to update settings
 function updateSettings() {
   const storeName = document.getElementById('store-name').value;
   const currency = document.getElementById('currency').value;
@@ -845,6 +805,74 @@ function updateSettings() {
   // Add logic to update settings
 }
 
+// Local storage functions for items
+function getItemsFromStorage() {
+  return JSON.parse(localStorage.getItem('items')) || [];
+}
+
+function saveItems(items) {
+  localStorage.setItem('items', JSON.stringify(items));
+}
+
+// Function to populate item options
+function populateItemOptions(selectId = 'item-select') {
+  const itemSelect = document.getElementById(selectId);
+  itemSelect.innerHTML = '';
+  const items = getItemsFromStorage();
+  items.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.name;
+    option.textContent = item.name;
+    itemSelect.appendChild(option);
+  });
+}
+
+// Initial setup
+document.addEventListener('DOMContentLoaded', () => {
+  populateItemOptions();
+  addMenuItemListeners();
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+  // Initialize other components if necessary
+});
+
+// Function to add menu item listeners
+function addMenuItemListeners() {
+  const menuItems = document.querySelectorAll('.menu-item');
+  menuItems.forEach(item => {
+    addMenuItemListener(item);
+  });
+}
+
+// Function to add menu item listener
+function addMenuItemListener(item) {
+  item.addEventListener('click', () => {
+    const name = item.getAttribute('data-name');
+    const price = parseFloat(item.getAttribute('data-price'));
+    addToOrder(name, price);
+  });
+}
+
+// Functions to get and save categories to localStorage
+function getCategoriesFromStorage() {
+  return JSON.parse(localStorage.getItem('categories')) || [];
+}
+
+function saveCategories(categories) {
+  localStorage.setItem('categories', JSON.stringify(categories));
+}
+
+
+
+// Function to update settings
+function updateSettings() {
+  const storeName = document.getElementById('store-name').value;
+  const currency = document.getElementById('currency').value;
+  alert(`Settings updated: Store Name - ${storeName}, Currency - ${currency}`);
+  // Add logic to update settings
+}
+
+// Function to manage users
 function manageUsers() {
   const userManagementContent = document.getElementById('user-management-content');
   userManagementContent.innerHTML = '<p>Managing users...</p>';
@@ -918,18 +946,23 @@ function saveItems(items) {
   localStorage.setItem('items', JSON.stringify(items));
 }
 
-// Function to populate item options
+
 function populateItemOptions() {
   const itemSelect = document.getElementById('item-select');
-  itemSelect.innerHTML = '';
-  const items = getItemsFromStorage();
-  items.forEach(item => {
-    const option = document.createElement('option');
-    option.value = item.name;
-    option.textContent = item.name;
-    itemSelect.appendChild(option);
-  });
+  if (itemSelect) {
+    itemSelect.innerHTML = '';
+    const items = getItemsFromStorage();
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.name;
+      option.textContent = item.name;
+      itemSelect.appendChild(option);
+    });
+  } else {
+    console.error('Element with ID "item-select" not found.');
+  }
 }
+
 
 // Function to add menu item listeners
 function addMenuItemListeners() {
@@ -984,3 +1017,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   addMenuItemListeners();
 });
+
