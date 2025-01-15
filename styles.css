@@ -197,54 +197,50 @@ main {
 }
 
 .menu {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Ensure columns fit and are responsive */
-  gap: 10px; /* Add gap between grid items */
-  justify-items: center; /* Center the grid items */
-  padding: 10px; /* Add padding around the grid */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Adding some gap between items */
+  justify-content: center;
 }
 
 .menu-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px; /* Smaller padding */
-  border: 1px solid #ddd; /* Add border for separation */
-  border-radius: 10px; /* Rounded corners */
-  background: linear-gradient(145deg, #ffffff, #e6e6e6); /* Gradient background */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(255, 255, 255, 0.6); /* Box shadow for depth */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 5px; /* Adding some margin */
+  padding: 10px; /* Adding padding for better spacing */
+  background-color: #f9f9f9; /* Light background color for a cleaner look */
+  border: 1px solid #ddd; /* Adding a border for definition */
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Softer shadow for elegance */
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for box-shadow as well */
+}
+
+.menu-item img {
+  width: 100px; /* Slightly larger width for better visibility */
+  height: 80px; /* Slightly larger height for better visibility */
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
 .menu-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), inset 0 3px 6px rgba(255, 255, 255, 0.8); /* Enhance box shadow on hover */
   border-color: #007bff;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
 }
 
-.menu-item img {
-  width: 60px; /* Smaller width */
-  height: 60px; /* Smaller height */
-  object-fit: cover;
-  border-radius: 8px; /* Slightly smaller radius */
-  margin-bottom: 5px; /* Add margin below image */
+.menu-item p {
+  font-size: 14px; /* Slightly larger font size for item name */
+  font-weight: bold; /* Bold text */
+  margin: 5px 0 2px; /* Adjusted margin for spacing */
 }
 
-.menu-item .item-name {
-  font-size: 0.7em; /* Smaller font size */
-  text-align: center;
-  margin: 3px 0; /* Margin between name and price */
-  font-weight: bold;
-  color: #333;
+.menu-item .price {
+  font-size: 12px; /* Smaller font for price */
+  color: #007bff; /* Stylish color */
+  margin-top: 2px; /* Adding top margin */
 }
-
-.menu-item .item-price {
-  font-size: 0.6em; /* Smaller font size */
-  text-align: center;
-  margin: 0; /* No margin */
-  color: #666;
-}
-
 
 
 .order-summary {
@@ -495,81 +491,4 @@ main {
   .menu-item .item-name, .menu-item .item-price {
     font-size: 0.7em; /* Smaller font size for mobile */
   }
-}
-.order-section {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(145deg, #ffffff, #e6e6e6); /* Gradient background */
-  padding: 20px; /* Add padding */
-  border-radius: 15px; /* Rounded corners */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(255, 255, 255, 0.6); /* Box shadow for depth */
-  margin: 20px 0; /* Margin around the container */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.order-section:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), inset 0 3px 6px rgba(255, 255, 255, 0.8); /* Enhance box shadow on hover */
-}
-
-.order-section .section-title {
-  font-size: 1.5em; /* Larger font size */
-  text-align: center;
-  margin-bottom: 20px; /* Space below the title */
-  font-weight: bold;
-  color: #333;
-}
-
-.order-section .order-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.order-section .order-table th, .order-section .order-table td {
-  padding: 10px; /* Add padding */
-  text-align: left;
-  border-bottom: 1px solid #ddd; /* Add border between rows */
-}
-
-.order-section .order-table th {
-  background-color: #f9f9f9; /* Background color for headers */
-  font-weight: bold;
-  color: #333;
-}
-
-.order-section .order-table td {
-  background-color: #fff; /* Background color for rows */
-  color: #666;
-}
-
-.order-section .order-table tr:hover {
-  background-color: #f1f1f1; /* Background color on hover */
-}
-
-.order-section .total {
-  font-size: 1.2em; /* Larger font size */
-  font-weight: bold;
-  color: #333;
-  margin-top: 20px; /* Space above the total */
-  text-align: right;
-}
-
-.order-section .btn {
-  padding: 10px 20px; /* Add padding */
-  background: linear-gradient(135deg, #007bff, #0056b3); /* Gradient background */
-  color: white;
-  border: none;
-  border-radius: 5px; /* Rounded corners */
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 20px; /* Space above the button */
-  display: block;
-  width: 100%; /* Full width */
-  text-align: center;
-}
-
-.order-section .btn:hover {
-  background-color: #0056b3;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); /* Enhance box shadow on hover */
 }
