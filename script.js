@@ -15,118 +15,7 @@ const database = firebase.database();
 
 console.log("Firebase initialized successfully.");
 
-// Function to show content based on the selected option
-function showContent(id) {
-  console.log(`Showing content for ID: ${id}`);
-  const content = document.getElementById('content');
-  let contentHtml = '';
 
-  switch(id) {
-    case 'home':
-      contentHtml = '<h1>Home</h1><p>Welcome to the Taboche POS Home Page.</p>';
-      break;
-    case 'add-item':
-      contentHtml = `
-        <h1>Add Item</h1>
-        <form id="add-item-form">
-          <label for="new-item-name">Item Name:</label>
-          <input type="text" id="new-item-name" required><br>
-          <label for="new-item-price">Item Price (Rs):</label>
-          <input type="number" id="new-item-price" required><br>
-          <label for="new-item-category">Item Category:</label>
-          <input type="text" id="new-item-category" required><br>
-          <label for="new-item-image">Item Image:</label>
-          <input type="file" id="new-item-image" accept="image/*" required><br>
-          <button type="button" onclick="addItem()">Add Item</button>
-        </form>
-      `;
-      break;
-    case 'remove-item':
-      contentHtml = `
-        <h1>Remove Item</h1>
-        <label for="item-select">Select Item to Remove:</label>
-        <select id="item-select"></select><br>
-        <button type="button" onclick="removeItem()">Remove Item</button>
-      `;
-      populateItemOptions();
-      break;
-    case 'edit-item':
-      contentHtml = `
-        <h1>Edit Item</h1>
-        <label for="edit-item-select">Select Item to Edit:</label>
-        <select id="edit-item-select"></select><br>
-        <button type="button" onclick="editItem()">Edit Item</button>
-        <div id="edit-item-details"></div>
-      `;
-      populateItemOptions('edit-item-select');
-      break;
-    case 'sales-reports':
-      contentHtml = '<h1>Sales Reports</h1><p>View your sales reports here.</p>';
-      break;
-    case 'settings':
-      contentHtml = `
-        <h1>Settings</h1>
-        <form id="settings-form">
-          <label for="store-name">Store Name:</label>
-          <input type="text" id="store-name" required><br>
-          <label for="currency">Currency:</label>
-          <input type="text" id="currency" required><br>
-          <button type="button" onclick="updateSettings()">Update Settings</button>
-        </form>
-      `;
-      break;
-    case 'admin-panel':
-      contentHtml = '<h1>Admin Panel</h1><p>Manage your admin settings here.</p>';
-      break;
-    default:
-      contentHtml = `<h1>${id}</h1>`;
-  }
-
-  content.innerHTML = contentHtml;
-  console.log(`Content for ${id} injected into the page.`);
-}
-
-// Function to toggle the sidebar
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  sidebar.classList.toggle('active');
-}
-
-// Function to toggle the dropdown in the sidebar
-function toggleDropdown() {
-  const dropdownContainer = document.querySelector('.dropdown-container');
-  dropdownContainer.classList.toggle('active');
-}
-
-// Function to show login dialog (placeholder)
-function showLoginDialog() {
-  alert('Show login dialog');
-}
-
-// Function to add item (placeholder)
-function addItem() {
-  alert('Item added');
-}
-
-// Function to remove item (placeholder)
-function removeItem() {
-  alert('Item removed');
-}
-
-// Function to edit item (placeholder)
-function editItem() {
-  alert('Item edited');
-}
-
-// Function to populate item options (placeholder)
-function populateItemOptions(selectId) {
-  alert('Populate item options');
-}
-
-// Function to update settings (placeholder)
-function updateSettings() {
-  alert('Settings updated');
-}
 
 
 
@@ -192,19 +81,27 @@ function filterCategory(category) {
   });
 }
 
-
 function addToOrder(name, price) {
+  console.log(`Adding to order: ${name}, Price: ${price}, Selected Table: ${selectedTable}`);
+  
   if (selectedTable === "None") {
     alert("Please select a table first!");
     return;
   }
 
   if (!tables[selectedTable].order[name]) {
-    tables[selectedTable].order[name] = { price: price, quantity: 0 };
+    tables[selectedTable].order[name] = { price: price, quantity: 1 };
+    console.log(`Initializing quantity for ${name} to 0`);
+  } else {
+    tables[selectedTable].order[name].quantity += 0;
+    console.log(`Incrementing quantity for ${name} to ${tables[selectedTable].order[name].quantity}`);
   }
-  tables[selectedTable].order[name].quantity += 1;
+  
   tables[selectedTable].totalPrice += price;
   tables[selectedTable].status = "occupied";
+  
+  console.log(`Total price for ${selectedTable}: ${tables[selectedTable].totalPrice}`);
+  console.log(`Order for ${selectedTable}: `, tables[selectedTable].order);
 
   renderTables();
   updateOrderSummary();
@@ -237,12 +134,24 @@ function displayOrderItems(orderItems) {
   orderItemsList.innerHTML = ''; // Clear existing items
   let totalPrice = 0;
 
-  
+  for (const [name, item] of Object.entries(orderItems)) {
+    const orderItem = document.createElement('li');
+    orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
+    orderItemsList.appendChild(orderItem);
+
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.onclick = () => removeFromOrder(name);
+    orderItem.appendChild(removeButton);
+
+    totalPrice += item.price * item.quantity;
+  }
 
   document.getElementById('total-price').textContent = totalPrice;
   tables[selectedTable].totalPrice = totalPrice;
   saveData();
 }
+
 // Initial setup
 document.addEventListener('DOMContentLoaded', renderTables);
 
@@ -298,6 +207,10 @@ function applyDiscountHandler() {
     }
   }
 }
+
+// Clear localStorage to ensure no residual data is causing issues
+localStorage.clear();
+
 
 function updatePaymentSummary() {
   const paymentSummaryElem = document.getElementById('payment-summary');
