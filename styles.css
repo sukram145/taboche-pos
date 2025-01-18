@@ -81,6 +81,50 @@ header {
   margin-left: 0; /* Adjust content margin when sidebar is hidden */
 }
 
+.login-dialog {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.login-dialog-content {
+  position: relative;
+}
+
+.close-login {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.login-dialog h2 {
+  text-align: center;
+}
+
+.login-dialog input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.login-dialog button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+
+
 main {
   display: flex;
   flex: 1;

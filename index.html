@@ -14,7 +14,7 @@
     <div class="logo">Taboche POS</div>
     <div class="datetime" id="datetime">Loading...</div>
     <div class="user-info">
-      <span id="user-role">Admin</span>
+      <span id="user-role">Guest</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
@@ -36,7 +36,20 @@
     <a href="#" id="admin-panel-btn" onclick="showContent('admin-panel')">Admin Panel</a>
   </div>
   <div id="content"></div>
-  
+
+  <!-- Login Dialog -->
+  <div id="login-dialog" class="login-dialog">
+    <div class="login-dialog-content">
+      <span class="close-login" onclick="closeLoginDialog()">&times;</span>
+      <h2>Login</h2>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+    </div>
+  </div>
+
+
+
   <div class="pos-container">
     <div class="table-management">
       <h2>Table Management</h2>
@@ -216,7 +229,7 @@
     <div class="price">Rs 110</div>
   </div>
   <div class="menu-item" data-name="Egg Keema Noodles" data-price="220" data-category="Noodles/Pizza" data-section="Kitchen">
-    <img src="images/egg_keema_noodles.jpg" alt="Egg Keema Noodles">
+    <img src="images/egg_keema_noodles.jpg" alt="Egg/mushroom Keema Noodles">
     <p>Egg Keema Noodles</p>
     <div class="price">Rs 220</div>
   </div>
@@ -248,7 +261,7 @@
   <div class="menu-item" data-name="Veg Burger" data-price="260" data-category="Fast Food" data-section="Kitchen">
     <img src="images/burger_veg.jpg" alt="Veg Burger">
     <p>Veg Burger</p>
-    <div class="price">Rs 260</div>
+    <div class="price">Rs 280</div>
   </div>
   <div class="menu-item" data-name="Chicken Burger" data-price="370" data-category="Fast Food" data-section="Kitchen">
     <img src="images/burger_chicken.jpg" alt="Chicken Burger">
@@ -269,12 +282,12 @@
   <div class="menu-item" data-name="Veg Wraps" data-price="450" data-category="Fast Food" data-section="Kitchen">
     <img src="images/wraps_veg.jpg" alt="wraps_veg">
     <p>Veg Wraps</p>
-    <div class="price">Rs 450</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Chicken Wraps" data-price="490" data-category="Fast Food" data-section="Kitchen">
     <img src="images/wraps_chicken.jpg" alt="Chicken Wraps">
     <p>Chicken Wraps</p>
-    <div class="price">Rs 490</div>
+    <div class="price">Rs 300</div>
   </div>
   <div class="menu-item" data-name="Buff Wraps" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/wraps_buff.jpg" alt="Buff Wraps">
@@ -370,6 +383,32 @@
     <div class="price">Rs 250</div>
   </div>
 </div>
+<!-- thukpa -->
+  <div class="menu-item" data-name="Veg Thukpa" data-price="180" data-category="Thukpa" data-section="Kitchen">
+    <p>Veg Thukpa</p>
+    <div class="price">Rs 180</div>
+  </div>
+
+  <div class="menu-item" data-name="Egg Thukpa" data-price="200" data-category="Thukpa" data-section="Kitchen">
+    <p>Egg Thukpa</p>
+    <div class="price">Rs 200</div>
+  </div>
+
+  <div class="menu-item" data-name="Buff Thukpa" data-price="220" data-category="Thukpa" data-section="Kitchen">
+    <p>Buff Thukpa</p>
+    <div class="price">Rs 220</div>
+  </div>
+
+  <div class="menu-item" data-name="Chicken Thukpa" data-price="250" data-category="Thukpa" data-section="Kitchen">
+    <p>Chicken Thukpa</p>
+    <div class="price">Rs 250</div>
+  </div>
+
+  <div class="menu-item" data-name="Mix Thukpa" data-price="300" data-category="Thukpa" data-section="Kitchen">
+    <p>Mix Thukpa</p>
+    <div class="price">Rs 300</div>
+  </div>
+</div>
 
 
 <!-- Sandwich Items -->
@@ -391,7 +430,7 @@
   <div class="menu-item" data-name="Rose Latte" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/roselatte.jpg" alt="Rose Latte">
     <p>Rose Latte</p>
-    <div class="price">Rs 170</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Cappuccino" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/cappuccino.jpg" alt="Cappuccino">
@@ -416,47 +455,47 @@
   <div class="menu-item" data-name="Latte" data-price="150" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte.jpg" alt="Latte">
     <p>Latte</p>
-    <div class="price">Rs 150</div>
+    <div class="price">Rs 170</div>
   </div>
   <div class="menu-item" data-name="Mocha Latte" data-price="200" data-category="Hot Coffee" data-section="Bar">
     <img src="images/mocha_latte.jpg" alt="Mocha Latte">
     <p>Mocha Latte</p>
-    <div class="price">Rs 200</div>
+    <div class="price">Rs 240</div>
   </div>
   <div class="menu-item" data-name="Coconut Latte" data-price="200" data-category="Hot Coffee" data-section="Bar">
     <img src="images/coconut_latte.jpg" alt="Coconut Latte">
     <p>Coconut Latte</p>
-    <div class="price">Rs 200</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Flavored Latte (Caramel)" data-price="150" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte_caramel.jpg" alt="Flavored Latte (Caramel)">
     <p>Flavored Latte (Caramel)</p>
-    <div class="price">Rs 150</div>
+    <div class="price">Rs 240</div>
   </div>
   <div class="menu-item" data-name="Flavored Latte (Vanilla)" data-price="150" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte_vanilla.jpg" alt="Flavored Latte (Vanilla)">
     <p>Flavored Latte (Vanilla)</p>
-    <div class="price">Rs 150</div>
+    <div class="price">Rs 240</div>
   </div>
   <div class="menu-item" data-name="Flavored Latte (Hazelnut)" data-price="150" data-category="Hot Coffee" data-section="Bar">
     <img src="images/flavored_latte_hazelnut.jpg" alt="Flavored Latte (Hazelnut)">
     <p>Flavored Latte (Hazelnut)</p>
-    <div class="price">Rs 150</div>
+    <div class="price">Rs 240</div>
   </div>
   <div class="menu-item" data-name="Flat White" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/flat_white.jpg" alt="Flat White">
     <p>Flat White</p>
-    <div class="price">Rs 170</div>
+    <div class="price">Rs 150</div>
   </div>
   <div class="menu-item" data-name="Hot Chocolate" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_chocolate.jpg" alt="Hot Chocolate">
     <p>Hot Chocolate</p>
-    <div class="price">Rs 170</div>
+    <div class="price">Rs 240</div>
   </div>
   <div class="menu-item" data-name="Hot Vanilla" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_vanilla.jpg" alt="Hot Vanilla">
     <p>Hot Vanilla</p>
-    <div class="price">Rs 170</div>
+    <div class="price">Rs 240</div>
   </div>
 </div>
 <!-- Iced Latte Items -->
