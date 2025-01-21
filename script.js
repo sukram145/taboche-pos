@@ -224,25 +224,6 @@ function addPayment(method) {
   }
 }
 
-// Function to apply discount and update order summary
-function applyDiscount() {
-  const discountInput = document.getElementById('discount');
-  const discount = parseFloat(discountInput.value) || 0;
-
-  if (discount < 0 || discount > 100) {
-    alert('Please enter a valid discount percentage between 0 and 100.');
-    return;
-  }
-
-  tables[selectedTable].discount = discount;
-  updateOrderSummary();
-}
-
-// Function to update the order summary
-function updateOrderSummary() {
-  const orderItems = tables[selectedTable].order;
-  displayOrderItems(orderItems);
-}
 // Update payment summary
 function updatePaymentSummary() {
   const paymentSummaryElem = document.getElementById('payment-summary');
@@ -275,37 +256,6 @@ function updatePaymentSummary() {
       insufficientAmountElem.style.display = 'none';
     }
   }
-}
-
-
-// Function to display order items and apply discount
-function displayOrderItems(orderItems) {
-  const orderItemsList = document.getElementById('order-items');
-  orderItemsList.innerHTML = '';
-  let totalPrice = 0;
-
-  for (const [name, item] of Object.entries(orderItems)) {
-    const orderItem = document.createElement('li');
-    orderItem.textContent = `${item.name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
-    orderItemsList.appendChild(orderItem);
-
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
-    removeButton.className = 'remove-item';
-    removeButton.setAttribute('data-name', name);
-    removeButton.onclick = () => removeFromOrder(name);
-    orderItem.appendChild(removeButton);
-
-    totalPrice += item.price * item.quantity;
-  }
-
-  const discount = tables[selectedTable].discount || 0;
-  const discountedPrice = totalPrice * (1 - discount / 100);
-
-  document.getElementById('total-price').textContent = discountedPrice.toFixed(2);
-  tables[selectedTable].totalPrice = discountedPrice;
-
-  saveData();
 }
 
 // Show and close payment dialog
@@ -401,6 +351,19 @@ function showPaymentDialog() {
   if (paymentDialog) {
     paymentDialog.style.display = 'flex';
   }
+}
+// Function to apply discount and update order summary
+function applyDiscount() {
+  const discountInput = document.getElementById('discount');
+  const discount = parseFloat(discountInput.value) || 0;
+
+  if (discount < 0 || discount > 100) {
+    alert('Please enter a valid discount percentage between 0 and 100.');
+    return;
+  }
+
+  tables[selectedTable].discount = discount;
+  updateOrderSummary();
 }
 
 function closePaymentDialog() {

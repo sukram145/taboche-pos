@@ -18,14 +18,17 @@
     </div>
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
-
   <div class="sidebar" id="sidebar">
     <button class="close-btn" onclick="toggleSidebar()">&times;</button>
-    <button id="homeBtn" onclick="showHomeContent()">Home</button>
-    <button id="menuManagementBtn" onclick="showMenuManagementContent()">Menu Management</button>
-    <button id="salesReportsBtn" onclick="showSalesReportsContent()">Sales Reports</button>
-    <button id="settingsBtn" onclick="showSettingsContent()">Settings</button>
-    <button id="adminPanelBtn" onclick="showAdminPanelContent()">Admin Panel</button>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><button id="homeBtn" onclick="showHomeContent()">Home</button></li>
+        <li><button id="menuManagementBtn" onclick="showMenuManagementContent()">Menu Management</button></li>
+        <li><button id="salesReportsBtn" onclick="showSalesReportsContent()">Sales Reports</button></li>
+        <li><button id="settingsBtn" onclick="showSettingsContent()">Settings</button></li>
+        <li><button id="adminPanelBtn" onclick="showAdminPanelContent()">Admin Panel</button></li>
+      </ul>
+    </nav>
   </div>
   
   <div id="content"></div>
