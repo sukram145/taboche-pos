@@ -286,8 +286,6 @@ main {
   color: #007bff; /* Stylish color */
   margin-top: 2px; /* Adding top margin */
 }
-
-
 .order-summary {
   flex: 1;
   background: #f1f1f1;
@@ -330,7 +328,7 @@ main {
   justify-content: space-between;
 }
 
-.checkout-btn, .finalize-btn, .complete-btn {
+.checkout-btn, .finalize-btn, .complete-btn, .change-table-btn, .void-btn, .print-receipt-btn {
   padding: 10px 20px; /* Adjusted padding */
   background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
@@ -343,7 +341,7 @@ main {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.checkout-btn:hover, .finalize-btn:hover, .complete-btn:hover {
+.checkout-btn:hover, .finalize-btn:hover, .complete-btn:hover, .change-table-btn:hover, .void-btn:hover, .print-receipt-btn:hover {
   background-color: #0056b3;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }

@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Professional Restaurant POS</title>
+  <title>Taboche POS</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
-  <script src="script.js" defer></script>
 </head>
 <body>
   <header>
@@ -22,21 +21,15 @@
 
   <div class="sidebar" id="sidebar">
     <button class="close-btn" onclick="toggleSidebar()">&times;</button>
-    <a href="#" id="home-btn" onclick="showContent('home')">Home</a>
-    <button class="dropdown-btn" onclick="toggleDropdown()">Menu Management 
-      <i class="fa fa-caret-down"></i>
-    </button>
-    <div class="dropdown-container">
-      <a href="#" id="add-item-btn" onclick="showContent('add-item')">Add Item</a>
-      <a href="#" id="remove-item-btn" onclick="showContent('remove-item')">Remove Item</a>
-      <a href="#" id="edit-item-btn" onclick="showContent('edit-item')">Edit Item</a>
-    </div>
-    <a href="#" id="sales-reports-btn" onclick="showContent('sales-reports')">Sales Reports</a>
-    <a href="#" id="settings-btn" onclick="showContent('settings')">Settings</a>
-    <a href="#" id="admin-panel-btn" onclick="showContent('admin-panel')">Admin Panel</a>
+    <button id="homeBtn" onclick="showHomeContent()">Home</button>
+    <button id="menuManagementBtn" onclick="showMenuManagementContent()">Menu Management</button>
+    <button id="salesReportsBtn" onclick="showSalesReportsContent()">Sales Reports</button>
+    <button id="settingsBtn" onclick="showSettingsContent()">Settings</button>
+    <button id="adminPanelBtn" onclick="showAdminPanelContent()">Admin Panel</button>
   </div>
+  
   <div id="content"></div>
-
+  
   <!-- Login Dialog -->
   <div id="login-dialog" class="login-dialog">
     <div class="login-dialog-content">
@@ -47,6 +40,8 @@
       <button onclick="login()">Login</button>
     </div>
   </div>
+
+
 
 
 
@@ -792,7 +787,12 @@
         </div>
         <button class="finalize-btn" onclick="finalizeOrder()">Finalize Order</button>
         <button class="checkout-btn" onclick="showPaymentDialog()">Checkout</button>
-      </div>
+        <button class="change-table-btn" onclick="changeTable()">Change Table</button>
+        <button class="void-btn" onclick="voidSelectedItem()">Void</button>
+        
+       
+
+        <button class="print-receipt-btn" onclick="printReceipt()">Print Receipt</button>
     </main>
     
     <div id="payment-dialog" class="dialog" style="display: none;">
@@ -802,6 +802,7 @@
           <div class="discount-section">
             <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
             <button onclick="applyDiscountHandler()">Apply Discount</button>
+            
           </div>
           <div class="payment-methods">
             <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
@@ -824,13 +825,12 @@
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
 
 
+      <!-- Button that calls editItem function on click -->
+      <button onclick="editItem()">Edit Item</button>
+  
+    <!-- Correct -->
+<script src="script.js"></script>
 
-  <!-- Existing script reference -->
-  <script src="script.js" defer></script>
-
-  <!-- Firebase configuration and initialization -->
- 
-   
-  </script>
-</body>
-</html>
+  </body>
+  </html>
+  
