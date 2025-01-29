@@ -28,7 +28,7 @@
         <li><button id="settingsBtn" onclick="showSettingsContent()">Settings</button></li>
         <li><button id="adminPanelBtn" onclick="showAdminPanelContent()">Admin Panel</button></li>
       </ul>
-    </nav>
+    
   </div>
   
   <div id="content"></div>
@@ -152,6 +152,18 @@
     <p>SURYA LIGHT</p>
     <div class="price">Rs 30</div>
   </div>
+  <div class="menu-item" data-name="Water" data-price="50" data-category="misc" data-section="Bar">
+    <img src="images/water.jpg" alt="Water">
+    <p>WATER</p>
+    <div class="price">Rs 50</div>
+</div>
+
+<div class="menu-item" data-name="Juju Dhau" data-price="85" data-category="misc" data-section="Bar">
+    <img src="images/juju_dhau.jpg" alt="Juju Dhau">
+    <p>JUJU DHAU</p>
+    <div class="price">Rs 85</div>
+</div>
+
 </div>
 <!-- Breakfast Items -->
 <div class="menu">
@@ -348,7 +360,7 @@
     <p>Chicken Momo</p>
     <div class="price">Rs 220</div>
   </div>
-  <div class="menu-item" data-name="Chicken Wraps" data-price="490" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Chicken Wraps" data-price="300" data-category="Fast Food" data-section="Kitchen">
     <img src="images/wraps_chicken.jpg" alt="Chicken Wraps">
     <p>Chicken Wraps</p>
     <div class="price">Rs 300</div>
@@ -717,6 +729,12 @@
     <p>Chamomile</p>
     <div class="price">Rs 150</div>
   </div>
+  <div class="menu-item" data-name="Lemon Tea" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/lemon_tea.jpg" alt="Lemon Tea">
+    <p>Lemon Tea</p>
+    <div class="price">Rs 150</div>
+</div>
+
   <div class="menu-item" data-name="Hibiscus" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/hibiscus.jpg" alt="Hibiscus">
     <p>Hibiscus</p>
@@ -823,6 +841,8 @@
         </div>
       </div>
     </div>
+    <div id="content"></div>
+    <div id="salesReportOutput"></div>
     
   <div id="sales-report" class="sales-report"></div>
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
