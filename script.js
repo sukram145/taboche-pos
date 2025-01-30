@@ -174,32 +174,32 @@ function updateOrderSummary() {
 }
 
 
-function displayOrderItems(orderItems, tableNumber) {
+// Display order items in the order summary
+function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
   orderItemsList.innerHTML = '';
   let totalPrice = 0;
 
   for (const [name, item] of Object.entries(orderItems)) {
-      const orderItem = document.createElement('li');
-      orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
-      orderItemsList.appendChild(orderItem);
+    const orderItem = document.createElement('li');
+    orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
+    orderItemsList.appendChild(orderItem);
 
-      const removeButton = document.createElement('button');
-      removeButton.textContent = 'Remove';
-      removeButton.className = 'remove-item';
-      removeButton.setAttribute('data-name', name);
-      removeButton.onclick = () => removeFromOrder(name);
-      orderItem.appendChild(removeButton);
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.className = 'remove-item';
+    removeButton.setAttribute('data-name', name);
+    removeButton.onclick = () => removeFromOrder(name);
+    orderItem.appendChild(removeButton);
 
-      totalPrice += item.price * item.quantity;
+    totalPrice += item.price * item.quantity;
   }
 
   document.getElementById('total-price').textContent = totalPrice;
-  tables[tableNumber].totalPrice = totalPrice;
+  tables[selectedTable].totalPrice = totalPrice;
 
   saveData();
 }
-
 
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
@@ -286,26 +286,23 @@ function showPaymentDialog() {
   }
 }
 
-function addPayment(paymentMethod) {
-  const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
-  if (isNaN(amount) || amount <= 0) {
-      alert('Invalid amount. Please enter a valid number.');
-      return;
+function addPayment(method) {
+  const amount = parseFloat(prompt(`Enter amount for ${method}:`));
+
+  if (amount && !isNaN(amount) && amount > 0) {
+    const standardizedMethod = method.toLowerCase().trim().replace(" ", "_");
+    if (!tables[selectedTable].payments) {
+      tables[selectedTable].payments = [];
+    }
+    tables[selectedTable].payments.push({ method: standardizedMethod, amount: amount });
+    console.log(`Payment added: Method = ${standardizedMethod}, Amount = ${amount}`);
+    updatePaymentSummary();
+    saveData();
+  } else {
+    alert('Please enter a valid positive amount');
   }
-
-  if (!tables[selectedTable]) {
-      tables[selectedTable] = {
-          payments: [],
-          totalPrice: 0,
-          discount: 0,
-          status: 'occupied'
-      };
-  }
-
-  tables[selectedTable].payments.push({ method: paymentMethod, amount });
-
-  updatePaymentSummary();
 }
+
 
 function closePaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
@@ -414,12 +411,13 @@ function closePaymentDialog() {
   }
 }
 
+
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
 
   if (!totalPriceElem || !totalPriceElem.textContent) {
-      alert('Total price element is not found or its content is invalid.');
-      return;
+    alert('Total price element is not found or its content is invalid.');
+    return;
   }
 
   const totalPrice = parseFloat(totalPriceElem.textContent);
@@ -427,69 +425,71 @@ function completeOrder() {
   const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
 
   if (totalPaid < totalPrice) {
-      const shortAmount = totalPrice - totalPaid;
-      alert(`Payment is not enough to settle the order! Short by Rs ${shortAmount}`);
-      return;
+    const shortAmount = totalPrice - totalPaid;
+    alert(`Payment is not enough to settle the order! Short by Rs ${shortAmount}`);
+    return;
   }
 
-  let cashAmount = 0;
-  let cardAmount = 0;
-  let mobileAmount = 0;
+  let cashSalesAmount = 0;
+  let mobileSalesAmount = 0;
+  let change = 0;
 
   tables[selectedTable]?.payments.forEach(payment => {
-      const standardizedMethod = payment.method.toLowerCase().trim();
+    const standardizedMethod = payment.method.toLowerCase().trim();
 
-      const standardizedMethodsMapping = {
-          'mobile payment': 'mobile',
-          'cash': 'cash',
-          'card': 'card'
-      };
+    const standardizedMethodsMapping = {
+      'mobile payment': 'mobile_payment',
+      'cash': 'cash'
+    };
 
-      const finalMethod = standardizedMethodsMapping[standardizedMethod] || standardizedMethod;
+    const finalMethod = standardizedMethodsMapping[standardizedMethod] || standardizedMethod;
 
-      console.log(`Updating sales data for payment method: ${finalMethod}`);
-      
-      // Update amounts based on the payment method
-      switch (finalMethod) {
-          case 'cash':
-              cashAmount += payment.amount;
-              break;
-          case 'card':
-              cardAmount += payment.amount;
-              break;
-          case 'mobile':
-              mobileAmount += payment.amount;
-              break;
-          default:
-              console.error(`Invalid payment method: ${finalMethod}`);
-              return;
-      }
+    switch (finalMethod) {
+      case 'cash':
+        cashSalesAmount += Math.min(totalPrice - mobileSalesAmount, payment.amount); // Reflect actual sales amount from cash
+        change = payment.amount - cashSalesAmount; // Calculate change
+        break;
+      case 'mobile_payment':
+        mobileSalesAmount += Math.min(totalPrice - cashSalesAmount, payment.amount); // Reflect actual sales amount from mobile payment
+        break;
+      default:
+        console.error(`Invalid payment method: ${finalMethod}`);
+        return;
+    }
   });
 
-  updateSalesData(totalPrice, discount, cashAmount, cardAmount, mobileAmount);
+  // Update sales data with the correct total amount for each payment method
+  salesData.cashSales = (salesData.cashSales || 0) + cashSalesAmount;
+  salesData.mobileSales = (salesData.mobileSales || 0) + mobileSalesAmount;
+  salesData.totalSales = (salesData.totalSales || 0) + totalPrice;
+  salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discount;
+  salesData.totalOrders = (salesData.totalOrders || 0) + 1;
 
+  console.log('Updated Sales Data:', salesData);
+  saveData();
   printReceipt();
 
+  if (change > 0) {
+    alert(`Customer change: Rs ${change}`);
+  }
+
   if (tables[selectedTable]) {
-      tables[selectedTable].order = {};
-      tables[selectedTable].totalPrice = 0;
-      tables[selectedTable].status = "available";
-      tables[selectedTable].payments = [];
-      tables[selectedTable].discount = 0;
+    tables[selectedTable].order = {};
+    tables[selectedTable].totalPrice = 0;
+    tables[selectedTable].status = "available";
+    tables[selectedTable].payments = [];
+    tables[selectedTable].discount = 0;
   }
 
   closePaymentDialog();
   renderTables();
   updateOrderSummary();
   updatePaymentSummary();
-  saveData();
 
   alert("Order completed successfully!");
 
-  // Call generateSalesReport to update and display the sales report
-  generateSalesReport();
+  generateSalesReport(); // Ensure the sales report gets updated and displayed
 }
-
 
 
 
@@ -543,45 +543,43 @@ function printReceipt() {
   receiptWindow.close();
 }
 
-function updateSalesData(totalPrice, discount, cashAmount, cardAmount, mobileAmount) {
-  console.log(`Updating sales data: totalPrice=${totalPrice}, discount=${discount}, cashAmount=${cashAmount}, cardAmount=${cardAmount}, mobileAmount=${mobileAmount}`);
 
-  salesData.cashPayments += cashAmount;
-  salesData.cardPayments += cardAmount;
-  salesData.mobilePayments += mobileAmount;
+function updateSalesData(totalPrice, discount, cashAmount, mobileAmount) {
+  salesData.totalSales = (salesData.totalSales || 0) + totalPrice;
+  salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discount;
+  salesData.totalOrders = (salesData.totalOrders || 0) + 1;
 
-  salesData.totalSales += totalPrice;
-  salesData.totalDiscounts += (totalPrice * discount / 100);
-  salesData.totalOrders += 1;
+  salesData.cashPayments = (salesData.cashPayments || 0) + cashAmount;
+  salesData.mobilePayments = (salesData.mobilePayments || 0) + mobileAmount;
 
   saveData();
-  generateSalesReport();
 }
+
 
 
 
 
 
 function displaySalesReport() {
-  const totalSales = salesData.totalSales || 0;
-  const totalOrders = salesData.totalOrders || 0;
   const totalDiscounts = salesData.totalDiscounts || 0;
+  const totalOrders = salesData.totalOrders || 0;
   const cashSales = salesData.cashPayments || 0;
-  const cardSales = salesData.cardPayments || 0;
   const mobileSales = salesData.mobilePayments || 0;
+  const totalSales = salesData.totalSales || 0;
 
   const report = `
-      <h3>Sales Report</h3>
-      <p>Total Sales: Rs ${totalSales}</p>
-      <p>Total Orders: ${totalOrders}</p>
-      <p>Total Discounts: Rs ${totalDiscounts}</p>
-      <p>Total Cash Sales: Rs ${cashSales}</p>
-      <p>Total Card Sales: Rs ${cardSales}</p>
-      <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
-      <button onclick="printElement('salesReportOutput')">Print Report</button>
+    <h3>Sales Report</h3>
+    <p>Total Discounts: Rs ${totalDiscounts}</p>
+    <p>Total Cash Sales: Rs ${cashSales}</p>
+    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
+    <p>Total Orders: ${totalOrders}</p>
+    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
+    <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
   document.getElementById('salesReportOutput').innerHTML = report;
 }
+
+
 
 function showSalesReportsContent() {
   const content = document.getElementById('content');
@@ -675,22 +673,23 @@ function saveData() {
 }
 
 function generateSalesReport() {
-  const totalSales = salesData.totalSales || 0;
-  const totalOrders = salesData.totalOrders || 0;
+  console.log('Generating sales report...');
+  console.log('Sales Data:', salesData);
+
   const totalDiscounts = salesData.totalDiscounts || 0;
-  const cashSales = salesData.cashPayments || 0;
-  const cardSales = salesData.cardPayments || 0;
-  const mobileSales = salesData.mobilePayments || 0;
+  const totalOrders = salesData.totalOrders || 0;
+  const cashSales = salesData.cashSales || 0;
+  const mobileSales = salesData.mobileSales || 0;
+  const totalSales = salesData.totalSales || 0;
 
   const report = `
-      <h3>Sales Report</h3>
-      <p>Total Sales: Rs ${totalSales}</p>
-      <p>Total Orders: ${totalOrders}</p>
-      <p>Total Discounts: Rs ${totalDiscounts}</p>
-      <p>Total Cash Sales: Rs ${cashSales}</p>
-      <p>Total Card Sales: Rs ${cardSales}</p>
-      <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
-      <button onclick="printElement('salesReportOutput')">Print Report</button>
+    <h3>Sales Report</h3>
+    <p>Total Discounts: Rs ${totalDiscounts}</p>
+    <p>Total Cash Sales: Rs ${cashSales}</p>
+    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
+    <p>Total Orders: ${totalOrders}</p>
+    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
+    <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
   document.getElementById('salesReportOutput').innerHTML = report;
 }
@@ -699,15 +698,14 @@ function generateSalesReport() {
 
 
 
-
 // Function to get total sales by payment method
 function getPaymentTotal(method) {
   return Object.values(tables).reduce((sum, table) => {
-    return sum + (table.payments.filter(payment => payment.method === method).reduce((sum, payment) => sum + payment.amount, 0));
+    return sum + table.payments.filter(payment => payment.method === method).reduce((sum, payment) => sum + payment.amount, 0);
   }, 0);
 }
 
-// Function to print a specific element
+// Function to print a specific element with date, time, and restaurant details
 function printElement(elementId) {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -715,16 +713,44 @@ function printElement(elementId) {
     return;
   }
 
+  // Get current date and time
+  const now = new Date();
+  const dateString = now.toLocaleDateString();
+  const timeString = now.toLocaleTimeString();
+
+  // Restaurant details
+  const restaurantDetails = `
+    <div>
+      <h2>TABOCHE RESTUARENT</h2>
+      <p>SIDDHA POKHARI BHAKTAPUR</p>
+      <p>9810208828</p>
+    </div>
+  `;
+
+  // Create print content with date, time, and restaurant details
+  const printContent = `
+    <html>
+    <head><title>SALES Report</title></head>
+    <body>
+      ${restaurantDetails}
+      <div>
+        <p><strong>Date:</strong> ${dateString}</p>
+        <p><strong>Time:</strong> ${timeString}</p>
+      </div>
+      ${element.innerHTML}
+    </body>
+    </html>
+  `;
+
+  // Open a new window for printing
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Print Report</title>');
-  printWindow.document.write('</head><body >');
-  printWindow.document.write(element.innerHTML);
-  printWindow.document.write('</body></html>');
+  printWindow.document.write(printContent);
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
   printWindow.close();
 }
+
 
 // Function to reset sales report and total orders
 function resetSalesReport() {
