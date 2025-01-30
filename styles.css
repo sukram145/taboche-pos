@@ -1,0 +1,596 @@
+/* Base styles (applied to all devices) */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-10%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInDialog {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #292b2c;
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-in-out;
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  letter-spacing: 1px;
+  animation: slideInLeft 1s ease-in-out;
+}
+
+.datetime {
+  font-size: 0.9em;
+  font-weight: 300;
+  animation: slideInRight 1s ease-in-out;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  height: 100%;
+  position: fixed;
+  left: -250px;
+  top: 0;
+  background-color: #111;
+  padding-top: 20px;
+  transition: left 0.3s ease-in-out, background-color 0.3s;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar a, .dropdown-btn {
+  padding: 12px 20px;
+  text-decoration: none;
+  color: white;
+  display: block;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  animation: fadeIn 0.5s ease-in-out;
+  font-size: 1em;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar a:hover, .dropdown-btn:hover {
+  background-color: #575757;
+}
+
+.dropdown-container {
+  display: none;
+  background-color: #262626;
+  padding-left: 16px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.dropdown-btn.active + .dropdown-container {
+  display: block;
+  animation: slideDown 0.5s ease-in-out;
+}
+
+.content-container {
+  display: none;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#mainContent {
+  margin-left: 260px;
+  padding: 20px;
+}
+
+
+/* Login Dialog */
+.login-dialog {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  border-radius: 8px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.login-dialog-content {
+  position: relative;
+}
+
+.close-login {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #888;
+  transition: color 0.2s ease-in-out;
+}
+
+.close-login:hover {
+  color: #333;
+}
+
+.login-dialog h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-dialog input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.login-dialog input:focus {
+  border-color: #007bff;
+}
+
+.login-dialog button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.login-dialog button:hover {
+  background: #0056b3;
+}
+
+/* Main Layout */
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  padding: 15px;
+  gap: 10px;
+}
+
+.flex-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.table-management, .order-section, .payment-section {
+  flex: 1;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  margin: 0;
+  min-width: 280px;
+}
+
+.tables-dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.table-btn {
+  padding: 8px;
+  border: 1px solid #ccc;
+  background-color: #f4f4f4;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.table-btn:hover {
+  background-color: #ddd;
+  transform: translateY(-3px);
+}
+
+.table-card {
+  padding: 8px;
+  border: 1px solid #ccc;
+  background-color: #f4f4f4;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  border-radius: 10px;
+}
+
+.table-card.occupied {
+  background-color: #ff0707;
+  color: white;
+}
+
+.table-card.available {
+  background-color: #28a745;
+  color: white;
+}
+
+.table-card:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+}
+
+.order-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-bar input {
+  width: 100%;
+  height: 25px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.8em;
+  padding: 5px;
+  transition: border-color 0.3s ease;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
+}
+
+.categories {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px 0;
+}
+
+.categories button {
+  display: inline-block;
+  padding: 8px 12px;
+  background-color: #666;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  border-radius: 5px;
+  font-size: 0.8em;
+  margin: 0 3px;
+}
+
+.categories button:hover {
+  background-color: #555;
+  transform: translateY(-3px);
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu-item img {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.menu-item:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item p {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 5px 0 2px;
+}
+
+.menu-item p {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 5px 0 2px;
+}
+
+.menu-item .price {
+  font-size: 12px;
+  color: #007bff;
+  margin-top: 2px;
+}
+
+.order-summary {
+  flex: 1;
+  background: #f1f1f1;
+  border-left: 3px solid #007bff;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 0 10px 10px 0;
+}
+
+#order-items {
+  list-style: none;
+  padding: 0;
+}
+
+#order-items li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+#order-items li button {
+  padding: 5px 10px;
+  background: #ff3333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 5px;
+}
+
+#order-items li button:hover {
+  background-color: #cc0000;
+}
+
+.total {
+  margin-top: 15px;
+  font-size: 1em;
+  display: flex;
+  justify-content: space-between;
+}
+
+.checkout-btn, .finalize-btn, .complete-btn, .change-table-btn, .void-btn, .print-receipt-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 5px;
+  margin: 15px 0;
+  font-size: 0.8em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-btn:hover, .finalize-btn:hover, .complete-btn:hover, .change-table-btn:hover, .void-btn:hover, .print-receipt-btn:hover {
+  background-color: #0056b3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-content {
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  width: 80%;
+  max-width: 500px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(-10px);
+  opacity: 0;
+  animation: fadeInDialog 0.5s forwards;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.close:hover {
+  color: #ff0000;
+}
+
+.payment-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #ffffff, #f0f0f0);
+  color: #000;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 15px 0;
+}
+
+.discount-section {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 15px 0;
+}
+
+.discount-section input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100px;
+  font-size: 0.8em;
+  transition: border-color 0.3s ease;
+}
+
+.discount-section input:focus {
+  border-color: #007bff;
+}
+
+.discount-section button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 5px;
+}
+
+.discount-section button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.payments {
+  width: 100%;
+  text-align: center;
+}
+
+.payment-methods {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.payment-methods button {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 0.8em;
+  color: white;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payment-methods .cash-btn {
+  background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.payment-methods .cash-btn:hover {
+  background-color: #218838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.payment-methods .card-btn {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.payment-methods .card-btn:hover {
+  background-color: #e0a800;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.payment-methods .mobile-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.payment-methods .mobile-btn:hover {
+  background-color: #138496;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+#payment-summary {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+#payment-summary li {
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.change {
+  font-size: 1em;
+  margin: 15px 0;
+  color: green;
+  font-weight: bold;
+}
+
+.insufficient-amount {
+  margin-top: 15px;
+  color: red;
+  font-weight: bold;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 600px) {
+  body {
+    font-size: 12px;
+  }
+  .container {
+    width: 100%;
+  }
+  main {
+    flex-direction: column;
+    padding: 10px;
+  }
+  .table-management, .order-section, .payment-section {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  .menu-item img {
+    width: 60px;
+    height: 48px;
+  }
+  .menu-item p, .menu-item .price {
+    font-size: 0.7em;
+  }
+}
