@@ -39,6 +39,9 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
 };
 
 
+
+
+
 // Function to update date and time
 function updateDateTime() {
   const dateTimeElem = document.getElementById('datetime');
@@ -159,38 +162,44 @@ function removeFromOrder(name) {
   }
 }
 
-// Update the order summary
 function updateOrderSummary() {
   const orderItems = tables[selectedTable].order;
-  displayOrderItems(orderItems);
+  displayOrderItems(orderItems, selectedTable);
+  
+  // Update the table number in the DOM
+  const selectedTableElem = document.getElementById('selected-table');
+  if (selectedTableElem) {
+      selectedTableElem.textContent = selectedTable;
+  }
 }
 
-// Display order items in the order summary
-function displayOrderItems(orderItems) {
+
+function displayOrderItems(orderItems, tableNumber) {
   const orderItemsList = document.getElementById('order-items');
   orderItemsList.innerHTML = '';
   let totalPrice = 0;
 
   for (const [name, item] of Object.entries(orderItems)) {
-    const orderItem = document.createElement('li');
-    orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
-    orderItemsList.appendChild(orderItem);
+      const orderItem = document.createElement('li');
+      orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
+      orderItemsList.appendChild(orderItem);
 
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
-    removeButton.className = 'remove-item';
-    removeButton.setAttribute('data-name', name);
-    removeButton.onclick = () => removeFromOrder(name);
-    orderItem.appendChild(removeButton);
+      const removeButton = document.createElement('button');
+      removeButton.textContent = 'Remove';
+      removeButton.className = 'remove-item';
+      removeButton.setAttribute('data-name', name);
+      removeButton.onclick = () => removeFromOrder(name);
+      orderItem.appendChild(removeButton);
 
-    totalPrice += item.price * item.quantity;
+      totalPrice += item.price * item.quantity;
   }
 
   document.getElementById('total-price').textContent = totalPrice;
-  tables[selectedTable].totalPrice = totalPrice;
+  tables[tableNumber].totalPrice = totalPrice;
 
   saveData();
 }
+
 
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
@@ -211,52 +220,63 @@ function voidSelectedItem() {
   alert("Void mode activated. Select the item to void.");
 }
 
-// Add payment and update summary
-function addPayment(method) {
-  const amount = prompt(`Enter amount for ${method}:`);
-
-  if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
-    tables[selectedTable].payments.push({ method: method, amount: parseFloat(amount) });
-    updatePaymentSummary();
-    saveData();
-  } else {
-    alert('Please enter a valid positive amount');
+function addPayment(paymentMethod) {
+  const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
+  if (isNaN(amount) || amount <= 0) {
+      alert('Invalid amount. Please enter a valid number.');
+      return;
   }
+
+  if (!tables[selectedTable]) {
+      tables[selectedTable] = {
+          payments: [],
+          totalSales: 0,
+  totalDiscounts: 0,
+  totalOrders: 0,
+  cashPayments: 0,
+  cardPayments: 0,
+  mobilePayments: 0,
+          status: 'occupied'
+      };
+  }
+
+  tables[selectedTable].payments.push({ method: paymentMethod, amount });
+
+  updatePaymentSummary();
 }
 
-// Update payment summary
+
 function updatePaymentSummary() {
   const paymentSummaryElem = document.getElementById('payment-summary');
   const changeAmountElem = document.getElementById('change-amount');
-  const totalPriceElem = document.getElementById('total-price');
+  const insufficientAmountElem = document.getElementById('insufficient-amount');
+  const shortAmountElem = document.getElementById('short-amount');
 
-  if (paymentSummaryElem && changeAmountElem && totalPriceElem) {
-    paymentSummaryElem.innerHTML = '';
-    let totalPaid = 0;
+  let totalPaid = 0;
+  if (tables[selectedTable]?.payments) {
+      paymentSummaryElem.innerHTML = '';
+      tables[selectedTable].payments.forEach(payment => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${payment.method}: Rs ${payment.amount}`;
+          paymentSummaryElem.appendChild(listItem);
+          totalPaid += payment.amount;
+      });
+  }
 
-    (tables[selectedTable]?.payments || []).forEach(payment => {
-      const paymentItem = document.createElement('li');
-      paymentItem.textContent = `${payment.method}: Rs ${payment.amount}`;
-      paymentSummaryElem.appendChild(paymentItem);
-      totalPaid += payment.amount;
-    });
+  const totalPrice = tables[selectedTable]?.totalPrice || 0;
+  const changeAmount = totalPaid - totalPrice;
 
-    const totalPrice = parseFloat(totalPriceElem.textContent);
-    const change = totalPaid - totalPrice;
-
-    changeAmountElem.textContent = change >= 0 ? change : 0;
-
-    const insufficientAmountElem = document.getElementById('insufficient-amount');
-    const shortAmountElem = document.getElementById('short-amount');
-
-    if (totalPaid < totalPrice) {
-      insufficientAmountElem.style.display = 'block';
-      shortAmountElem.textContent = totalPrice - totalPaid;
-    } else {
+  if (changeAmount >= 0) {
+      changeAmountElem.textContent = changeAmount;
       insufficientAmountElem.style.display = 'none';
-    }
+  } else {
+      shortAmountElem.textContent = Math.abs(changeAmount);
+      insufficientAmountElem.style.display = 'block';
+      changeAmountElem.textContent = 0;
   }
 }
+
+
 
 // Show and close payment dialog
 function showPaymentDialog() {
@@ -264,6 +284,27 @@ function showPaymentDialog() {
   if (paymentDialog) {
     paymentDialog.style.display = 'flex';
   }
+}
+
+function addPayment(paymentMethod) {
+  const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
+  if (isNaN(amount) || amount <= 0) {
+      alert('Invalid amount. Please enter a valid number.');
+      return;
+  }
+
+  if (!tables[selectedTable]) {
+      tables[selectedTable] = {
+          payments: [],
+          totalPrice: 0,
+          discount: 0,
+          status: 'occupied'
+      };
+  }
+
+  tables[selectedTable].payments.push({ method: paymentMethod, amount });
+
+  updatePaymentSummary();
 }
 
 function closePaymentDialog() {
@@ -377,8 +418,8 @@ function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
 
   if (!totalPriceElem || !totalPriceElem.textContent) {
-    alert('Total price element is not found or its content is invalid.');
-    return;
+      alert('Total price element is not found or its content is invalid.');
+      return;
   }
 
   const totalPrice = parseFloat(totalPriceElem.textContent);
@@ -386,23 +427,55 @@ function completeOrder() {
   const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
 
   if (totalPaid < totalPrice) {
-    const shortAmount = totalPrice - totalPaid;
-    alert(`Payment is not enough to settle the order! Short by Rs ${shortAmount}`);
-    return;
+      const shortAmount = totalPrice - totalPaid;
+      alert(`Payment is not enough to settle the order! Short by Rs ${shortAmount}`);
+      return;
   }
 
+  let cashAmount = 0;
+  let cardAmount = 0;
+  let mobileAmount = 0;
+
   tables[selectedTable]?.payments.forEach(payment => {
-    updateSalesData(totalPrice, discount, payment.method.toLowerCase());
+      const standardizedMethod = payment.method.toLowerCase().trim();
+
+      const standardizedMethodsMapping = {
+          'mobile payment': 'mobile',
+          'cash': 'cash',
+          'card': 'card'
+      };
+
+      const finalMethod = standardizedMethodsMapping[standardizedMethod] || standardizedMethod;
+
+      console.log(`Updating sales data for payment method: ${finalMethod}`);
+      
+      // Update amounts based on the payment method
+      switch (finalMethod) {
+          case 'cash':
+              cashAmount += payment.amount;
+              break;
+          case 'card':
+              cardAmount += payment.amount;
+              break;
+          case 'mobile':
+              mobileAmount += payment.amount;
+              break;
+          default:
+              console.error(`Invalid payment method: ${finalMethod}`);
+              return;
+      }
   });
+
+  updateSalesData(totalPrice, discount, cashAmount, cardAmount, mobileAmount);
 
   printReceipt();
 
   if (tables[selectedTable]) {
-    tables[selectedTable].order = {};
-    tables[selectedTable].totalPrice = 0;
-    tables[selectedTable].status = "available";
-    tables[selectedTable].payments = [];
-    tables[selectedTable].discount = 0;
+      tables[selectedTable].order = {};
+      tables[selectedTable].totalPrice = 0;
+      tables[selectedTable].status = "available";
+      tables[selectedTable].payments = [];
+      tables[selectedTable].discount = 0;
   }
 
   closePaymentDialog();
@@ -412,40 +485,12 @@ function completeOrder() {
   saveData();
 
   alert("Order completed successfully!");
-  displaySalesReport();
+
+  // Call generateSalesReport to update and display the sales report
+  generateSalesReport();
 }
 
 
-// Function to update sales data
-function updateSalesData(totalPrice, discount, paymentMethod) {
-  salesData.totalSales += totalPrice;
-  salesData.totalDiscounts += (totalPrice * discount / 100);
-  salesData.totalOrders += 1;
-
-  switch (paymentMethod) {
-    case 'cash':
-      salesData.cashPayments += totalPrice;
-      break;
-    case 'card':
-      salesData.cardPayments += totalPrice;
-      break;
-    case 'mobile':
-      salesData.mobilePayments += totalPrice;
-      break;
-    default:
-      console.error('Invalid payment method');
-      return;
-  }
-
-  saveData();
-}
-
-// Function to save data
-function saveData() {
-  localStorage.setItem('tables', JSON.stringify(tables));
-  localStorage.setItem('salesData', JSON.stringify(salesData));
-  console.log('Sales data saved:', salesData);
-}
 
 
 // Function to print receipt
@@ -498,210 +543,44 @@ function printReceipt() {
   receiptWindow.close();
 }
 
-function updateSalesData(totalPrice, discount, paymentMethod) {
+function updateSalesData(totalPrice, discount, cashAmount, cardAmount, mobileAmount) {
+  console.log(`Updating sales data: totalPrice=${totalPrice}, discount=${discount}, cashAmount=${cashAmount}, cardAmount=${cardAmount}, mobileAmount=${mobileAmount}`);
+
+  salesData.cashPayments += cashAmount;
+  salesData.cardPayments += cardAmount;
+  salesData.mobilePayments += mobileAmount;
+
   salesData.totalSales += totalPrice;
   salesData.totalDiscounts += (totalPrice * discount / 100);
   salesData.totalOrders += 1;
 
-  switch (paymentMethod.toLowerCase()) {
-    case 'cash':
-      salesData.cashPayments += totalPrice;
-      break;
-    case 'card':
-      salesData.cardPayments += totalPrice;
-      break;
-    case 'mobile':
-      salesData.mobilePayments += totalPrice;
-      break;
-    default:
-      console.error('Invalid payment method');
-      return;
-  }
-
   saveData();
-}
-
-function saveData() {
-  localStorage.setItem('tables', JSON.stringify(tables));
-  localStorage.setItem('salesData', JSON.stringify(salesData));
-  console.log('Sales data saved:', salesData);
+  generateSalesReport();
 }
 
 
 
-function generateSalesReport() {
-  const totalSales = salesData.totalSales;
-  const totalOrders = salesData.totalOrders;
-  const totalDiscounts = salesData.totalDiscounts;
-  const cashSales = salesData.cashPayments;
-  const cardSales = salesData.cardPayments;
-  const mobileSales = salesData.mobilePayments;
+
+
+function displaySalesReport() {
+  const totalSales = salesData.totalSales || 0;
+  const totalOrders = salesData.totalOrders || 0;
+  const totalDiscounts = salesData.totalDiscounts || 0;
+  const cashSales = salesData.cashPayments || 0;
+  const cardSales = salesData.cardPayments || 0;
+  const mobileSales = salesData.mobilePayments || 0;
 
   const report = `
-    <h3>Sales Report</h3>
-    <p>Total Sales: Rs ${totalSales}</p>
-    <p>Total Orders: ${totalOrders}</p>
-    <p>Total Discounts: Rs ${totalDiscounts}</p>
-    <p>Total Cash Sales: Rs ${cashSales}</p>
-    <p>Total Card Sales: Rs ${cardSales}</p>
-    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
-    <button onclick="printElement('salesReportOutput')">Print Report</button>
+      <h3>Sales Report</h3>
+      <p>Total Sales: Rs ${totalSales}</p>
+      <p>Total Orders: ${totalOrders}</p>
+      <p>Total Discounts: Rs ${totalDiscounts}</p>
+      <p>Total Cash Sales: Rs ${cashSales}</p>
+      <p>Total Card Sales: Rs ${cardSales}</p>
+      <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
+      <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
   document.getElementById('salesReportOutput').innerHTML = report;
-}
-
-
-
-// Function to get total sales by payment method
-function getPaymentTotal(method) {
-  return Object.values(tables).reduce((sum, table) => {
-    return sum + (table.payments.filter(payment => payment.method === method).reduce((sum, payment) => sum + payment.amount, 0));
-  }, 0);
-}
-
-// Function to print a specific element
-function printElement(elementId) {
-  const element = document.getElementById(elementId);
-  if (!element) {
-    console.error('Element not found to print');
-    return;
-  }
-  
-  const printWindow = window.open('', 'PRINT', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Print Report</title>');
-  printWindow.document.write('</head><body >');
-  printWindow.document.write(element.innerHTML);
-  printWindow.document.write('</body></html>');
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
-  printWindow.close();
-}
-
-// Function to reset sales report and total orders
-function resetSalesReport() {
-  console.log('Resetting sales report and total orders...');
-  
-  salesData = {
-    totalSales: 0,
-    totalDiscounts: 0,
-    totalOrders: 0
-  };
-
-  const salesReportElem = document.getElementById('sales-report');
-  const orderItemsElem = document.getElementById('order-items');
-  const totalPriceElem = document.getElementById('total-price');
-
-  if (!salesReportElem) {
-    console.error('Sales report element not found.');
-    return;
-  }
-
-  if (!orderItemsElem) {
-    console.error('Order items element not found.');
-    return;
-  }
-
-  if (!totalPriceElem) {
-    console.error('Total price element not found.');
-    return;
-  }
-
-  salesReportElem.innerHTML = '';
-  orderItemsElem.innerHTML = '';
-  totalPriceElem.textContent = '0';
-
-  alert('Sales report and total orders have been reset.');
-  saveData();
-}
-
-// Function to print sales report
-function printSalesReport() {
-  const salesReportElem = document.getElementById('sales-report');
-  
-  if (!salesReportElem) {
-    console.error('Sales report element not found.');
-    return;
-  }
-
-  const salesReport = salesReportElem.innerHTML;
-  console.log('Sales Report:', salesReport);
-  // Additional logic to send the report to a printer or save it as a file can be added here.
-}
-
-// Function to print and reset sales report and total orders
-function printAndResetSalesReport() {
-  printSalesReport();
-  resetSalesReport();
-}
-
-// Function to schedule a reset at midnight
-function scheduleMidnightReset() {
-  const now = new Date();
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0); // Set to next midnight
-  const timeToMidnight = midnight.getTime() - now.getTime();
-
-  setTimeout(() => {
-    printAndResetSalesReport();
-    setInterval(printAndResetSalesReport, 24 * 60 * 60 * 1000); // Repeat every 24 hours
-  }, timeToMidnight);
-}
-
-
-// Function to toggle the sidebar
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) {
-    console.error('Sidebar element not found');
-    return;
-  }
-  sidebar.classList.toggle('active');
-}
-
-// Function to show content based on the clicked link
-function showHomeContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = '<h1>Welcome to Taboche POS</h1><p>Your one-stop solution for managing sales and inventory.</p>';
-  toggleSidebar();
-}
-
-function showMenuManagementContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = `
-    <h1>Menu Management</h1>
-    <div>
-      <h2>Edit Category</h2>
-      <form id="editCategoryForm">
-        <label for="categoryName">Category Name:</label>
-        <input type="text" id="categoryName" name="categoryName"><br>
-        <button type="button" onclick="editCategory()">Edit Category</button>
-      </form>
-    </div>
-    <div>
-      <h2>Edit Item</h2>
-      <form id="editItemForm">
-        <label for="editItemId">Item ID:</label>
-        <input type="text" id="editItemId" name="editItemId"><br>
-        <label for="newItemName">New Item Name:</label>
-        <input type="text" id="newItemName" name="newItemName"><br>
-        <label for="newItemPrice">New Item Price:</label>
-        <input type="text" id="newItemPrice" name="newItemPrice"><br>
-        <label for="newItemPicture">New Item Picture:</label>
-        <input type="file" id="newItemPicture" name="newItemPicture"><br>
-        <button type="button" onclick="editItem()">Edit Item</button>
-      </form>
-    </div>
-  `;
-  toggleSidebar();
 }
 
 function showSalesReportsContent() {
@@ -787,3 +666,187 @@ document.addEventListener('DOMContentLoaded', () => {
 
   scheduleMidnightReset(); // Schedule the daily reset
 });
+
+
+
+function saveData() {
+  localStorage.setItem('salesData', JSON.stringify(salesData));
+  console.log("Data saved successfully.");
+}
+
+function generateSalesReport() {
+  const totalSales = salesData.totalSales || 0;
+  const totalOrders = salesData.totalOrders || 0;
+  const totalDiscounts = salesData.totalDiscounts || 0;
+  const cashSales = salesData.cashPayments || 0;
+  const cardSales = salesData.cardPayments || 0;
+  const mobileSales = salesData.mobilePayments || 0;
+
+  const report = `
+      <h3>Sales Report</h3>
+      <p>Total Sales: Rs ${totalSales}</p>
+      <p>Total Orders: ${totalOrders}</p>
+      <p>Total Discounts: Rs ${totalDiscounts}</p>
+      <p>Total Cash Sales: Rs ${cashSales}</p>
+      <p>Total Card Sales: Rs ${cardSales}</p>
+      <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
+      <button onclick="printElement('salesReportOutput')">Print Report</button>
+  `;
+  document.getElementById('salesReportOutput').innerHTML = report;
+}
+
+
+
+
+
+
+// Function to get total sales by payment method
+function getPaymentTotal(method) {
+  return Object.values(tables).reduce((sum, table) => {
+    return sum + (table.payments.filter(payment => payment.method === method).reduce((sum, payment) => sum + payment.amount, 0));
+  }, 0);
+}
+
+// Function to print a specific element
+function printElement(elementId) {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    console.error('Element not found to print');
+    return;
+  }
+
+  const printWindow = window.open('', 'PRINT', 'height=600,width=800');
+  printWindow.document.write('<html><head><title>Print Report</title>');
+  printWindow.document.write('</head><body >');
+  printWindow.document.write(element.innerHTML);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+}
+
+// Function to reset sales report and total orders
+function resetSalesReport() {
+  console.log('Resetting sales report and total orders...');
+
+  salesData = {
+    totalSales: 0,
+    totalDiscounts: 0,
+    totalOrders: 0
+  };
+
+  const salesReportElem = document.getElementById('sales-report');
+  const orderItemsElem = document.getElementById('order-items');
+  const totalPriceElem = document.getElementById('total-price');
+
+  if (!salesReportElem) {
+    console.error('Sales report element not found.');
+    return;
+  }
+
+  if (!orderItemsElem) {
+    console.error('Order items element not found.');
+    return;
+  }
+
+  if (!totalPriceElem) {
+    console.error('Total price element not found.');
+    return;
+  }
+
+  salesReportElem.innerHTML = '';
+  orderItemsElem.innerHTML = '';
+  totalPriceElem.textContent = '0';
+
+  alert('Sales report and total orders have been reset.');
+  saveData();
+}
+
+// Function to print sales report
+function printSalesReport() {
+  const salesReportElem = document.getElementById('sales-report');
+
+  if (!salesReportElem) {
+    console.error('Sales report element not found.');
+    return;
+  }
+
+  const salesReport = salesReportElem.innerHTML;
+  console.log('Sales Report:', salesReport);
+  // Additional logic to send the report to a printer or save it as a file can be added here.
+}
+
+// Function to print and reset sales report and total orders
+function printAndResetSalesReport() {
+  printSalesReport();
+  resetSalesReport();
+}
+
+// Function to schedule a reset at midnight
+function scheduleMidnightReset() {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0); // Set to next midnight
+  const timeToMidnight = midnight.getTime() - now.getTime();
+
+  setTimeout(() => {
+    printAndResetSalesReport();
+    setInterval(printAndResetSalesReport, 24 * 60 * 60 * 1000); // Repeat every 24 hours
+  }, timeToMidnight);
+}
+
+// Function to toggle the sidebar
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) {
+    console.error('Sidebar element not found');
+    return;
+  }
+  sidebar.classList.toggle('active');
+}
+
+// Function to show content based on the clicked link
+function showHomeContent() {
+  const content = document.getElementById('content');
+  if (!content) {
+    console.error('Content element not found');
+    return;
+  }
+  content.innerHTML = '<h1>Welcome to Taboche POS</h1><p>Your one-stop solution for managing sales and inventory.</p>';
+  toggleSidebar();
+}
+
+function showMenuManagementContent() {
+  const content = document.getElementById('content');
+  if (!content) {
+    console.error('Content element not found');
+    return;
+  }
+  content.innerHTML = `
+    <h1>Menu Management</h1>
+    <div>
+      <h2>Edit Category</h2>
+      <form id="editCategoryForm">
+        <label for="categoryName">Category Name:</label>
+        <input type="text" id="categoryName" name="categoryName"><br>
+        <button type="button" onclick="editCategory()">Edit Category</button>
+      </form>
+    </div>
+    <div>
+      <h2>Edit Item</h2>
+      <form id="editItemForm">
+        <label for="editItemId">Item ID:</label>
+        <input type="text" id="editItemId" name="editItemId"><br>
+        <label for="newItemName">New Item Name:</label>
+        <input type="text" id="newItemName" name="newItemName"><br>
+        <label for="newItemPrice">New Item Price:</label>
+        <input type="text" id="newItemPrice" name="newItemPrice"><br>
+        <label for="newItemPicture">New Item Picture:</label>
+        <input type="file" id="newItemPicture" name="newItemPicture"><br>
+        <button type="button" onclick="editItem()">Edit Item</button>
+      </form>
+    </div>
+  `;
+  toggleSidebar();
+}
