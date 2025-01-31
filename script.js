@@ -327,6 +327,12 @@ function changeTable() {
     alert("Invalid table number or table does not exist.");
   }
 }
+let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
+
+function saveOrderHistory() {
+  localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+}
+
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
 
@@ -388,6 +394,18 @@ function completeOrder() {
     alert(`Customer change: Rs ${change}`);
   }
 
+  // Save order details to order history
+  orderHistory.push({
+    table: selectedTable,
+    order: tables[selectedTable].order,
+    totalPrice: totalPrice,
+    payments: tables[selectedTable].payments,
+    discount: discount,
+    timestamp: new Date()
+  });
+
+  saveOrderHistory(); // Save order history to local storage
+
   if (tables[selectedTable]) {
     tables[selectedTable].order = {};
     tables[selectedTable].totalPrice = 0;
@@ -405,6 +423,61 @@ function completeOrder() {
 
   generateSalesReport(); // Ensure the sales report gets updated and displayed
 }
+
+
+
+// Function to open the dialog box
+function openOrderHistoryDialog() {
+  document.getElementById('order-history-dialog').style.display = 'block';
+  renderOrderHistory(); // Render the order history inside the dialog
+}
+
+// Function to close the dialog box
+function closeOrderHistoryDialog() {
+  document.getElementById('order-history-dialog').style.display = 'none';
+}function renderOrderHistory() {
+  const orderHistoryContainer = document.getElementById('order-history-container');
+
+  if (!orderHistoryContainer) {
+    console.error('Order history container element not found.');
+    return;
+  }
+
+  orderHistoryContainer.innerHTML = ''; // Clear existing order history
+
+  orderHistory.forEach((order, index) => {
+    const orderElem = document.createElement('div');
+    orderElem.classList.add('order-history-item');
+    orderElem.innerHTML = `
+      <h3>Order #${index + 1}</h3>
+      <p><strong>Table:</strong> ${order.table}</p>
+      <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
+      <p><strong>Discount:</strong> Rs ${order.discount}</p>
+      <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
+      <p><strong>Timestamp:</strong> ${order.timestamp}</p>
+    `;
+    orderHistoryContainer.appendChild(orderElem);
+  });
+
+  // Check order history length
+  checkOrderHistoryLength();
+}
+
+
+function checkOrderHistoryLength() {
+  const historyLength = orderHistory.length;
+  console.log(`Order history length: ${historyLength}`);
+
+  if (historyLength === 100) {
+    alert('There are exactly 100 orders in the order history.');
+  } else {
+    alert(`There are ${historyLength} orders in the order history.`);
+  }
+}
+
+// Call this function to check the length of order history
+checkOrderHistoryLength();
+
 
 // Function to update sales data with the correct total amount for each payment method
 function updateSalesData(totalPrice, discount, cashAmount, mobileAmount) {
@@ -533,10 +606,29 @@ function printElement(elementId) {
   printWindow.close();
 }
 
-// Function to print and reset sales report and total orders
+// Function to print and reset the sales report
 function printAndResetSalesReport() {
-  printElement('salesReportOutput');
-  resetSalesReport();
+  // Print the sales report (you can customize this part as needed)
+  console.log('Sales Report:', salesData);
+  alert('Sales Report printed successfully!');
+
+  // Reset the sales data
+  salesData = {
+    cashSales: 0,
+    mobileSales: 0,
+    totalSales: 0,
+    totalDiscounts: 0,
+    totalOrders: 0
+  };
+
+  // Reset the order history
+  orderHistory = [];
+  localStorage.removeItem('orderHistory');
+  alert('Sales report and order history have been reset.');
+
+  // Re-render the order history and sales report
+  renderOrderHistory();
+  generateSalesReport();
 }
 
 // Function to reset sales report and total orders

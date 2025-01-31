@@ -889,11 +889,23 @@
 
     
   <div id="sales-report" class="sales-report"></div>
-  <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
+  <!-- Add this button in your HTML -->
+<button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
+
 
         
-      <!-- Button that calls editItem function on click -->
-      <button onclick="editItem()">Edit Item</button>
+<!-- Add this HTML structure for the dialog box -->
+<div id="order-history-dialog" class="dialog">
+  <div class="dialog-content">
+    <span class="close-button" onclick="closeOrderHistoryDialog()">&times;</span>
+    <h2>Order History</h2>
+    <div id="order-history-container"></div>
+  </div>
+</div>
+
+<!-- Add a button to open the dialog box -->
+<button onclick="openOrderHistoryDialog()">View Order History</button>
+
   
     <!-- Correct -->
 <script src="script.js"></script>
