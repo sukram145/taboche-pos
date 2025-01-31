@@ -1,4 +1,4 @@
-// Define the firebaseConfig variable
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyA74YCQAfmUdu96AKIk41uSdiMS6imJz6E",
   authDomain: "taboche-pos.firebaseapp.com",
@@ -10,37 +10,30 @@ const firebaseConfig = {
   measurementId: "G-00TEQG2H1Z"
 };
 
-
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
 for (let i = 1; i <= 20; i++) {
   if (!tables[`Table ${i}`]) {
-    tables[`Table ${i}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0 };
+    tables[`Table ${i}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0 };
   }
 }
 
 // Track whether void button was pressed
 let isVoidMode = false;
 
-// Define the editItem function
-function editItem() {
-  // Your code here
-  console.log('Edit item function called!');
-}
-
-
+// Initialize sales data from localStorage or create default structure
 let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   totalSales: 0,
   totalDiscounts: 0,
   totalOrders: 0,
   cashPayments: 0,
-  cardPayments: 0,
   mobilePayments: 0
 };
 
-
-
-
+// Define the editItem function
+function editItem() {
+  console.log('Edit item function called!');
+}
 
 // Function to update date and time
 function updateDateTime() {
@@ -54,7 +47,6 @@ function updateDateTime() {
 // Update date and time every second
 setInterval(updateDateTime, 1000);
 
-
 // Render tables in the dashboard
 function renderTables() {
   const dashboard = document.getElementById('tables-dashboard');
@@ -62,7 +54,6 @@ function renderTables() {
     console.error('Dashboard element not found');
     return;
   }
-
   dashboard.innerHTML = '';
   for (const [table, info] of Object.entries(tables)) {
     const tableCard = document.createElement('div');
@@ -78,15 +69,12 @@ function selectTable(table) {
   selectedTable = table;
   const selectedTableDisplayElem = document.getElementById('selected-table-display');
   const orderSection = document.getElementById('order-section');
-
   if (selectedTableDisplayElem) {
     selectedTableDisplayElem.textContent = table;
   }
-
   if (orderSection) {
     orderSection.style.display = 'block';
   }
-
   updateOrderSummary();
 }
 
@@ -105,31 +93,25 @@ function filterCategory(category) {
 // Add item to the order with negative price if in void mode
 function addToOrder(name, price) {
   console.log(`Adding to order: ${name}, Price: ${price}, Selected Table: ${selectedTable}`);
-
   if (selectedTable === "None") {
     alert("Please select a table first!");
     return;
   }
-
   if (!tables[selectedTable].order) {
     tables[selectedTable].order = {};
   }
-
-  // Apply negative price if void mode is active
   if (isVoidMode) {
     price = -price;
     isVoidMode = false; // Reset void mode after adding the item
   }
-
   if (!tables[selectedTable].order.hasOwnProperty(name)) {
     tables[selectedTable].order[name] = { price: price, quantity: 1 };
   } else {
     tables[selectedTable].order[name].quantity += 1;
   }
-
   tables[selectedTable].totalPrice += price;
+  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
   tables[selectedTable].status = "occupied";
-
   renderTables();
   updateOrderSummary();
   saveData();
@@ -156,73 +138,52 @@ function removeFromOrder(name) {
     if (tables[selectedTable].totalPrice === 0) {
       tables[selectedTable].status = "available";
     }
+    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
     renderTables();
     updateOrderSummary();
     saveData();
   }
 }
 
-function applyDiscount() {
-  const discountInput = document.getElementById('discount');
-  const discount = parseFloat(discountInput.value) || 0;
-
-  if (discount < 0 || discount > 100) {
-    alert('Please enter a valid discount percentage between 0 and 100.');
-    return;
-  }
-
-  tables[selectedTable].discount = discount;
-  updateOrderSummary();
-  saveData(); // Save data after updating discount
-}
-
-function updateOrderSummary() {
-  const orderItems = tables[selectedTable].order;
-  let totalPrice = 0;
-
-  for (const [name, item] of Object.entries(orderItems)) {
-    totalPrice += item.price * item.quantity;
-  }
-
-  const discount = tables[selectedTable].discount || 0;
-  totalPrice -= (totalPrice * discount / 100);
-
-  tables[selectedTable].totalPrice = totalPrice;
-  
-  displayOrderItems(orderItems, selectedTable);
-
-  document.getElementById('total-price').textContent = totalPrice.toFixed(2); // Update UI with formatted price
-  
-  saveData(); // Save data after updating order summary
-}
-
-
-
 // Display order items in the order summary
 function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
   orderItemsList.innerHTML = '';
   let totalPrice = 0;
-
   for (const [name, item] of Object.entries(orderItems)) {
     const orderItem = document.createElement('li');
     orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
     orderItemsList.appendChild(orderItem);
-
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
     removeButton.className = 'remove-item';
     removeButton.setAttribute('data-name', name);
     removeButton.onclick = () => removeFromOrder(name);
     orderItem.appendChild(removeButton);
-
     totalPrice += item.price * item.quantity;
   }
-
   document.getElementById('total-price').textContent = totalPrice;
   tables[selectedTable].totalPrice = totalPrice;
-
+  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
   saveData();
+}
+
+// Update order summary
+function updateOrderSummary() {
+  const order = tables[selectedTable];
+  displayOrderItems(order.order, selectedTable);
+  const selectedTableElem = document.getElementById('selected-table');
+  if (selectedTableElem) {
+    selectedTableElem.textContent = selectedTable;
+  }
+  const orderSummary = document.getElementById('orderSummary');
+  if (orderSummary) {
+    orderSummary.innerHTML = `
+      Total Price: ${order.totalPrice.toFixed(2)}<br>
+      Discount: ${order.discount}%<br>
+      Discounted Total: ${order.discountedTotal.toFixed(2)}
+    `;
+  }
 }
 
 // Disable the remove button for finalized items
@@ -230,10 +191,7 @@ function disableRemoveButtonForFinalizedItems() {
   for (const [name, item] of Object.entries(tables[selectedTable].order)) {
     const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
     if (removeButton) {
-      console.log(`Disabling remove button for: ${name}`);
       removeButton.disabled = true;
-    } else {
-      console.error(`Remove button not found for: ${name}`);
     }
   }
 }
@@ -244,62 +202,56 @@ function voidSelectedItem() {
   alert("Void mode activated. Select the item to void.");
 }
 
+// Add payment
 function addPayment(paymentMethod) {
   const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
   if (isNaN(amount) || amount <= 0) {
-      alert('Invalid amount. Please enter a valid number.');
-      return;
+    alert('Invalid amount. Please enter a valid number.');
+    return;
   }
-
   if (!tables[selectedTable]) {
-      tables[selectedTable] = {
-          payments: [],
-          totalSales: 0,
-  totalDiscounts: 0,
-  totalOrders: 0,
-  cashPayments: 0,
-  cardPayments: 0,
-  mobilePayments: 0,
-          status: 'occupied'
-      };
+    tables[selectedTable] = {
+      payments: [],
+      totalSales: 0,
+      totalDiscounts: 0,
+      totalOrders: 0,
+      cashPayments: 0,
+      mobilePayments: 0,
+      status: 'occupied'
+    };
   }
-
   tables[selectedTable].payments.push({ method: paymentMethod, amount });
-
   updatePaymentSummary();
+  saveData();
 }
 
-
+// Function to update payment summary
 function updatePaymentSummary() {
   const paymentSummaryElem = document.getElementById('payment-summary');
   const changeAmountElem = document.getElementById('change-amount');
   const insufficientAmountElem = document.getElementById('insufficient-amount');
   const shortAmountElem = document.getElementById('short-amount');
-
   let totalPaid = 0;
   if (tables[selectedTable]?.payments) {
-      paymentSummaryElem.innerHTML = '';
-      tables[selectedTable].payments.forEach(payment => {
-          const listItem = document.createElement('li');
-          listItem.textContent = `${payment.method}: Rs ${payment.amount}`;
-          paymentSummaryElem.appendChild(listItem);
-          totalPaid += payment.amount;
-      });
+    paymentSummaryElem.innerHTML = '';
+    tables[selectedTable].payments.forEach(payment => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${payment.method}: Rs ${payment.amount}`;
+      paymentSummaryElem.appendChild(listItem);
+      totalPaid += payment.amount;
+    });
   }
-
-  const totalPrice = tables[selectedTable]?.totalPrice || 0;
+  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
   const changeAmount = totalPaid - totalPrice;
-
   if (changeAmount >= 0) {
-      changeAmountElem.textContent = changeAmount;
-      insufficientAmountElem.style.display = 'none';
+    changeAmountElem.textContent = changeAmount;
+    insufficientAmountElem.style.display = 'none';
   } else {
-      shortAmountElem.textContent = Math.abs(changeAmount);
-      insufficientAmountElem.style.display = 'block';
-      changeAmountElem.textContent = 0;
+    shortAmountElem.textContent = Math.abs(changeAmount);
+    insufficientAmountElem.style.display = 'block';
+    changeAmountElem.textContent = 0;
   }
 }
-
 
 // Show and close payment dialog
 function showPaymentDialog() {
@@ -308,9 +260,6 @@ function showPaymentDialog() {
     paymentDialog.style.display = 'flex';
   }
 }
-
-
-
 
 function closePaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
@@ -374,52 +323,6 @@ function changeTable() {
     alert("Invalid table number or table does not exist.");
   }
 }
-
-// Print receipt
-function printReceipt() {
-  const orderItems = tables[selectedTable].order;
-  let receiptContent = `Receipt for Table ${selectedTable}\n\n`;
-
-  for (const [name, item] of Object.entries(orderItems)) {
-    receiptContent += `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}\n`;
-  }
-
-  receiptContent += `\nTotal: Rs ${tables[selectedTable].totalPrice}\n`;
-  console.log(receiptContent);
-  alert("Receipt printed. Check console for details.");
-}
-
-
-
-// Show and close payment dialog
-function showPaymentDialog() {
-  const paymentDialog = document.getElementById('payment-dialog');
-  if (paymentDialog) {
-    paymentDialog.style.display = 'flex';
-  }
-}
-// Function to apply discount and update order summary
-function applyDiscount() {
-  const discountInput = document.getElementById('discount');
-  const discount = parseFloat(discountInput.value) || 0;
-
-  if (discount < 0 || discount > 100) {
-    alert('Please enter a valid discount percentage between 0 and 100.');
-    return;
-  }
-
-  tables[selectedTable].discount = discount;
-  updateOrderSummary();
-}
-
-function closePaymentDialog() {
-  const paymentDialog = document.getElementById('payment-dialog');
-  if (paymentDialog) {
-    paymentDialog.style.display = 'none';
-  }
-}
-
-
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
 
@@ -499,76 +402,70 @@ function completeOrder() {
   generateSalesReport(); // Ensure the sales report gets updated and displayed
 }
 
+// Function to update sales data with the correct total amount for each payment method
+function updateSalesData(totalPrice, discount, cashAmount, mobileAmount) {
+  // Initialize salesData if it doesn't exist
+  let salesData = JSON.parse(localStorage.getItem('salesData')) || {
+    totalSales: 0,
+    totalDiscounts: 0,
+    totalOrders: 0,
+    cashPayments: 0,
+    mobilePayments: 0
+  };
+
+  console.log("Before update:", salesData);
+
+  // Update sales data
+  salesData.totalSales += totalPrice;
+  salesData.totalDiscounts += discount;
+  salesData.totalOrders += 1;
+  salesData.cashPayments += cashAmount;
+  salesData.mobilePayments += mobileAmount;
+
+  console.log("After update:", salesData);
+
+  // Store updated sales data
+  localStorage.setItem('salesData', JSON.stringify(salesData));
+}
+
 
 
 // Function to print receipt
 function printReceipt() {
-  let receiptWindow = window.open('', 'PRINT', 'height=600,width=800');
+  const printWindow = window.open('', 'PRINT', 'height=600,width=800');
+  printWindow.document.write('<html><head><title>Receipt</title></head><body>');
+  printWindow.document.write('<h1>Taboche POS Receipt</h1>');
+  printWindow.document.write(`<p>Table: ${selectedTable}</p>`);
+  printWindow.document.write('<ul>');
+  Object.entries(tables[selectedTable].order).forEach(([name, item]) => {
+    printWindow.document.write(`<li>${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}</li>`);
+  });
+  printWindow.document.write('</ul>');
+  printWindow.document.write(`<p>Total Price: Rs ${tables[selectedTable].totalPrice.toFixed(2)}</p>`);
+  printWindow.document.write(`<p>Discount: ${tables[selectedTable].discount}%</p>`);
+  printWindow.document.write(`<p>Discounted Total: Rs ${tables[selectedTable].discountedTotal.toFixed(2)}</p>`);
+  printWindow.document.write('<h2>Payments</h2>');
+  printWindow.document.write('<ul>');
+  tables[selectedTable].payments.forEach(payment => {
+    printWindow.document.write(`<li>${payment.method}: Rs ${payment.amount}</li>`);
+  });
+  printWindow.document.write('</ul>');
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+}
 
-  receiptWindow.document.write('<html><head><title>Receipt</title>');
-  receiptWindow.document.write('</head><body style="font-family: Arial, sans-serif; margin: 20px;">');
-  receiptWindow.document.write('<div style="text-align: center;">');
-  receiptWindow.document.write('<h1>Taboche Restaurant</h1>');
-  receiptWindow.document.write('<p>Address: Siddha Pokhari, Bhaktapur</p>');
-  receiptWindow.document.write('<p>Phone: 9810208828</p>');
-  receiptWindow.document.write('<p>Email: info@taboche-restaurant.com</p>');
-  receiptWindow.document.write('<p>Website: www.taboche-restaurant.com</p>');
-  receiptWindow.document.write('<hr>');
-  receiptWindow.document.write('</div>');
-  
-  receiptWindow.document.write('<p><strong>Table:</strong> ' + selectedTable + '</p>');
-  receiptWindow.document.write('<p><strong>Date:</strong> ' + new Date().toLocaleString() + '</p>');
-  receiptWindow.document.write('<h2>Order Details</h2>');
-  receiptWindow.document.write('<ul>');
-
-  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
-    receiptWindow.document.write('<li>' + name + ' - Rs ' + item.price + ' x ' + item.quantity + ' = Rs ' + (item.price * item.quantity) + '</li>');
+// Function to display sales report
+function displaySalesReport() {
+  console.log("Displaying sales report...");
+  const salesReportElem = document.getElementById('salesReportOutput');
+  if (!salesReportElem) {
+    console.error('Sales report element not found.');
+    return;
   }
 
-  receiptWindow.document.write('</ul>');
-  receiptWindow.document.write('<hr>');
-  receiptWindow.document.write('<p><strong>Total:</strong> Rs ' + tables[selectedTable].totalPrice + '</p>');
-  receiptWindow.document.write('<p><strong>Discount:</strong> ' + tables[selectedTable].discount + '%</p>');
-  receiptWindow.document.write('<h3>Payments</h3>');
-  receiptWindow.document.write('<ul>');
-
-  (tables[selectedTable]?.payments || []).forEach(payment => {
-    receiptWindow.document.write('<li>' + payment.method + ': Rs ' + payment.amount + '</li>');
-  });
-
-  receiptWindow.document.write('</ul>');
-  receiptWindow.document.write('<p><strong>Change:</strong> Rs ' + (document.getElementById('change-amount')?.textContent || 0) + '</p>');
-  receiptWindow.document.write('<hr>');
-  receiptWindow.document.write('<div style="text-align: center;">');
-  receiptWindow.document.write('<p>We hope you enjoyed your meal!</p>');
-  receiptWindow.document.write('<p>Thank you for dining with us. Please come again!</p>');
-  receiptWindow.document.write('</div>');
-  receiptWindow.document.write('</body></html>');
-
-  receiptWindow.document.close();
-  receiptWindow.focus();
-  receiptWindow.print();
-  receiptWindow.close();
-}
-
-
-function updateSalesData(totalPrice, discount, cashAmount, mobileAmount) {
-  salesData.totalSales = (salesData.totalSales || 0) + totalPrice;
-  salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discount;
-  salesData.totalOrders = (salesData.totalOrders || 0) + 1;
-
-  salesData.cashPayments = (salesData.cashPayments || 0) + cashAmount;
-  salesData.mobilePayments = (salesData.mobilePayments || 0) + mobileAmount;
-
-  saveData();
-}
-
-
-
-
-
-
-function displaySalesReport() {
   const totalDiscounts = salesData.totalDiscounts || 0;
   const totalOrders = salesData.totalOrders || 0;
   const cashSales = salesData.cashPayments || 0;
@@ -584,134 +481,9 @@ function displaySalesReport() {
     <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
     <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
-  document.getElementById('salesReportOutput').innerHTML = report;
+  salesReportElem.innerHTML = report;
+  console.log("Sales report displayed.");
 }
-
-
-
-function showSalesReportsContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = `
-    <h1>Sales Reports</h1>
-    <button type="button" onclick="generateSalesReport()">Generate Sales Report</button>
-    <div id="salesReportOutput"></div>
-  `;
-  toggleSidebar();
-}
-
-function showSettingsContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = `
-    <h1>Settings</h1>
-    <form id="settingsForm">
-      <label for="currency">Currency:</label>
-      <input type="text" id="currency" name="currency"><br>
-      <label for="taxRate">Tax Rate:</label>
-      <input type="text" id="taxRate" name="taxRate"><br>
-      <label for="layoutColor">Layout Color:</label>
-      <input type="color" id="layoutColor" name="layoutColor"><br>
-      <button type="button" onclick="saveSettings()">Save Settings</button>
-    </form>
-  `;
-  toggleSidebar();
-}
-
-function showAdminPanelContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = `
-    <h1>Admin Panel</h1>
-    <p>Admin panel functionalities will be here.</p>
-    <button type="button" onclick="manageUsers()">Manage Users</button>
-  `;
-  toggleSidebar();
-}
-
-// Customize layout settings
-function saveSettings() {
-  const currency = document.getElementById('currency').value.trim();
-  const taxRate = parseFloat(document.getElementById('taxRate').value);
-  const layoutColor = document.getElementById('layoutColor').value;
-
-  if (!currency || isNaN(taxRate) || taxRate < 0 || !layoutColor) {
-    alert('Please enter valid settings');
-    return;
-  }
-
-  // Logic to save settings (e.g., updating settings in the database or local storage)
-  alert(`Settings Saved: Currency ${currency}, Tax Rate: ${taxRate}, Layout Color: ${layoutColor}`);
-  document.documentElement.style.setProperty('--layout-color', layoutColor);
-}
-
-// Manage users (example placeholder)
-function manageUsers() {
-  alert('User management functionality will be here.');
-}
-
-// Initial setup and event listeners for sidebar buttons
-document.addEventListener('DOMContentLoaded', () => {
-  renderTables();
-
-  document.getElementById('homeBtn')?.addEventListener('click', showHomeContent);
-  document.getElementById('menuManagementBtn')?.addEventListener('click', showMenuManagementContent);
-  document.getElementById('salesReportsBtn')?.addEventListener('click', showSalesReportsContent);
-  document.getElementById('settingsBtn')?.addEventListener('click', showSettingsContent);
-  document.getElementById('adminPanelBtn')?.addEventListener('click', showAdminPanelContent);
-  document.getElementById('toggleSidebarBtn')?.addEventListener('click', toggleSidebar);
-
-  scheduleMidnightReset(); // Schedule the daily reset
-});
-
-
-// Save data to localStorage
-function saveData() {
-  localStorage.setItem('tables', JSON.stringify(tables));
-  localStorage.setItem('salesData', JSON.stringify(salesData));
-  console.log("Data saved successfully.");
-}
-
-// Load data from localStorage when the app starts
-function loadData() {
-  tables = JSON.parse(localStorage.getItem('tables')) || {};
-  salesData = JSON.parse(localStorage.getItem('salesData')) || {
-    totalSales: 0,
-    totalDiscounts: 0,
-    totalOrders: 0,
-    cashPayments: 0,
-    mobilePayments: 0
-  };
-  renderTables();
-  console.log("Data loaded successfully.");
-}
-
-// Call loadData function when the document is ready
-document.addEventListener('DOMContentLoaded', () => {
-  loadData();
-  renderTables();
-  updateOrderSummary();
-
-  document.getElementById('homeBtn')?.addEventListener('click', showHomeContent);
-  document.getElementById('menuManagementBtn')?.addEventListener('click', showMenuManagementContent);
-  document.getElementById('salesReportsBtn')?.addEventListener('click', showSalesReportsContent);
-  document.getElementById('settingsBtn')?.addEventListener('click', showSettingsContent);
-  document.getElementById('adminPanelBtn')?.addEventListener('click', showAdminPanelContent);
-  document.getElementById('toggleSidebarBtn')?.addEventListener('click', toggleSidebar);
-
-  scheduleMidnightReset(); // Schedule the daily reset
-});
-
-
 
 function generateSalesReport() {
   console.log('Generating sales report...');
@@ -738,15 +510,6 @@ function generateSalesReport() {
 
 
 
-
-// Function to get total sales by payment method
-function getPaymentTotal(method) {
-  return Object.values(tables).reduce((sum, table) => {
-    return sum + table.payments.filter(payment => payment.method === method).reduce((sum, payment) => sum + payment.amount, 0);
-  }, 0);
-}
-
-
 // Function to print a specific element
 function printElement(elementId) {
   const element = document.getElementById(elementId);
@@ -757,7 +520,7 @@ function printElement(elementId) {
 
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
   printWindow.document.write('<html><head><title>Print Report</title>');
-  printWindow.document.write('</head><body >');
+  printWindow.document.write('</head><body>');
   printWindow.document.write(element.innerHTML);
   printWindow.document.write('</body></html>');
   printWindow.document.close();
@@ -766,87 +529,29 @@ function printElement(elementId) {
   printWindow.close();
 }
 
-// Function to reset sales report and total orders
-function resetSalesReport() {
-  console.log('Resetting sales report and total orders...');
-
-  salesData = {
-    totalSales: 0,
-    totalDiscounts: 0,
-    totalOrders: 0
-  };
-
-  const salesReportElem = document.getElementById('sales-report');
-  const orderItemsElem = document.getElementById('order-items');
-  const totalPriceElem = document.getElementById('total-price');
-
-  if (!salesReportElem) {
-    console.error('Sales report element not found.');
-    return;
-  }
-
-  if (!orderItemsElem) {
-    console.error('Order items element not found.');
-    return;
-  }
-
-  if (!totalPriceElem) {
-    console.error('Total price element not found.');
-    return;
-  }
-
-  salesReportElem.innerHTML = '';
-  orderItemsElem.innerHTML = '';
-  totalPriceElem.textContent = '0';
-
-  alert('Sales report and total orders have been reset.');
-  saveData();
-}
-
-// Function to print sales report
-function printSalesReport() {
-  const salesReportElem = document.getElementById('sales-report');
-
-  if (!salesReportElem) {
-    console.error('Sales report element not found.');
-    return;
-  }
-
-  const salesReport = salesReportElem.innerHTML;
-  console.log('Sales Report:', salesReport);
-  // Additional logic to send the report to a printer or save it as a file can be added here.
-}
-
 // Function to print and reset sales report and total orders
 function printAndResetSalesReport() {
-  printSalesReport();
+  printElement('salesReportOutput');
   resetSalesReport();
 }
 
-// Function to schedule a reset at midnight
-function scheduleMidnightReset() {
-  const now = new Date();
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0); // Set to next midnight
-  const timeToMidnight = midnight.getTime() - now.getTime();
+// Function to reset sales report and total orders
+function resetSalesReport() {
+  console.log('Resetting sales report and total orders...');
+  salesData = {
+    totalSales: 0,
+    totalDiscounts: 0,
+    totalOrders: 0,
+    cashPayments: 0,
+    mobilePayments: 0
+  };
 
-  setTimeout(() => {
-    printAndResetSalesReport();
-    setInterval(printAndResetSalesReport, 24 * 60 * 60 * 1000); // Repeat every 24 hours
-  }, timeToMidnight);
+  localStorage.setItem('salesData', JSON.stringify(salesData));
+  displaySalesReport();
+  alert('Sales report and total orders have been reset.');
 }
 
-// Function to toggle the sidebar
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) {
-    console.error('Sidebar element not found');
-    return;
-  }
-  sidebar.classList.toggle('active');
-}
-
-// Function to show content based on the clicked link
+// Function to show home content
 function showHomeContent() {
   const content = document.getElementById('content');
   if (!content) {
@@ -857,6 +562,7 @@ function showHomeContent() {
   toggleSidebar();
 }
 
+// Function to show menu management content
 function showMenuManagementContent() {
   const content = document.getElementById('content');
   if (!content) {
@@ -889,4 +595,126 @@ function showMenuManagementContent() {
     </div>
   `;
   toggleSidebar();
+}
+
+// Function to show sales reports content
+function showSalesReportsContent() {
+  const content = document.getElementById('content');
+  if (!content) {
+    console.error('Content element not found');
+    return;
+  }
+  content.innerHTML = `
+    <h1>Sales Reports</h1>
+    <button type="button" onclick="generateSalesReport()">Generate Sales Report</button>
+    <div id="salesReportOutput"></div>
+  `;
+  toggleSidebar();
+}
+
+// Function to show settings content
+function showSettingsContent() {
+  const content = document.getElementById('content');
+  if (!content) {
+    console.error('Content element not found');
+    return;
+  }
+  content.innerHTML = `
+    <h1>Settings</h1>
+    <form id="settingsForm">
+      <label for="currency">Currency:</label>
+      <input type="text" id="currency" name="currency"><br>
+      <label for="taxRate">Tax Rate:</label>
+      <input type="text" id="taxRate" name="taxRate"><br>
+      <label for="layoutColor">Layout Color:</label>
+      <input type="color" id="layoutColor" name="layoutColor"><br>
+      <button type="button" onclick="saveSettings()">Save Settings</button>
+    </form>
+  `;
+  toggleSidebar();
+}
+
+// Function to show admin panel content
+function showAdminPanelContent() {
+  const content = document.getElementById('content');
+  if (!content) {
+    console.error('Content element not found');
+    return;
+  }
+  content.innerHTML = `
+    <h1>Admin Panel</h1>
+    <p>Admin panel functionalities will be here.</p>
+    <button type="button" onclick="manageUsers()">Manage Users</button>
+  `;
+  toggleSidebar();
+}
+
+// Function to toggle the sidebar
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) {
+    console.error('Sidebar element not found');
+    return;
+  }
+  sidebar.classList.toggle('active');
+}
+
+// Customize layout settings
+function saveSettings() {
+  const currency = document.getElementById('currency').value.trim();
+  const taxRate = parseFloat(document.getElementById('taxRate').value);
+  const layoutColor = document.getElementById('layoutColor').value;
+
+  if (!currency || isNaN(taxRate) || taxRate < 0 || !layoutColor) {
+    alert('Please enter valid settings');
+    return;
+  }
+
+  alert(`Settings Saved: Currency ${currency}, Tax Rate: ${taxRate}, Layout Color: ${layoutColor}`);
+  document.documentElement.style.setProperty('--layout-color', layoutColor);
+}
+
+// Manage users (example placeholder)
+function manageUsers() {
+  alert('User management functionality will be here.');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTables();
+
+  const homeBtn = document.getElementById('homeBtn');
+  if (homeBtn) homeBtn.addEventListener('click', showHomeContent);
+
+  const menuManagementBtn = document.getElementById('menuManagementBtn');
+  if (menuManagementBtn) menuManagementBtn.addEventListener('click', showMenuManagementContent);
+
+  const salesReportsBtn = document.getElementById('salesReportsBtn');
+  if (salesReportsBtn) salesReportsBtn.addEventListener('click', showSalesReportsContent);
+
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn) settingsBtn.addEventListener('click', showSettingsContent);
+
+  const adminPanelBtn = document.getElementById('adminPanelBtn');
+  if (adminPanelBtn) adminPanelBtn.addEventListener('click', showAdminPanelContent);
+
+  const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+  if (toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', toggleSidebar);
+
+  scheduleMidnightReset(); // Schedule the daily reset
+});
+
+// Function to schedule a reset at midnight
+function scheduleMidnightReset() {
+  const now = new Date();
+  const msUntilMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
+  setTimeout(() => {
+    resetSalesReport();
+    scheduleMidnightReset(); // Schedule the next reset
+  }, msUntilMidnight);
+}
+
+// Function to save data to localStorage
+function saveData() {
+  localStorage.setItem('tables', JSON.stringify(tables));
+  localStorage.setItem('salesData', JSON.stringify(salesData));
 }
