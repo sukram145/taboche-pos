@@ -82,6 +82,30 @@ function selectTable(table) {
   updateOrderSummary();
 }
 
+// Function to search menu items
+function searchMenu() {
+  // Get the search query
+  const query = document.getElementById('search').value.toLowerCase();
+
+  // Get all menu items
+  const menuItems = document.getElementsByClassName('menu-item');
+
+  // Loop through menu items
+  for (let i = 0; i < menuItems.length; i++) {
+    // Get the item name and price
+    const itemName = menuItems[i].getAttribute('data-name').toLowerCase();
+
+    // Check if the item name includes the search query
+    if (itemName.includes(query)) {
+      // If it matches, display the item
+      menuItems[i].style.display = '';
+    } else {
+      // If it doesn't match, hide the item
+      menuItems[i].style.display = 'none';
+    }
+  }
+}
+
 // Filter menu items by category
 function filterCategory(category) {
   const menuItems = document.querySelectorAll('.menu-item');
