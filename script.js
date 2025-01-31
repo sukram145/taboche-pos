@@ -12,11 +12,15 @@ const firebaseConfig = {
 
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
-for (let i = 1; i <= 20; i++) {
-  if (!tables[`Table ${i}`]) {
-    tables[`Table ${i}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0 };
+const tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8A', '8B', '9A', '9B', '10A', '10B', '10C', '11', '12'];
+
+tableNumbers.forEach(table => {
+  if (!tables[`Table ${table}`]) {
+    tables[`Table ${table}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0 };
   }
-}
+});
+
+
 
 // Track whether void button was pressed
 let isVoidMode = false;
