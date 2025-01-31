@@ -35,16 +35,17 @@
   <div id="content"></div>
   
   <!-- Login Dialog -->
-  <div id="login-dialog" class="login-dialog">
-    <div class="login-dialog-content">
-      <span class="close-login" onclick="closeLoginDialog()">&times;</span>
+  <div id="login-dialog" class="dialog" style="display: none;">
+    <div class="dialog-content">
+      <span class="close" onclick="closeLoginDialog()">&times;</span>
       <h2>Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
       <button onclick="login()">Login</button>
+      <button onclick="signUp()">Sign Up</button>
     </div>
   </div>
-
+  
 
 
 

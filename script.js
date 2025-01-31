@@ -162,16 +162,40 @@ function removeFromOrder(name) {
   }
 }
 
+function applyDiscount() {
+  const discountInput = document.getElementById('discount');
+  const discount = parseFloat(discountInput.value) || 0;
+
+  if (discount < 0 || discount > 100) {
+    alert('Please enter a valid discount percentage between 0 and 100.');
+    return;
+  }
+
+  tables[selectedTable].discount = discount;
+  updateOrderSummary();
+  saveData(); // Save data after updating discount
+}
+
 function updateOrderSummary() {
   const orderItems = tables[selectedTable].order;
-  displayOrderItems(orderItems, selectedTable);
-  
-  // Update the table number in the DOM
-  const selectedTableElem = document.getElementById('selected-table');
-  if (selectedTableElem) {
-      selectedTableElem.textContent = selectedTable;
+  let totalPrice = 0;
+
+  for (const [name, item] of Object.entries(orderItems)) {
+    totalPrice += item.price * item.quantity;
   }
+
+  const discount = tables[selectedTable].discount || 0;
+  totalPrice -= (totalPrice * discount / 100);
+
+  tables[selectedTable].totalPrice = totalPrice;
+  
+  displayOrderItems(orderItems, selectedTable);
+
+  document.getElementById('total-price').textContent = totalPrice.toFixed(2); // Update UI with formatted price
+  
+  saveData(); // Save data after updating order summary
 }
+
 
 
 // Display order items in the order summary
@@ -277,7 +301,6 @@ function updatePaymentSummary() {
 }
 
 
-
 // Show and close payment dialog
 function showPaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
@@ -286,22 +309,7 @@ function showPaymentDialog() {
   }
 }
 
-function addPayment(method) {
-  const amount = parseFloat(prompt(`Enter amount for ${method}:`));
 
-  if (amount && !isNaN(amount) && amount > 0) {
-    const standardizedMethod = method.toLowerCase().trim().replace(" ", "_");
-    if (!tables[selectedTable].payments) {
-      tables[selectedTable].payments = [];
-    }
-    tables[selectedTable].payments.push({ method: standardizedMethod, amount: amount });
-    console.log(`Payment added: Method = ${standardizedMethod}, Amount = ${amount}`);
-    updatePaymentSummary();
-    saveData();
-  } else {
-    alert('Please enter a valid positive amount');
-  }
-}
 
 
 function closePaymentDialog() {
@@ -390,19 +398,7 @@ function showPaymentDialog() {
     paymentDialog.style.display = 'flex';
   }
 }
-// Function to apply discount and update order summary
-function applyDiscount() {
-  const discountInput = document.getElementById('discount');
-  const discount = parseFloat(discountInput.value) || 0;
 
-  if (discount < 0 || discount > 100) {
-    alert('Please enter a valid discount percentage between 0 and 100.');
-    return;
-  }
-
-  tables[selectedTable].discount = discount;
-  updateOrderSummary();
-}
 
 function closePaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
@@ -666,11 +662,44 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
+// Save data to localStorage
 function saveData() {
+  localStorage.setItem('tables', JSON.stringify(tables));
   localStorage.setItem('salesData', JSON.stringify(salesData));
   console.log("Data saved successfully.");
 }
+
+// Load data from localStorage when the app starts
+function loadData() {
+  tables = JSON.parse(localStorage.getItem('tables')) || {};
+  salesData = JSON.parse(localStorage.getItem('salesData')) || {
+    totalSales: 0,
+    totalDiscounts: 0,
+    totalOrders: 0,
+    cashPayments: 0,
+    mobilePayments: 0
+  };
+  renderTables();
+  console.log("Data loaded successfully.");
+}
+
+// Call loadData function when the document is ready
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  renderTables();
+  updateOrderSummary();
+
+  document.getElementById('homeBtn')?.addEventListener('click', showHomeContent);
+  document.getElementById('menuManagementBtn')?.addEventListener('click', showMenuManagementContent);
+  document.getElementById('salesReportsBtn')?.addEventListener('click', showSalesReportsContent);
+  document.getElementById('settingsBtn')?.addEventListener('click', showSettingsContent);
+  document.getElementById('adminPanelBtn')?.addEventListener('click', showAdminPanelContent);
+  document.getElementById('toggleSidebarBtn')?.addEventListener('click', toggleSidebar);
+
+  scheduleMidnightReset(); // Schedule the daily reset
+});
+
+
 
 function generateSalesReport() {
   console.log('Generating sales report...');
@@ -705,7 +734,8 @@ function getPaymentTotal(method) {
   }, 0);
 }
 
-// Function to print a specific element with date, time, and restaurant details
+
+// Function to print a specific element
 function printElement(elementId) {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -713,44 +743,16 @@ function printElement(elementId) {
     return;
   }
 
-  // Get current date and time
-  const now = new Date();
-  const dateString = now.toLocaleDateString();
-  const timeString = now.toLocaleTimeString();
-
-  // Restaurant details
-  const restaurantDetails = `
-    <div>
-      <h2>TABOCHE RESTUARENT</h2>
-      <p>SIDDHA POKHARI BHAKTAPUR</p>
-      <p>9810208828</p>
-    </div>
-  `;
-
-  // Create print content with date, time, and restaurant details
-  const printContent = `
-    <html>
-    <head><title>SALES Report</title></head>
-    <body>
-      ${restaurantDetails}
-      <div>
-        <p><strong>Date:</strong> ${dateString}</p>
-        <p><strong>Time:</strong> ${timeString}</p>
-      </div>
-      ${element.innerHTML}
-    </body>
-    </html>
-  `;
-
-  // Open a new window for printing
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
-  printWindow.document.write(printContent);
+  printWindow.document.write('<html><head><title>Print Report</title>');
+  printWindow.document.write('</head><body >');
+  printWindow.document.write(element.innerHTML);
+  printWindow.document.write('</body></html>');
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
   printWindow.close();
 }
-
 
 // Function to reset sales report and total orders
 function resetSalesReport() {
