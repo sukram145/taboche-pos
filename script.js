@@ -398,7 +398,19 @@ function showPaymentDialog() {
     paymentDialog.style.display = 'flex';
   }
 }
+// Function to apply discount and update order summary
+function applyDiscount() {
+  const discountInput = document.getElementById('discount');
+  const discount = parseFloat(discountInput.value) || 0;
 
+  if (discount < 0 || discount > 100) {
+    alert('Please enter a valid discount percentage between 0 and 100.');
+    return;
+  }
+
+  tables[selectedTable].discount = discount;
+  updateOrderSummary();
+}
 
 function closePaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
