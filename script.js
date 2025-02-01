@@ -20,8 +20,6 @@ tableNumbers.forEach(table => {
   }
 });
 
-
-
 // Track whether void button was pressed
 let isVoidMode = false;
 
@@ -84,23 +82,13 @@ function selectTable(table) {
 
 // Function to search menu items
 function searchMenu() {
-  // Get the search query
   const query = document.getElementById('search').value.toLowerCase();
-
-  // Get all menu items
   const menuItems = document.getElementsByClassName('menu-item');
-
-  // Loop through menu items
   for (let i = 0; i < menuItems.length; i++) {
-    // Get the item name and price
     const itemName = menuItems[i].getAttribute('data-name').toLowerCase();
-
-    // Check if the item name includes the search query
     if (itemName.includes(query)) {
-      // If it matches, display the item
       menuItems[i].style.display = '';
     } else {
-      // If it doesn't match, hide the item
       menuItems[i].style.display = 'none';
     }
   }
@@ -207,11 +195,25 @@ function updateOrderSummary() {
   const orderSummary = document.getElementById('orderSummary');
   if (orderSummary) {
     orderSummary.innerHTML = `
-      Total Price: ${order.totalPrice.toFixed(2)}<br>
+      Total Price: Rs ${order.totalPrice.toFixed(2)}<br>
       Discount: ${order.discount}%<br>
-      Discounted Total: ${order.discountedTotal.toFixed(2)}
+      Discounted Total: Rs ${order.discountedTotal.toFixed(2)}
     `;
   }
+}
+
+// Apply discount
+function applyDiscountHandler() {
+  const discount = parseFloat(document.getElementById('discount').value);
+  if (isNaN(discount) || discount < 0 || discount > 100) {
+    alert('Please enter a valid discount percentage (0-100).');
+    return;
+  }
+  tables[selectedTable].discount = discount;
+  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - discount) / 100);
+  updateOrderSummary();
+  updatePaymentSummary(); // Reflect discount in payment summary
+  saveData();
 }
 
 // Disable the remove button for finalized items
@@ -233,7 +235,7 @@ function voidSelectedItem() {
 // Add payment
 function addPayment(paymentMethod) {
   const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
-  if (isNaN(amount) || amount <= 0) {
+  if (isNaN(amount    ) || amount <= 0) {
     alert('Invalid amount. Please enter a valid number.');
     return;
   }
@@ -312,7 +314,7 @@ function finalizeOrder() {
       const section = sectionElem.getAttribute('data-section');
       if (section === 'Kitchen') {
         kitchenOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
-      } else if (section === 'Bar') {
+      } else if ( section === 'Bar') {
         barOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
       }
     } else {
@@ -351,6 +353,7 @@ function changeTable() {
     alert("Invalid table number or table does not exist.");
   }
 }
+
 let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
 function saveOrderHistory() {
@@ -367,10 +370,11 @@ function completeOrder() {
 
   const totalPrice = parseFloat(totalPriceElem.textContent);
   const discount = tables[selectedTable]?.discount || 0;
+  const discountedTotal = tables[selectedTable]?.discountedTotal || 0;
   const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
 
-  if (totalPaid < totalPrice) {
-    const shortAmount = totalPrice - totalPaid;
+  if (totalPaid < discountedTotal) {
+    const shortAmount = discountedTotal - totalPaid;
     alert(`Payment is not enough to settle the order! Short by Rs ${shortAmount}`);
     return;
   }
@@ -391,11 +395,11 @@ function completeOrder() {
 
     switch (finalMethod) {
       case 'cash':
-        cashSalesAmount += Math.min(totalPrice - mobileSalesAmount, payment.amount); // Reflect actual sales amount from cash
+        cashSalesAmount += Math.min(discountedTotal - mobileSalesAmount, payment.amount); // Reflect actual sales amount from cash
         change = payment.amount - cashSalesAmount; // Calculate change
         break;
       case 'mobile_payment':
-        mobileSalesAmount += Math.min(totalPrice - cashSalesAmount, payment.amount); // Reflect actual sales amount from mobile payment
+        mobileSalesAmount += Math.min(discountedTotal - cashSalesAmount, payment.amount); // Reflect actual sales amount from mobile payment
         break;
       default:
         console.error(`Invalid payment method: ${finalMethod}`);
@@ -406,7 +410,7 @@ function completeOrder() {
   // Update sales data with the correct total amount for each payment method
   salesData.cashSales = (salesData.cashSales || 0) + cashSalesAmount;
   salesData.mobileSales = (salesData.mobileSales || 0) + mobileSalesAmount;
-  salesData.totalSales = (salesData.totalSales || 0) + totalPrice;
+  salesData.totalSales = (salesData.totalSales || 0) + discountedTotal;
   salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discount;
   salesData.totalOrders = (salesData.totalOrders || 0) + 1;
 
@@ -423,8 +427,9 @@ function completeOrder() {
     table: selectedTable,
     order: tables[selectedTable].order,
     totalPrice: totalPrice,
-    payments: tables[selectedTable].payments,
+    discountedTotal: discountedTotal.toFixed(2),
     discount: discount,
+    payments: tables[selectedTable].payments,
     timestamp: new Date()
   });
 
@@ -447,89 +452,6 @@ function completeOrder() {
 
   generateSalesReport(); // Ensure the sales report gets updated and displayed
 }
-
-
-
-// Function to open the dialog box
-function openOrderHistoryDialog() {
-  document.getElementById('order-history-dialog').style.display = 'block';
-  renderOrderHistory(); // Render the order history inside the dialog
-}
-
-// Function to close the dialog box
-function closeOrderHistoryDialog() {
-  document.getElementById('order-history-dialog').style.display = 'none';
-}function renderOrderHistory() {
-  const orderHistoryContainer = document.getElementById('order-history-container');
-
-  if (!orderHistoryContainer) {
-    console.error('Order history container element not found.');
-    return;
-  }
-
-  orderHistoryContainer.innerHTML = ''; // Clear existing order history
-
-  orderHistory.forEach((order, index) => {
-    const orderElem = document.createElement('div');
-    orderElem.classList.add('order-history-item');
-    orderElem.innerHTML = `
-      <h3>Order #${index + 1}</h3>
-      <p><strong>Table:</strong> ${order.table}</p>
-      <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
-      <p><strong>Discount:</strong> Rs ${order.discount}</p>
-      <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
-      <p><strong>Timestamp:</strong> ${order.timestamp}</p>
-    `;
-    orderHistoryContainer.appendChild(orderElem);
-  });
-
-  // Check order history length
-  checkOrderHistoryLength();
-}
-
-
-function checkOrderHistoryLength() {
-  const historyLength = orderHistory.length;
-  console.log(`Order history length: ${historyLength}`);
-
-  if (historyLength === 100) {
-    alert('There are exactly 100 orders in the order history.');
-  } else {
-    alert(`There are ${historyLength} orders in the order history.`);
-  }
-}
-
-// Call this function to check the length of order history
-checkOrderHistoryLength();
-
-
-// Function to update sales data with the correct total amount for each payment method
-function updateSalesData(totalPrice, discount, cashAmount, mobileAmount) {
-  // Initialize salesData if it doesn't exist
-  let salesData = JSON.parse(localStorage.getItem('salesData')) || {
-    totalSales: 0,
-    totalDiscounts: 0,
-    totalOrders: 0,
-    cashPayments: 0,
-    mobilePayments: 0
-  };
-
-  console.log("Before update:", salesData);
-
-  // Update sales data
-  salesData.totalSales += totalPrice;
-  salesData.totalDiscounts += discount;
-  salesData.totalOrders += 1;
-  salesData.cashPayments += cashAmount;
-  salesData.mobilePayments += mobileAmount;
-
-  console.log("After update:", salesData);
-
-  // Store updated sales data
-  localStorage.setItem('salesData', JSON.stringify(salesData));
-}
-
-
 
 // Function to print receipt
 function printReceipt() {
@@ -563,7 +485,7 @@ function displaySalesReport() {
   console.log("Displaying sales report...");
   const salesReportElem = document.getElementById('salesReportOutput');
   if (!salesReportElem) {
-    console.error('Sales report element not found.');
+    console.error('Sales report element not  found.');
     return;
   }
 
@@ -608,9 +530,6 @@ function generateSalesReport() {
   document.getElementById('salesReportOutput').innerHTML = report;
 }
 
-
-
-
 // Function to print a specific element
 function printElement(elementId) {
   const element = document.getElementById(elementId);
@@ -632,7 +551,6 @@ function printElement(elementId) {
 
 // Function to print and reset the sales report
 function printAndResetSalesReport() {
-  // Print the sales report (you can customize this part as needed)
   console.log('Sales Report:', salesData);
   alert('Sales Report printed successfully!');
 
@@ -838,3 +756,61 @@ function saveData() {
   localStorage.setItem('tables', JSON.stringify(tables));
   localStorage.setItem('salesData', JSON.stringify(salesData));
 }
+
+// Order History Functions
+function openOrderHistoryDialog() {
+  document.getElementById('order-history-dialog').style.display = 'block';
+  renderOrderHistory(); // Render the order history inside the dialog
+}
+
+function closeOrderHistoryDialog() {
+  document.getElementById('order-history-dialog').style.display = 'none';
+}
+
+function renderOrderHistory() {
+  const orderHistoryContainer = document.getElementById('order-history-container');
+
+  if (!orderHistoryContainer) {
+    console.error('Order history container element not found.');
+    return;
+  }
+
+  orderHistoryContainer.innerHTML = ''; // Clear existing order history
+
+  orderHistory.forEach((order, index) => {
+    const orderElem = document.createElement('div');
+    orderElem.classList.add('order-history-item');
+
+    // Format the timestamp
+    const timestamp = new Date(order.timestamp);
+    const formattedTimestamp = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}`;
+
+    orderElem.innerHTML = `
+      <h3>Order #${index + 1}</h3>
+      <p><strong>Table:</strong> ${order.table}</p>
+      <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
+      <p><strong>Discount:</strong> Rs ${order.discount}</p>
+      <p><strong>Discounted Total:</strong> Rs ${order.discountedTotal}</p>
+      <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
+      <p><strong>Timestamp:</strong> ${formattedTimestamp}</p>
+    `;
+    orderHistoryContainer.appendChild(orderElem);
+  });
+
+  // Check order history length
+  checkOrderHistoryLength();
+}
+
+function checkOrderHistoryLength() {
+  const historyLength = orderHistory.length;
+  console.log(`Order history length: ${historyLength}`);
+
+  if (historyLength === 100) {
+    alert('There are exactly 100 orders in the order history.');
+  } else {
+    alert(`There are ${historyLength} orders in the order history.`);
+  }
+}
+
+// Call this function to check the length of order history
+checkOrderHistoryLength();

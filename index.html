@@ -10,13 +10,12 @@
 </head>
 <body>
   <header>
-    <div class="logo">Taboche Restaurent </div>
+    <div class="logo">Taboche POS</div>
     <div class="datetime" id="datetime">Loading...</div>
     <div class="user-info">
       <span id="user-role">Guest</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
-    
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
   <div class="sidebar" id="sidebar">
@@ -35,17 +34,16 @@
   <div id="content"></div>
   
   <!-- Login Dialog -->
-  <div id="login-dialog" class="dialog" style="display: none;">
-    <div class="dialog-content">
-      <span class="close" onclick="closeLoginDialog()">&times;</span>
+  <div id="login-dialog" class="login-dialog">
+    <div class="login-dialog-content">
+      <span class="close-login" onclick="closeLoginDialog()">&times;</span>
       <h2>Login</h2>
-      <input type="email" id="email" placeholder="Email" required>
-      <input type="password" id="password" placeholder="Password" required>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
       <button onclick="login()">Login</button>
-      <button onclick="signUp()">Sign Up</button>
     </div>
   </div>
-  
+
 
 
 
@@ -54,27 +52,28 @@
     <div class="table-management">
       <h2>Table Management</h2>
       <div class="tables-dashboard" id="tables-dashboard">
-        <!-- Updated Table Buttons -->
-        <button class="table-btn table-btn-1" onclick="selectTable('1')">Table 1</button>
-        <button class="table-btn table-btn-2" onclick="selectTable('2')">Table 2</button>
-        <button class="table-btn table-btn-3" onclick="selectTable('3')">Table 3</button>
-        <button class="table-btn table-btn-4" onclick="selectTable('4')">Table 4</button>
-        <button class="table-btn table-btn-5" onclick="selectTable('5')">Table 5</button>
-        <button class="table-btn table-btn-6" onclick="selectTable('6')">Table 6</button>
-        <button class="table-btn table-btn-7" onclick="selectTable('7')">Table 7</button>
-        <button class="table-btn table-btn-8A" onclick="selectTable('8A')">Table 8A</button>
-        <button class="table-btn table-btn-8B" onclick="selectTable('8B')">Table 8B</button>
-        <button class="table-btn table-btn-9A" onclick="selectTable('9A')">Table 9A</button>
-        <button class="table-btn table-btn-9B" onclick="selectTable('9B')">Table 9B</button>
-        <button class="table-btn table-btn-10A" onclick="selectTable('10A')">Table 10A</button>
-        <button class="table-btn table-btn-10B" onclick="selectTable('10B')">Table 10B</button>
-        <button class="table-btn table-btn-10C" onclick="selectTable('10C')">Table 10C</button>
-        <button class="table-btn table-btn-11" onclick="selectTable('11')">Table 11</button>
-        <button class="table-btn table-btn-12" onclick="selectTable('12')">Table 12</button>
-      </div>
-    </div>
-  </div>
-  
+        <!-- Example Table Buttons -->
+        <button class="table-btn table-btn-1" onclick="selectTable(1)">Table 1</button>
+        <button class="table-btn table-btn-2" onclick="selectTable(2)">Table 2</button>
+        <button class="table-btn table-btn-3" onclick="selectTable(3)">Table 3</button>
+        <button class="table-btn table-btn-4" onclick="selectTable(4)">Table 4</button>
+        <button class="table-btn table-btn-5" onclick="selectTable(5)">Table 5</button>
+        <button class="table-btn table-btn-6" onclick="selectTable(6)">Table 6</button>
+        <button class="table-btn table-btn-7" onclick="selectTable(7)">Table 7</button>
+        <button class="table-btn table-btn-8" onclick="selectTable(8)">Table 8</button>
+        <button class="table-btn table-btn-9" onclick="selectTable(9)">Table 9</button>
+        <button class="table-btn table-btn-10" onclick="selectTable(10)">Table 10</button>
+        <button class="table-btn table-btn-11" onclick="selectTable(11)">Table 11</button>
+        <button class="table-btn table-btn-12" onclick="selectTable(12)">Table 12</button>
+        <button class="table-btn table-btn-13" onclick="selectTable(13)">Table 13</button>
+        <button class="table-btn table-btn-14" onclick="selectTable(14)">Table 14</button>
+        <button class="table-btn table-btn-15" onclick="selectTable(15)">Table 15</button>
+        <button class="table-btn table-btn-16" onclick="selectTable(16)">Table 16</button>
+        <button class="table-btn table-btn-17" onclick="selectTable(17)">Table 17</button>
+        <button class="table-btn table-btn-18" onclick="selectTable(18)">Table 18</button>
+        <button class="table-btn table-btn-19" onclick="selectTable(19)">Table 19</button>
+        <button class="table-btn table-btn-20" onclick="selectTable(20)">Table 20</button>
+        
       </div>
     </div>
     <main class="order-container flex-container">
@@ -138,12 +137,6 @@
     <p>SHIKHAR ICE</p>
     <div class="price">Rs 25</div>
   </div>
-  <div class="menu-item" data-name="hukka" data-price="550" data-category="misc" data-section="Bar">
-    <img src="images/hukka.jpg" alt="HUKKA">
-    <p>HUKKA</p>
-    <div class="price">Rs 550</div>
-  </div>
-  
   <div class="menu-item" data-name="SurYa Red" data-price="30" data-category="misc" data-section="Bar">
     <img src="images/surya_red.jpg" alt="Surya Red">
     <p>SURYA RED</p>
@@ -233,12 +226,6 @@
     <p>Buff Keema Noodles</p>
     <div class="price">Rs 240</div>
   </div>
-    <div class="menu-item" data-name="Pasta" data-price="300" data-category="Noodles/Pizza" data-section="Kitchen">
-    <img src="images/pasta.jpg" alt="Pasta">
-    <p>Pasta</p>
-    <div class="price">Rs 300</div>
-</div>
-
   <div class="menu-item" data-name="Buff Thukpa" data-price="220" data-category="Noodles/Pizza" data-section="Kitchen">
     <img src="images/buff_thukpa.jpg" alt="Buff Thukpa">
     <p>Buff Thukpa</p>
@@ -328,10 +315,10 @@
     <p>Buff Fried Rice</p>
     <div class="price">Rs 320</div>
   </div>
-  <div class="menu-item" data-name="Buff Jhol Momo" data-price="220" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Buff Jhol Momo" data-price="250" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_jhol_momo.jpg" alt="Buff Jhol Momo">
     <p>Buff Jhol Momo</p>
-    <div class="price">Rs 220</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Buff Momo" data-price="200" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_momo.jpg" alt="Buff Momo">
@@ -348,10 +335,10 @@
     <p>Chicken Burger</p>
     <div class="price">Rs 370</div>
   </div>
-  <div class="menu-item" data-name="Chicken Chilly Momo" data-price="250" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Chicken Chilly Momo" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_chilly_momo.jpg" alt="Chicken Chilly Momo">
     <p>Chicken Chilly Momo</p>
-    <div class="price">Rs 250</div>
+    <div class="price">Rs 280</div>
   </div>
   <div class="menu-item" data-name="Chicken Chowmein" data-price="260" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_chowmein.jpg" alt="Chicken Chowmein">
@@ -363,16 +350,10 @@
     <p>Chicken Fried Rice</p>
     <div class="price">Rs 340</div>
   </div>
-  <div class="menu-item" data-name="Mix Fried Rice" data-price="380" data-category="Fast Food" data-section="Kitchen">
-    <img src="images/mix_fried_rice.jpg" alt="Mix Fried Rice">
-    <p>Mix Fried Rice</p>
-    <div class="price">Rs 380</div>
-</div>
-
-  <div class="menu-item" data-name="Chicken Jhol Momo" data-price="240" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Chicken Jhol Momo" data-price="250" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_jhol_momo.jpg" alt="Chicken Jhol Momo">
     <p>Chicken Jhol Momo</p>
-    <div class="price">Rs 240</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Chicken Momo" data-price="220" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_momo.jpg" alt="Chicken Momo">
@@ -404,7 +385,7 @@
     <p>Spicy Wings</p>
     <div class="price">Rs 480</div>
   </div>
-  <div class="menu-item" data-name="Veg Burger" data-price="280" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Burger" data-price="260" data-category="Fast Food" data-section="Kitchen">
     <img src="images/burger_veg.jpg" alt="Veg Burger">
     <p>Veg Burger</p>
     <div class="price">Rs 280</div>
@@ -424,38 +405,21 @@
     <p>Veg Fried Rice</p>
     <div class="price">Rs 200</div>
   </div>
-  <div class="menu-item" data-name="Veg Jhol Momo" data-price="200" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Jhol Momo" data-price="220" data-category="Fast Food" data-section="Kitchen">
     <img src="images/veg_jhol_momo.jpg" alt="Veg Jhol Momo">
     <p>Veg Jhol Momo</p>
-    <div class="price">Rs 200</div>
+    <div class="price">Rs 220</div>
   </div>
   <div class="menu-item" data-name="Veg Momo" data-price="180" data-category="Fast Food" data-section="Kitchen">
     <img src="images/veg_momo.jpg" alt="Veg Momo">
     <p>Veg Momo</p>
     <div class="price">Rs 180</div>
   </div>
-  <div class="menu-item" data-name="Veg Wraps" data-price="250" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Wraps" data-price="450" data-category="Fast Food" data-section="Kitchen">
     <img src="images/wraps_veg.jpg" alt="wraps_veg">
     <p>Veg Wraps</p>
     <div class="price">Rs 250</div>
   </div>
-  <!-- BIRYANI -->
-  <div class="menu-item" data-name="Chicken Biryani" data-price="490" data-category="Fast Food" data-section="Kitchen">
-    <img src="images/chicken_biryani.jpg" alt="Chicken Biryani">
-    <p>Chicken Biryani</p>
-    <div class="price">Rs 490</div>
-  </div>
-  <div class="menu-item" data-name="Egg Biryani" data-price="420" data-category="Fast Food" data-section="Kitchen">
-    <img src="images/egg_biryani.jpg" alt="Egg Biryani">
-    <p>Egg Biryani</p>
-    <div class="price">Rs 420</div>
-  </div>
-  <div class="menu-item" data-name="Veg Biryani" data-price="390" data-category="Fast Food" data-section="Kitchen">
-    <img src="images/veg_biryani.jpg" alt="Veg Biryani">
-    <p>Veg Biryani</p>
-    <div class="price">Rs 390</div>
-  </div>
-  
 </div>
 
 <!-- Sandwich Items -->
@@ -513,15 +477,15 @@
     <p>Flavored Latte (Vanilla)</p>
     <div class="price">Rs 240</div>
   </div>
-  <div class="menu-item" data-name="Hot Chocolate" data-price="230" data-category="Hot Coffee" data-section="Bar">
+  <div class="menu-item" data-name="Hot Chocolate" data-price="240" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_chocolate.jpg" alt="Hot Chocolate">
     <p>Hot Chocolate</p>
-    <div class="price">Rs 230</div>
+    <div class="price">Rs 240</div>
   </div>
-  <div class="menu-item" data-name="Hot Vanilla" data-price="230" data-category="Hot Coffee" data-section="Bar">
+  <div class="menu-item" data-name="Hot Vanilla" data-price="240" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_vanilla.jpg" alt="Hot Vanilla">
     <p>Hot Vanilla</p>
-    <div class="price">Rs 230</div>
+    <div class="price">Rs 240</div>
   </div>
   <div class="menu-item" data-name="Latte" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte.jpg" alt="Latte">
@@ -747,12 +711,6 @@
     <p>Coke</p>
     <div class="price">Rs 85</div>
   </div>
-  <div class="menu-item" data-name="Bubble Tea" data-price="250" data-category="Soft Drink" data-section="Bar">
-    <img src="images/bubble_tea.jpg" alt="Bubble Tea">
-    <p>Bubble Tea</p>
-    <div class="price">Rs 250</div>
-</div>
-
   <div class="menu-item" data-name="Sprite" data-price="85" data-category="Soft Drink" data-section="Bar">
     <img src="images/sprite.jpg" alt="Sprite">
     <p>Sprite</p>
@@ -771,21 +729,63 @@
     <p>Chamomile</p>
     <div class="price">Rs 150</div>
   </div>
+  <div class="menu-item" data-name="calming-tea" data-price="200" data-category="Tea" data-section="Bar">
+    <img src="images/calming_tea.jpg" alt="Calming Tea">
+    <p>Calming Tea</p>
+    <div class="price">Rs 200</div>
+  </div>
+  
+  <div class="menu-item" data-name="midnight-red-rose" data-price="200" data-category="Tea" data-section="Bar">
+    <img src="images/midnight_red_rose.jpg" alt="Midnight Red Rose">
+    <p>Midnight Red Rose</p>
+    <div class="price">Rs 200</div>
+  </div>
+  
+  <div class="menu-item" data-name="floral-delight" data-price="200" data-category="Tea" data-section="Bar">
+    <img src="images/floral_delight.jpg" alt="Floral Delight">
+    <p>Floral Delight</p>
+    <div class="price">Rs 200</div>
+  </div>
+  
+  <div class="menu-item" data-name="himalayan-herbal" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/himalayan_herbal.jpg" alt="Himalayan Herbal">
+    <p>Himalayan Herbal</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
+  <div class="menu-item" data-name="peppermint" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/peppermint.jpg" alt="Peppermint">
+    <p>Peppermint</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
+  <div class="menu-item" data-name="spearmint" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/spearmint.jpg" alt="Spearmint">
+    <p>Spearmint</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
+  <div class="menu-item" data-name="black-rosella" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/black_rosella.jpg" alt="Black Rosella">
+    <p>Black Rosella</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
   <div class="menu-item" data-name="Lemon Tea" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/lemon_tea.jpg" alt="Lemon Tea">
     <p>Lemon Tea</p>
     <div class="price">Rs 150</div>
 </div>
 
-  <div class="menu-item" data-name="Hibiscus" data-price="180" data-category="Tea" data-section="Bar">
+  <div class="menu-item" data-name="Hibiscus" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/hibiscus.jpg" alt="Hibiscus">
     <p>Hibiscus</p>
-    <div class="price">Rs 180</div>
+    <div class="price">Rs 150</div>
   </div>
-  <div class="menu-item" data-name="Butterfly" data-price="180" data-category="Tea" data-section="Bar">
+  <div class="menu-item" data-name="Butterfly" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/butterfly.jpg" alt="Butterfly">
     <p>Butterfly</p>
-    <div class="price">Rs 180</div>
+    <div class="price">Rs 150</div>
   </div>
   <div class="menu-item" data-name="Jasmine" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/jasmine.jpg" alt="Jasmine">
@@ -812,15 +812,15 @@
     <p>Illam with Lemon Grass</p>
     <div class="price">Rs 150</div>
   </div>
-  <div class="menu-item" data-name="Earl Grey" data-price="150" data-category="Tea" data-section="Bar">
+  <div class="menu-item" data-name="Earl Grey" data-price="100" data-category="Tea" data-section="Bar">
     <img src="images/earl_grey.jpg" alt="Earl Grey">
     <p>Earl Grey</p>
-    <div class="price">Rs 150</div>
+    <div class="price">Rs 100</div>
   </div>
-  <div class="menu-item" data-name="Green Tea" data-price="120" data-category="Tea" data-section="Bar">
+  <div class="menu-item" data-name="Green Tea" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/green_tea.jpg" alt="Green Tea">
     <p>Green Tea</p>
-    <div class="price">Rs 120</div>
+    <div class="price">Rs 150</div>
   </div>
   <div class="menu-item" data-name="Flower Tea" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/flower_tea.jpg" alt="Flower Tea">
@@ -869,7 +869,7 @@
           </div>
           <div class="payment-methods">
             <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
-           
+            
             <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
           </div>
           <ul id="payment-summary"></ul>
@@ -885,27 +885,24 @@
     </div>
     <div id="content"></div>
     <div id="salesReportOutput"></div>
-
-
     
   <div id="sales-report" class="sales-report"></div>
-  <!-- Add this button in your HTML -->
-<button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
+  <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
 
+<!-- Add View Order History Button in the appropriate section -->
+<button class="view-order-history-btn" onclick="openOrderHistoryDialog()">View Order History</button>
 
-        
-<!-- Add this HTML structure for the dialog box -->
-<div id="order-history-dialog" class="dialog">
+<!-- Add a Dialog for Viewing Order History -->
+<div id="order-history-dialog" class="dialog" style="display: none;">
   <div class="dialog-content">
-    <span class="close-button" onclick="closeOrderHistoryDialog()">&times;</span>
+    <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
     <h2>Order History</h2>
     <div id="order-history-container"></div>
   </div>
 </div>
 
-<!-- Add a button to open the dialog box -->
-<button onclick="openOrderHistoryDialog()">View Order History</button>
-
+      <!-- Button that calls editItem function on click -->
+      <button onclick="editItem()">Edit Item</button>
   
     <!-- Correct -->
 <script src="script.js"></script>
