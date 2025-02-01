@@ -315,10 +315,10 @@
     <p>Buff Fried Rice</p>
     <div class="price">Rs 320</div>
   </div>
-  <div class="menu-item" data-name="Buff Jhol Momo" data-price="220" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Buff Jhol Momo" data-price="250" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_jhol_momo.jpg" alt="Buff Jhol Momo">
     <p>Buff Jhol Momo</p>
-    <div class="price">Rs 220</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Buff Momo" data-price="200" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_momo.jpg" alt="Buff Momo">
@@ -350,10 +350,10 @@
     <p>Chicken Fried Rice</p>
     <div class="price">Rs 340</div>
   </div>
-  <div class="menu-item" data-name="Chicken Jhol Momo" data-price="240" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Chicken Jhol Momo" data-price="250" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_jhol_momo.jpg" alt="Chicken Jhol Momo">
     <p>Chicken Jhol Momo</p>
-    <div class="price">Rs 240</div>
+    <div class="price">Rs 250</div>
   </div>
   <div class="menu-item" data-name="Chicken Momo" data-price="220" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_momo.jpg" alt="Chicken Momo">
@@ -405,10 +405,10 @@
     <p>Veg Fried Rice</p>
     <div class="price">Rs 200</div>
   </div>
-  <div class="menu-item" data-name="Veg Jhol Momo" data-price="200" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Jhol Momo" data-price="220" data-category="Fast Food" data-section="Kitchen">
     <img src="images/veg_jhol_momo.jpg" alt="Veg Jhol Momo">
     <p>Veg Jhol Momo</p>
-    <div class="price">Rs 200</div>
+    <div class="price">Rs 220</div>
   </div>
   <div class="menu-item" data-name="Veg Momo" data-price="180" data-category="Fast Food" data-section="Kitchen">
     <img src="images/veg_momo.jpg" alt="Veg Momo">
@@ -729,6 +729,48 @@
     <p>Chamomile</p>
     <div class="price">Rs 150</div>
   </div>
+  <div class="menu-item" data-name="calming-tea" data-price="200" data-category="Tea" data-section="Bar">
+    <img src="images/calming_tea.jpg" alt="Calming Tea">
+    <p>Calming Tea</p>
+    <div class="price">Rs 200</div>
+  </div>
+  
+  <div class="menu-item" data-name="midnight-red-rose" data-price="200" data-category="Tea" data-section="Bar">
+    <img src="images/midnight_red_rose.jpg" alt="Midnight Red Rose">
+    <p>Midnight Red Rose</p>
+    <div class="price">Rs 200</div>
+  </div>
+  
+  <div class="menu-item" data-name="floral-delight" data-price="200" data-category="Tea" data-section="Bar">
+    <img src="images/floral_delight.jpg" alt="Floral Delight">
+    <p>Floral Delight</p>
+    <div class="price">Rs 200</div>
+  </div>
+  
+  <div class="menu-item" data-name="himalayan-herbal" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/himalayan_herbal.jpg" alt="Himalayan Herbal">
+    <p>Himalayan Herbal</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
+  <div class="menu-item" data-name="peppermint" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/peppermint.jpg" alt="Peppermint">
+    <p>Peppermint</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
+  <div class="menu-item" data-name="spearmint" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/spearmint.jpg" alt="Spearmint">
+    <p>Spearmint</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
+  <div class="menu-item" data-name="black-rosella" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/black_rosella.jpg" alt="Black Rosella">
+    <p>Black Rosella</p>
+    <div class="price">Rs 150</div>
+  </div>
+  
   <div class="menu-item" data-name="Lemon Tea" data-price="150" data-category="Tea" data-section="Bar">
     <img src="images/lemon_tea.jpg" alt="Lemon Tea">
     <p>Lemon Tea</p>
@@ -827,7 +869,7 @@
           </div>
           <div class="payment-methods">
             <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
-            <button class="card-btn" onclick="addPayment('Card')">Card</button>
+            
             <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
           </div>
           <ul id="payment-summary"></ul>
@@ -847,6 +889,17 @@
   <div id="sales-report" class="sales-report"></div>
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
 
+<!-- Add View Order History Button in the appropriate section -->
+<button class="view-order-history-btn" onclick="openOrderHistoryDialog()">View Order History</button>
+
+<!-- Add a Dialog for Viewing Order History -->
+<div id="order-history-dialog" class="dialog" style="display: none;">
+  <div class="dialog-content">
+    <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
+    <h2>Order History</h2>
+    <div id="order-history-container"></div>
+  </div>
+</div>
 
       <!-- Button that calls editItem function on click -->
       <button onclick="editItem()">Edit Item</button>
