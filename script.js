@@ -548,7 +548,6 @@ function printElement(elementId) {
   printWindow.print();
   printWindow.close();
 }
-
 // Function to print and reset the sales report
 function printAndResetSalesReport() {
   console.log('Sales Report:', salesData);
@@ -566,6 +565,10 @@ function printAndResetSalesReport() {
   // Reset the order history
   orderHistory = [];
   localStorage.removeItem('orderHistory');
+
+  // Clear sales data from local storage
+  localStorage.removeItem('salesData');
+
   alert('Sales report and order history have been reset.');
 
   // Re-render the order history and sales report
@@ -573,20 +576,31 @@ function printAndResetSalesReport() {
   generateSalesReport();
 }
 
-// Function to reset sales report and total orders
+// Function to reset sales report, total orders, and order history
 function resetSalesReport() {
-  console.log('Resetting sales report and total orders...');
+  console.log('Resetting sales report, total orders, and order history...');
+
+  // Reset the sales data
   salesData = {
+    cashSales: 0,
+    mobileSales: 0,
     totalSales: 0,
     totalDiscounts: 0,
-    totalOrders: 0,
-    cashPayments: 0,
-    mobilePayments: 0
+    totalOrders: 0
   };
 
-  localStorage.setItem('salesData', JSON.stringify(salesData));
+  // Reset the order history
+  orderHistory = [];
+  localStorage.removeItem('orderHistory');
+
+  // Clear sales data from local storage
+  localStorage.removeItem('salesData');
+
+  alert('Sales report, total orders, and order history have been reset.');
+
+  // Re-render the order history and sales report
+  renderOrderHistory();
   displaySalesReport();
-  alert('Sales report and total orders have been reset.');
 }
 
 // Function to show home content
