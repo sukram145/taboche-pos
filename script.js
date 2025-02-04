@@ -453,17 +453,27 @@ function completeOrder() {
   generateSalesReport(); // Ensure the sales report gets updated and displayed
 }
 
-// Function to print receipt
 function printReceipt() {
+  const logoUrl = 'http://localhost/images/RestaurantLogo.png'; // Update with your logo URL
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Receipt</title></head><body>');
-  printWindow.document.write('<h1>Taboche POS Receipt</h1>');
+  printWindow.document.write('<html><head><title>Receipt</title><style>body { font-family: Arial, sans-serif; } .header { text-align: center; } .details, .summary { margin-top: 20px; } .summary { border-top: 1px solid #000; padding-top: 10px; } </style></head><body>');
+  printWindow.document.write('<div class="header">');
+  printWindow.document.write('<h1>Taboche Bhaktapur </h1>');
+  printWindow.document.write(`<img src="${logoUrl}" alt="Restaurant Logo" style="width:100px;height:auto;">`);
+  printWindow.document.write('<p>Siddha Pokhar, Bhaktapur, Nepal</p>');
+  printWindow.document.write('<p>Phone: +977 981-0208828</p>');
+  printWindow.document.write(`<p>Date: ${new Date().toLocaleDateString()}</p>`);
+  printWindow.document.write(`<p>Time: ${new Date().toLocaleTimeString()}</p>`);
   printWindow.document.write(`<p>Table: ${selectedTable}</p>`);
+  printWindow.document.write('</div>');
+  printWindow.document.write('<div class="details">');
   printWindow.document.write('<ul>');
   Object.entries(tables[selectedTable].order).forEach(([name, item]) => {
     printWindow.document.write(`<li>${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}</li>`);
   });
   printWindow.document.write('</ul>');
+  printWindow.document.write('</div>');
+  printWindow.document.write('<div class="summary">');
   printWindow.document.write(`<p>Total Price: Rs ${tables[selectedTable].totalPrice.toFixed(2)}</p>`);
   printWindow.document.write(`<p>Discount: ${tables[selectedTable].discount}%</p>`);
   printWindow.document.write(`<p>Discounted Total: Rs ${tables[selectedTable].discountedTotal.toFixed(2)}</p>`);
@@ -473,6 +483,8 @@ function printReceipt() {
     printWindow.document.write(`<li>${payment.method}: Rs ${payment.amount}</li>`);
   });
   printWindow.document.write('</ul>');
+  printWindow.document.write('</div>');
+  printWindow.document.write('<p>Thank you for dining with us!</p>');
   printWindow.document.write('</body></html>');
   printWindow.document.close();
   printWindow.focus();
@@ -480,33 +492,8 @@ function printReceipt() {
   printWindow.close();
 }
 
-// Function to display sales report
-function displaySalesReport() {
-  console.log("Displaying sales report...");
-  const salesReportElem = document.getElementById('salesReportOutput');
-  if (!salesReportElem) {
-    console.error('Sales report element not  found.');
-    return;
-  }
 
-  const totalDiscounts = salesData.totalDiscounts || 0;
-  const totalOrders = salesData.totalOrders || 0;
-  const cashSales = salesData.cashPayments || 0;
-  const mobileSales = salesData.mobilePayments || 0;
-  const totalSales = salesData.totalSales || 0;
 
-  const report = `
-    <h3>Sales Report</h3>
-    <p>Total Discounts: Rs ${totalDiscounts}</p>
-    <p>Total Cash Sales: Rs ${cashSales}</p>
-    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
-    <p>Total Orders: ${totalOrders}</p>
-    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
-    <button onclick="printElement('salesReportOutput')">Print Report</button>
-  `;
-  salesReportElem.innerHTML = report;
-  console.log("Sales report displayed.");
-}
 
 function generateSalesReport() {
   console.log('Generating sales report...');
