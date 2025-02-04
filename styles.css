@@ -299,12 +299,13 @@ main {
   background-color: #555;
   transform: translateY(-3px);
 }
-
 .menu {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
+  max-height: 400px; /* Adjust this value as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .menu-item {
@@ -332,12 +333,6 @@ main {
   transform: translateY(-5px);
   border-color: #007bff;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-}
-
-.menu-item p {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 5px 0 2px;
 }
 
 .menu-item p {
