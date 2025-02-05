@@ -9,19 +9,19 @@ const firebaseConfig = {
   appId: "1:902721301924:web:c44ef0ade0ac7200ed6531",
   measurementId: "G-00TEQG2H1Z"
 };
-
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
 const tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8A', '8B', '9A', '9B', '10A', '10B', '10C', '11', '12'];
 
 tableNumbers.forEach(table => {
   if (!tables[`Table ${table}`]) {
-    tables[`Table ${table}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0 };
+    tables[`Table ${table}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0, time: null };
   }
 });
 
 // Track whether void button was pressed
 let isVoidMode = false;
+let selectedTable = null;
 
 // Initialize sales data from localStorage or create default structure
 let salesData = JSON.parse(localStorage.getItem('salesData')) || {
@@ -37,16 +37,19 @@ function editItem() {
   console.log('Edit item function called!');
 }
 
-// Function to update date and time
+// Function to update date, time, and day of the week
 function updateDateTime() {
-  const dateTimeElem = document.getElementById('datetime');
+  const datetimeElem = document.getElementById('datetime');
   const now = new Date();
-  const formattedDate = now.toLocaleDateString();
-  const formattedTime = now.toLocaleTimeString();
-  dateTimeElem.textContent = `${formattedDate} ${formattedTime}`;
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const day = daysOfWeek[now.getDay()];
+  const date = now.toLocaleDateString();
+  const time = now.toLocaleTimeString();
+  if (datetimeElem) {
+    datetimeElem.textContent = `${day}, ${date} ${time}`;
+  }
 }
-
-// Update date and time every second
+updateDateTime();
 setInterval(updateDateTime, 1000);
 
 // Render tables in the dashboard
@@ -71,12 +74,18 @@ function selectTable(table) {
   selectedTable = table;
   const selectedTableDisplayElem = document.getElementById('selected-table-display');
   const orderSection = document.getElementById('order-section');
+  
+  if (!tables[selectedTable].time) {
+    tables[selectedTable].time = new Date().toLocaleTimeString(); // Store the initial time for the table
+  }
+
   if (selectedTableDisplayElem) {
     selectedTableDisplayElem.textContent = table;
   }
   if (orderSection) {
     orderSection.style.display = 'block';
   }
+
   updateOrderSummary();
 }
 
@@ -118,7 +127,7 @@ function addToOrder(name, price) {
   }
   if (isVoidMode) {
     price = -price;
-    isVoidMode = false; // Reset void mode after adding the item
+    isVoidMode = false;
   }
   if (!tables[selectedTable].order.hasOwnProperty(name)) {
     tables[selectedTable].order[name] = { price: price, quantity: 1 };
@@ -133,7 +142,6 @@ function addToOrder(name, price) {
   saveData();
 }
 
-// Ensure addToOrder is only called once
 document.querySelectorAll('.menu-item').forEach(item => {
   item.addEventListener('click', (event) => {
     event.stopImmediatePropagation();
@@ -187,10 +195,14 @@ function displayOrderItems(orderItems) {
 // Update order summary
 function updateOrderSummary() {
   const order = tables[selectedTable];
-  displayOrderItems(order.order, selectedTable);
+  displayOrderItems(order.order);
   const selectedTableElem = document.getElementById('selected-table');
+  const selectedTimeElem = document.getElementById('selected-time');
   if (selectedTableElem) {
     selectedTableElem.textContent = selectedTable;
+  }
+  if (selectedTimeElem) {
+    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
   }
   const orderSummary = document.getElementById('orderSummary');
   if (orderSummary) {
@@ -201,6 +213,18 @@ function updateOrderSummary() {
     `;
   }
 }
+
+// Reset order summary
+function resetOrderSummary() {
+  selectedTable = null;
+  document.getElementById('selected-table-display').textContent = 'None';
+  document.getElementById('selected-time').textContent = 'Time: --:--';
+  document.getElementById('order-items').innerHTML = '';
+  document.getElementById('total-price').textContent = '0';
+}
+
+
+
 
 // Apply discount
 function applyDiscountHandler() {
@@ -395,11 +419,11 @@ function completeOrder() {
 
     switch (finalMethod) {
       case 'cash':
-        cashSalesAmount += Math.min(discountedTotal - mobileSalesAmount, payment.amount); // Reflect actual sales amount from cash
-        change = payment.amount - cashSalesAmount; // Calculate change
+        cashSalesAmount += Math.min(discountedTotal - mobileSalesAmount, payment.amount);
+        change = payment.amount - cashSalesAmount;
         break;
       case 'mobile_payment':
-        mobileSalesAmount += Math.min(discountedTotal - cashSalesAmount, payment.amount); // Reflect actual sales amount from mobile payment
+        mobileSalesAmount += Math.min(discountedTotal - cashSalesAmount, payment.amount);
         break;
       default:
         console.error(`Invalid payment method: ${finalMethod}`);
@@ -407,7 +431,6 @@ function completeOrder() {
     }
   });
 
-  // Update sales data with the correct total amount for each payment method
   salesData.cashSales = (salesData.cashSales || 0) + cashSalesAmount;
   salesData.mobileSales = (salesData.mobileSales || 0) + mobileSalesAmount;
   salesData.totalSales = (salesData.totalSales || 0) + discountedTotal;
@@ -422,7 +445,6 @@ function completeOrder() {
     alert(`Customer change: Rs ${change}`);
   }
 
-  // Save order details to order history
   orderHistory.push({
     table: selectedTable,
     order: tables[selectedTable].order,
@@ -433,7 +455,7 @@ function completeOrder() {
     timestamp: new Date()
   });
 
-  saveOrderHistory(); // Save order history to local storage
+  saveOrderHistory();
 
   if (tables[selectedTable]) {
     tables[selectedTable].order = {};
@@ -441,6 +463,7 @@ function completeOrder() {
     tables[selectedTable].status = "available";
     tables[selectedTable].payments = [];
     tables[selectedTable].discount = 0;
+    tables[selectedTable].time = null; // Reset the time for the table
   }
 
   closePaymentDialog();
@@ -450,7 +473,7 @@ function completeOrder() {
 
   alert("Order completed successfully!");
 
-  generateSalesReport(); // Ensure the sales report gets updated and displayed
+  generateSalesReport();
 }
 
 function printReceipt() {
