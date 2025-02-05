@@ -11,7 +11,7 @@
 <body>
   
   <header>
-    <div class="logo">Taboche POS</div>
+    <div class="logo">Taboche Restaurent</div>
     <div class="datetime" id="datetime">Loading...</div>
     <div class="user-info">
       <span id="user-role">Guest</span>
@@ -43,7 +43,7 @@
 
   <div class="pos-container">
     <div class="table-management">
-      <h2>Table Management</h2>
+     
       <div class="tables-dashboard" id="tables-dashboard">
         <!-- Example Table Buttons -->
         <button class="table-btn table-btn-1" onclick="selectTable(1)">Table 1</button>
@@ -71,7 +71,7 @@
     </div>
     <main class="order-container flex-container">
       <div class="order-section" id="order-section">
-        <h2>Order for Table <span id="selected-table-display">None</span></h2>
+        <h2>Order for  <span id="selected-table-display">None</span></h2>
         <div class="search-bar">
           <input type="text" id="search" placeholder="Search menu items..." onkeyup="searchMenu()">
         </div>
@@ -920,19 +920,25 @@
            </div>
       </div>
       <div class="order-summary">
-        <h3>Order Summary for Table <span id="selected-table">None</span></h3>
+        <h3>Order Summary for <span id="selected-table">None</span></h3>
+        <div id="order-summary">
+            <div id="selected-time">Time: --:--</div>
+        </div>
         <ul id="order-items"></ul>
         <div class="total">
-          <strong>Total:</strong> Rs <span id="total-price">0</span>
+            <strong>Total:</strong> Rs <span id="total-price">0</span>
         </div>
-        <button class="finalize-btn" onclick="finalizeOrder()">Finalize Order</button>
-        <button class="checkout-btn" onclick="showPaymentDialog()">Checkout</button>
-        <button class="change-table-btn" onclick="changeTable()">Change Table</button>
-        <button class="void-btn" onclick="voidSelectedItem()">Void</button>
-        
-       
-
-        <button class="print-receipt-btn" onclick="printReceipt()">Print Receipt</button>
+   
+        <div class="buttons">
+          <button class="btn finalize-btn" onclick="finalizeOrder()">Finalize Order</button>
+          <button class="btn checkout-btn" onclick="showPaymentDialog()">Checkout</button>
+          <button class="btn change-table-btn" onclick="changeTable()">Change Table</button>
+          <button class="btn void-btn" onclick="voidSelectedItem()">Void</button> 
+          <button class="print-receipt-btn" onclick="printReceipt()">Print Receipt</button>
+        </div>
+      </div>
+      
+      
     </main>
     
     <div id="payment-dialog" class="dialog" style="display: none;">
