@@ -1,8 +1,9 @@
 /* Base styles (applied to all devices) */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Arial, sans-serif;
   margin: 0;
-  background-color: #f4f4f9;
+  padding: 0;
+  background-color: #f4f4f4;
   color: #333;
 }
 
@@ -56,7 +57,7 @@ header {
   animation: slideInRight 1s ease-in-out;
 }
 
-/* Sidebar */
+/* Sidebar Navigation */
 .sidebar {
   width: 250px;
   height: 100%;
@@ -116,7 +117,6 @@ header {
   margin-left: 260px;
   padding: 20px;
 }
-
 
 /* Login Dialog */
 .login-dialog {
@@ -299,6 +299,7 @@ main {
   background-color: #555;
   transform: translateY(-3px);
 }
+
 .menu {
   display: flex;
   flex-wrap: wrap;
@@ -335,27 +336,22 @@ main {
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
 }
 
-.menu-item p {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 5px 0 2px;
+.menu-item p, .menu-item .price {
+  font-size: 0.8em;
+  margin-top: 5px;
 }
 
-.menu-item .price {
-  font-size: 12px;
-  color: #007bff;
-  margin-top: 2px;
-}
-
+/* Order Summary */
 .order-summary {
   background: #fff;
   border-left: 5px solid #007bff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
+  max-width: 300px; /* Adjust width as needed */
   width: 100%;
 }
+
 h3 {
   font-size: 26px;
   margin-bottom: 15px;
@@ -363,23 +359,28 @@ h3 {
   text-align: center;
   font-weight: 600;
 }
+
 #selected-table {
   color: #007bff;
 }
+
 #order-summary {
   margin-bottom: 20px;
 }
+
 #selected-time {
   font-size: 18px;
   margin-bottom: 15px;
   color: #555;
   text-align: center;
 }
+
 #order-items {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 #order-items li {
   display: flex;
   justify-content: space-between;
@@ -387,24 +388,29 @@ h3 {
   padding: 10px 0;
   border-bottom: 1px solid #e9ecef;
 }
+
 .item-info {
   display: flex;
   flex-direction: column;
   color: #333;
 }
+
 .item-name {
   font-size: 18px;
   font-weight: 500;
 }
+
 .item-qty-price {
   display: flex;
   justify-content: space-between;
   font-size: 16px;
   color: #777;
 }
+
 .item-qty {
   margin-right: 20px;
 }
+
 #order-items li button {
   padding: 6px 12px;
   background: #dc3545;
@@ -416,9 +422,11 @@ h3 {
   font-size: 14px;
   font-weight: 500;
 }
+
 #order-items li button:hover {
   background-color: #c82333;
 }
+
 .total {
   margin-top: 20px;
   font-size: 1.2em;
@@ -427,6 +435,7 @@ h3 {
   font-weight: 600;
   color: #333;
 }
+
 .total strong {
   color: #000;
 }
@@ -655,88 +664,6 @@ h3 {
   font-weight: bold;
 }
 
-/* Responsive styles */
-@media screen and (max-width: 600px) {
-  body {
-    font-size: 12px;
-  }
-  .container {
-    width: 100%;
-  }
-  main {
-    flex-direction: column;
-    padding: 10px;
-  }
-  .table-management, .order-section, .payment-section {
-    padding: 15px;
-    margin: 10px 0;
-  }
-  .menu-item img {
-    width: 60px;
-    height: 48px;
-  }
-  .menu-item p, .menu-item .price {
-    font-size: 0.7em;
-  }
-}
-/* General styles */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
-}
-
-/* Button styles */
-button {
-  padding: 10px 20px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-/* Dialog box styles */
-.dialog {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.5);
-}
-
-.dialog-content {
-  background-color: white;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 600px;
-  border-radius: 10px;
-}
-
-.close-button {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close-button:hover,
-.close-button:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
 /* Order History Styling */
 .order-history-item {
   border: 1px solid #ddd;
@@ -789,4 +716,80 @@ button:hover {
 
 .order-payments {
   margin-top: 20px;
+}
+
+/* Button styles */
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Dialog box styles */
+.dialog {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.dialog-content {
+  background-color: white;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 10px;
+}
+
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 600px) {
+  body {
+    font-size: 12px;
+  }
+  .container {
+    width: 100%;
+  }
+  main {
+    flex-direction: column;
+    padding: 10px;
+  }
+  .table-management, .order-section, .payment-section {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  .menu-item img {
+    width: 60px;
+    height: 48px;
+  }
+  .menu-item p, .menu-item .price {
+    font-size: 0.7em;
+  }
 }
