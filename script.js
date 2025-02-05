@@ -9,19 +9,19 @@ const firebaseConfig = {
   appId: "1:902721301924:web:c44ef0ade0ac7200ed6531",
   measurementId: "G-00TEQG2H1Z"
 };
-
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
 const tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8A', '8B', '9A', '9B', '10A', '10B', '10C', '11', '12'];
 
 tableNumbers.forEach(table => {
   if (!tables[`Table ${table}`]) {
-    tables[`Table ${table}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0 };
+    tables[`Table ${table}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0, time: null };
   }
 });
 
 // Track whether void button was pressed
 let isVoidMode = false;
+let selectedTable = null;
 
 // Initialize sales data from localStorage or create default structure
 let salesData = JSON.parse(localStorage.getItem('salesData')) || {
@@ -37,16 +37,19 @@ function editItem() {
   console.log('Edit item function called!');
 }
 
-// Function to update date and time
+// Function to update date, time, and day of the week
 function updateDateTime() {
-  const dateTimeElem = document.getElementById('datetime');
+  const datetimeElem = document.getElementById('datetime');
   const now = new Date();
-  const formattedDate = now.toLocaleDateString();
-  const formattedTime = now.toLocaleTimeString();
-  dateTimeElem.textContent = `${formattedDate} ${formattedTime}`;
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const day = daysOfWeek[now.getDay()];
+  const date = now.toLocaleDateString();
+  const time = now.toLocaleTimeString();
+  if (datetimeElem) {
+    datetimeElem.textContent = `${day}, ${date} ${time}`;
+  }
 }
-
-// Update date and time every second
+updateDateTime();
 setInterval(updateDateTime, 1000);
 
 // Render tables in the dashboard
@@ -71,12 +74,18 @@ function selectTable(table) {
   selectedTable = table;
   const selectedTableDisplayElem = document.getElementById('selected-table-display');
   const orderSection = document.getElementById('order-section');
+  
+  if (!tables[selectedTable].time) {
+    tables[selectedTable].time = new Date().toLocaleTimeString(); // Store the initial time for the table
+  }
+
   if (selectedTableDisplayElem) {
     selectedTableDisplayElem.textContent = table;
   }
   if (orderSection) {
     orderSection.style.display = 'block';
   }
+
   updateOrderSummary();
 }
 
@@ -118,7 +127,7 @@ function addToOrder(name, price) {
   }
   if (isVoidMode) {
     price = -price;
-    isVoidMode = false; // Reset void mode after adding the item
+    isVoidMode = false;
   }
   if (!tables[selectedTable].order.hasOwnProperty(name)) {
     tables[selectedTable].order[name] = { price: price, quantity: 1 };
@@ -133,7 +142,6 @@ function addToOrder(name, price) {
   saveData();
 }
 
-// Ensure addToOrder is only called once
 document.querySelectorAll('.menu-item').forEach(item => {
   item.addEventListener('click', (event) => {
     event.stopImmediatePropagation();
@@ -187,10 +195,14 @@ function displayOrderItems(orderItems) {
 // Update order summary
 function updateOrderSummary() {
   const order = tables[selectedTable];
-  displayOrderItems(order.order, selectedTable);
+  displayOrderItems(order.order);
   const selectedTableElem = document.getElementById('selected-table');
+  const selectedTimeElem = document.getElementById('selected-time');
   if (selectedTableElem) {
     selectedTableElem.textContent = selectedTable;
+  }
+  if (selectedTimeElem) {
+    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
   }
   const orderSummary = document.getElementById('orderSummary');
   if (orderSummary) {
@@ -201,6 +213,18 @@ function updateOrderSummary() {
     `;
   }
 }
+
+// Reset order summary
+function resetOrderSummary() {
+  selectedTable = null;
+  document.getElementById('selected-table-display').textContent = 'None';
+  document.getElementById('selected-time').textContent = 'Time: --:--';
+  document.getElementById('order-items').innerHTML = '';
+  document.getElementById('total-price').textContent = '0';
+}
+
+
+
 
 // Apply discount
 function applyDiscountHandler() {
@@ -395,11 +419,11 @@ function completeOrder() {
 
     switch (finalMethod) {
       case 'cash':
-        cashSalesAmount += Math.min(discountedTotal - mobileSalesAmount, payment.amount); // Reflect actual sales amount from cash
-        change = payment.amount - cashSalesAmount; // Calculate change
+        cashSalesAmount += Math.min(discountedTotal - mobileSalesAmount, payment.amount);
+        change = payment.amount - cashSalesAmount;
         break;
       case 'mobile_payment':
-        mobileSalesAmount += Math.min(discountedTotal - cashSalesAmount, payment.amount); // Reflect actual sales amount from mobile payment
+        mobileSalesAmount += Math.min(discountedTotal - cashSalesAmount, payment.amount);
         break;
       default:
         console.error(`Invalid payment method: ${finalMethod}`);
@@ -407,7 +431,6 @@ function completeOrder() {
     }
   });
 
-  // Update sales data with the correct total amount for each payment method
   salesData.cashSales = (salesData.cashSales || 0) + cashSalesAmount;
   salesData.mobileSales = (salesData.mobileSales || 0) + mobileSalesAmount;
   salesData.totalSales = (salesData.totalSales || 0) + discountedTotal;
@@ -422,7 +445,6 @@ function completeOrder() {
     alert(`Customer change: Rs ${change}`);
   }
 
-  // Save order details to order history
   orderHistory.push({
     table: selectedTable,
     order: tables[selectedTable].order,
@@ -433,7 +455,7 @@ function completeOrder() {
     timestamp: new Date()
   });
 
-  saveOrderHistory(); // Save order history to local storage
+  saveOrderHistory();
 
   if (tables[selectedTable]) {
     tables[selectedTable].order = {};
@@ -441,6 +463,7 @@ function completeOrder() {
     tables[selectedTable].status = "available";
     tables[selectedTable].payments = [];
     tables[selectedTable].discount = 0;
+    tables[selectedTable].time = null; // Reset the time for the table
   }
 
   closePaymentDialog();
@@ -450,20 +473,30 @@ function completeOrder() {
 
   alert("Order completed successfully!");
 
-  generateSalesReport(); // Ensure the sales report gets updated and displayed
+  generateSalesReport();
 }
 
-// Function to print receipt
 function printReceipt() {
+  const logoUrl = 'http://localhost/images/RestaurantLogo.png'; // Update with your logo URL
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Receipt</title></head><body>');
-  printWindow.document.write('<h1>Taboche POS Receipt</h1>');
+  printWindow.document.write('<html><head><title>Receipt</title><style>body { font-family: Arial, sans-serif; } .header { text-align: center; } .details, .summary { margin-top: 20px; } .summary { border-top: 1px solid #000; padding-top: 10px; } </style></head><body>');
+  printWindow.document.write('<div class="header">');
+  printWindow.document.write('<h1>Taboche Bhaktapur </h1>');
+  printWindow.document.write(`<img src="${logoUrl}" alt="Restaurant Logo" style="width:100px;height:auto;">`);
+  printWindow.document.write('<p>Siddha Pokhar, Bhaktapur, Nepal</p>');
+  printWindow.document.write('<p>Phone: +977 981-0208828</p>');
+  printWindow.document.write(`<p>Date: ${new Date().toLocaleDateString()}</p>`);
+  printWindow.document.write(`<p>Time: ${new Date().toLocaleTimeString()}</p>`);
   printWindow.document.write(`<p>Table: ${selectedTable}</p>`);
+  printWindow.document.write('</div>');
+  printWindow.document.write('<div class="details">');
   printWindow.document.write('<ul>');
   Object.entries(tables[selectedTable].order).forEach(([name, item]) => {
     printWindow.document.write(`<li>${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}</li>`);
   });
   printWindow.document.write('</ul>');
+  printWindow.document.write('</div>');
+  printWindow.document.write('<div class="summary">');
   printWindow.document.write(`<p>Total Price: Rs ${tables[selectedTable].totalPrice.toFixed(2)}</p>`);
   printWindow.document.write(`<p>Discount: ${tables[selectedTable].discount}%</p>`);
   printWindow.document.write(`<p>Discounted Total: Rs ${tables[selectedTable].discountedTotal.toFixed(2)}</p>`);
@@ -473,6 +506,8 @@ function printReceipt() {
     printWindow.document.write(`<li>${payment.method}: Rs ${payment.amount}</li>`);
   });
   printWindow.document.write('</ul>');
+  printWindow.document.write('</div>');
+  printWindow.document.write('<p>Thank you for dining with us!</p>');
   printWindow.document.write('</body></html>');
   printWindow.document.close();
   printWindow.focus();
@@ -480,33 +515,8 @@ function printReceipt() {
   printWindow.close();
 }
 
-// Function to display sales report
-function displaySalesReport() {
-  console.log("Displaying sales report...");
-  const salesReportElem = document.getElementById('salesReportOutput');
-  if (!salesReportElem) {
-    console.error('Sales report element not  found.');
-    return;
-  }
 
-  const totalDiscounts = salesData.totalDiscounts || 0;
-  const totalOrders = salesData.totalOrders || 0;
-  const cashSales = salesData.cashPayments || 0;
-  const mobileSales = salesData.mobilePayments || 0;
-  const totalSales = salesData.totalSales || 0;
 
-  const report = `
-    <h3>Sales Report</h3>
-    <p>Total Discounts: Rs ${totalDiscounts}</p>
-    <p>Total Cash Sales: Rs ${cashSales}</p>
-    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
-    <p>Total Orders: ${totalOrders}</p>
-    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
-    <button onclick="printElement('salesReportOutput')">Print Report</button>
-  `;
-  salesReportElem.innerHTML = report;
-  console.log("Sales report displayed.");
-}
 
 function generateSalesReport() {
   console.log('Generating sales report...');
@@ -780,7 +790,6 @@ function openOrderHistoryDialog() {
 function closeOrderHistoryDialog() {
   document.getElementById('order-history-dialog').style.display = 'none';
 }
-
 function renderOrderHistory() {
   const orderHistoryContainer = document.getElementById('order-history-container');
 
@@ -799,14 +808,45 @@ function renderOrderHistory() {
     const timestamp = new Date(order.timestamp);
     const formattedTimestamp = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}`;
 
+    // Create items list
+    const itemsList = Object.entries(order.order).map(([name, item]) => `
+      <tr>
+        <td>${name}</td>
+        <td>Rs ${item.price}</td>
+        <td>${item.quantity}</td>
+        <td>Rs ${item.price * item.quantity}</td>
+      </tr>`).join('');
+
     orderElem.innerHTML = `
-      <h3>Order #${index + 1}</h3>
-      <p><strong>Table:</strong> ${order.table}</p>
-      <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
-      <p><strong>Discount:</strong> Rs ${order.discount}</p>
-      <p><strong>Discounted Total:</strong> Rs ${order.discountedTotal}</p>
-      <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
-      <p><strong>Timestamp:</strong> ${formattedTimestamp}</p>
+      <div class="order-header">
+        <h3>Order #${index + 1}</h3>
+        <p><strong>Table:</strong> ${order.table}</p>
+        <p><strong>Date:</strong> ${formattedTimestamp}</p>
+      </div>
+      <div class="order-details">
+        <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
+        <p><strong>Discount:</strong> ${order.discount}%</p>
+        <p><strong>Discounted Total:</strong> Rs ${order.discountedTotal}</p>
+      </div>
+      <div class="order-items">
+        <p><strong>Items:</strong></p>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsList}
+          </tbody>
+        </table>
+      </div>
+      <div class="order-payments">
+        <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
+      </div>
     `;
     orderHistoryContainer.appendChild(orderElem);
   });
@@ -814,6 +854,7 @@ function renderOrderHistory() {
   // Check order history length
   checkOrderHistoryLength();
 }
+
 
 function checkOrderHistoryLength() {
   const historyLength = orderHistory.length;

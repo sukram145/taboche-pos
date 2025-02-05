@@ -299,12 +299,13 @@ main {
   background-color: #555;
   transform: translateY(-3px);
 }
-
 .menu {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
+  max-height: 400px; /* Adjust this value as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .menu-item {
@@ -340,12 +341,6 @@ main {
   margin: 5px 0 2px;
 }
 
-.menu-item p {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 5px 0 2px;
-}
-
 .menu-item .price {
   font-size: 12px;
   color: #007bff;
@@ -353,50 +348,91 @@ main {
 }
 
 .order-summary {
-  flex: 1;
-  background: #f1f1f1;
-  border-left: 3px solid #007bff;
-  padding: 15px;
-  margin-top: 15px;
-  border-radius: 0 10px 10px 0;
+  background: #fff;
+  border-left: 5px solid #007bff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
 }
-
+h3 {
+  font-size: 26px;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+  font-weight: 600;
+}
+#selected-table {
+  color: #007bff;
+}
+#order-summary {
+  margin-bottom: 20px;
+}
+#selected-time {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #555;
+  text-align: center;
+}
 #order-items {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
-
 #order-items li {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #ddd;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
 }
-
+.item-info {
+  display: flex;
+  flex-direction: column;
+  color: #333;
+}
+.item-name {
+  font-size: 18px;
+  font-weight: 500;
+}
+.item-qty-price {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  color: #777;
+}
+.item-qty {
+  margin-right: 20px;
+}
 #order-items li button {
-  padding: 5px 10px;
-  background: #ff3333;
+  padding: 6px 12px;
+  background: #dc3545;
   color: white;
   border: none;
   cursor: pointer;
   transition: background-color 0.3s ease;
   border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
 }
-
 #order-items li button:hover {
-  background-color: #cc0000;
+  background-color: #c82333;
 }
-
 .total {
-  margin-top: 15px;
-  font-size: 1em;
+  margin-top: 20px;
+  font-size: 1.2em;
   display: flex;
   justify-content: space-between;
+  font-weight: 600;
+  color: #333;
+}
+.total strong {
+  color: #000;
 }
 
 .checkout-btn, .finalize-btn, .complete-btn, .change-table-btn, .void-btn, .print-receipt-btn {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
   border: none;
   cursor: pointer;
@@ -407,8 +443,57 @@ main {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.checkout-btn:hover, .finalize-btn:hover, .complete-btn:hover, .change-table-btn:hover, .void-btn:hover, .print-receipt-btn:hover {
+.checkout-btn {
+  background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.checkout-btn:hover {
+  background-color: #218838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.finalize-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.finalize-btn:hover {
   background-color: #0056b3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.complete-btn {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.complete-btn:hover {
+  background-color: #e0a800;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.change-table-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.change-table-btn:hover {
+  background-color: #138496;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.void-btn {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.void-btn:hover {
+  background-color: #c82333;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.print-receipt-btn {
+  background: linear-gradient(135deg, #6f42c1, #563d7c);
+}
+
+.print-receipt-btn:hover {
+  background-color: #563d7c;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -454,7 +539,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(135deg, hwb(0 72% 7%), #d7fcdc);
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   color: #000;
   padding: 15px;
   border-radius: 10px;
@@ -465,7 +550,7 @@ main {
 .discount-section {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 10px;
   margin: 15px 0;
 }
 
@@ -554,7 +639,7 @@ main {
 
 #payment-summary li {
   padding: 8px 0;
-  border-bottom: 1px solid #62a877;
+  border-bottom: 1px solid #ccc;
 }
 
 .change {
@@ -651,4 +736,57 @@ button:hover {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+/* Order History Styling */
+.order-history-item {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-header h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
+.order-header p {
+  margin: 0;
+  color: #555;
+}
+
+.order-details {
+  margin-top: 15px;
+  line-height: 1.6;
+}
+
+.order-details p {
+  margin: 5px 0;
+}
+
+.order-items {
+  margin-top: 20px;
+}
+
+.order-items table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.order-items th, .order-items td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.order-items th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.order-payments {
+  margin-top: 20px;
 }

@@ -9,13 +9,16 @@
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
 </head>
 <body>
+  
   <header>
-    <div class="logo">Taboche POS</div>
+    <div class="logo">Taboche Restaurent</div>
     <div class="datetime" id="datetime">Loading...</div>
     <div class="user-info">
       <span id="user-role">Guest</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
+
+
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
   <div class="sidebar" id="sidebar">
@@ -33,16 +36,6 @@
   
   <div id="content"></div>
   
-  <!-- Login Dialog -->
-  <div id="login-dialog" class="login-dialog">
-    <div class="login-dialog-content">
-      <span class="close-login" onclick="closeLoginDialog()">&times;</span>
-      <h2>Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-    </div>
-  </div>
 
 
 
@@ -50,7 +43,7 @@
 
   <div class="pos-container">
     <div class="table-management">
-      <h2>Table Management</h2>
+     
       <div class="tables-dashboard" id="tables-dashboard">
         <!-- Example Table Buttons -->
         <button class="table-btn table-btn-1" onclick="selectTable(1)">Table 1</button>
@@ -78,7 +71,7 @@
     </div>
     <main class="order-container flex-container">
       <div class="order-section" id="order-section">
-        <h2>Order for Table <span id="selected-table-display">None</span></h2>
+        <h2>Order for  <span id="selected-table-display">None</span></h2>
         <div class="search-bar">
           <input type="text" id="search" placeholder="Search menu items..." onkeyup="searchMenu()">
         </div>
@@ -433,7 +426,7 @@
     <p>Spicy Wings</p>
     <div class="price">Rs 480</div>
   </div>
-  <div class="menu-item" data-name="Veg Burger" data-price="260" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Burger" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/burger_veg.jpg" alt="Veg Burger">
     <p>Veg Burger</p>
     <div class="price">Rs 280</div>
@@ -463,7 +456,7 @@
     <p>Veg Momo</p>
     <div class="price">Rs 180</div>
   </div>
-  <div class="menu-item" data-name="Veg Wraps" data-price="450" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Wraps" data-price="250" data-category="Fast Food" data-section="Kitchen">
     <img src="images/wraps_veg.jpg" alt="wraps_veg">
     <p>Veg Wraps</p>
     <div class="price">Rs 250</div>
@@ -528,6 +521,12 @@
     <p>Flat White</p>
     <div class="price">Rs 150</div>
   </div>
+  <div class="menu-item" data-name="Espresso Con Pan" data-price="150" data-category="Hot Coffee" data-section="Bar">
+    <img src="images/espresso_con_pan.jpg" alt="Espresso Con Pan">
+    <p>Espresso Con Pan</p>
+    <div class="price">Rs 150</div>
+</div>
+
   <div class="menu-item" data-name="Flavored Latte (Caramel)" data-price="240" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte_caramel.jpg" alt="Flavored Latte (Caramel)">
     <p>Flavored Latte (Caramel)</p>
@@ -543,15 +542,15 @@
     <p>Flavored Latte (Vanilla)</p>
     <div class="price">Rs 240</div>
   </div>
-  <div class="menu-item" data-name="Hot Chocolate" data-price="240" data-category="Hot Coffee" data-section="Bar">
+  <div class="menu-item" data-name="Hot Chocolate" data-price="230" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_chocolate.jpg" alt="Hot Chocolate">
     <p>Hot Chocolate</p>
-    <div class="price">Rs 240</div>
+    <div class="price">Rs 230</div>
   </div>
-  <div class="menu-item" data-name="Hot Vanilla" data-price="240" data-category="Hot Coffee" data-section="Bar">
+  <div class="menu-item" data-name="Hot Vanilla" data-price="230" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_vanilla.jpg" alt="Hot Vanilla">
     <p>Hot Vanilla</p>
-    <div class="price">Rs 240</div>
+    <div class="price">Rs 230</div>
   </div>
   <div class="menu-item" data-name="Latte" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte.jpg" alt="Latte">
@@ -921,19 +920,25 @@
            </div>
       </div>
       <div class="order-summary">
-        <h3>Order Summary for Table <span id="selected-table">None</span></h3>
+        <h3>Order Summary for <span id="selected-table">None</span></h3>
+        <div id="order-summary">
+            <div id="selected-time">Time: --:--</div>
+        </div>
         <ul id="order-items"></ul>
         <div class="total">
-          <strong>Total:</strong> Rs <span id="total-price">0</span>
+            <strong>Total:</strong> Rs <span id="total-price">0</span>
         </div>
-        <button class="finalize-btn" onclick="finalizeOrder()">Finalize Order</button>
-        <button class="checkout-btn" onclick="showPaymentDialog()">Checkout</button>
-        <button class="change-table-btn" onclick="changeTable()">Change Table</button>
-        <button class="void-btn" onclick="voidSelectedItem()">Void</button>
-        
-       
-
-        <button class="print-receipt-btn" onclick="printReceipt()">Print Receipt</button>
+   
+        <div class="buttons">
+          <button class="btn finalize-btn" onclick="finalizeOrder()">Finalize Order</button>
+          <button class="btn checkout-btn" onclick="showPaymentDialog()">Checkout</button>
+          <button class="btn change-table-btn" onclick="changeTable()">Change Table</button>
+          <button class="btn void-btn" onclick="voidSelectedItem()">Void</button> 
+          <button class="print-receipt-btn" onclick="printReceipt()">Print Receipt</button>
+        </div>
+      </div>
+      
+      
     </main>
     
     <div id="payment-dialog" class="dialog" style="display: none;">
@@ -962,7 +967,7 @@
       </div>
     </div>
     <div id="content"></div>
-    <div id="salesReportOutput"></div>
+  
     
   <div id="sales-report" class="sales-report"></div>
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
