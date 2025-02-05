@@ -9,6 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
 </head>
 <body>
+  
   <header>
     <div class="logo">Taboche POS</div>
     <div class="datetime" id="datetime">Loading...</div>
@@ -16,6 +17,8 @@
       <span id="user-role">Guest</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
+
+
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
   <div class="sidebar" id="sidebar">
@@ -33,16 +36,6 @@
   
   <div id="content"></div>
   
-  <!-- Login Dialog -->
-  <div id="login-dialog" class="login-dialog">
-    <div class="login-dialog-content">
-      <span class="close-login" onclick="closeLoginDialog()">&times;</span>
-      <h2>Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-    </div>
-  </div>
 
 
 
