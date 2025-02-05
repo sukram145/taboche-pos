@@ -767,7 +767,6 @@ function openOrderHistoryDialog() {
 function closeOrderHistoryDialog() {
   document.getElementById('order-history-dialog').style.display = 'none';
 }
-
 function renderOrderHistory() {
   const orderHistoryContainer = document.getElementById('order-history-container');
 
@@ -786,14 +785,45 @@ function renderOrderHistory() {
     const timestamp = new Date(order.timestamp);
     const formattedTimestamp = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}`;
 
+    // Create items list
+    const itemsList = Object.entries(order.order).map(([name, item]) => `
+      <tr>
+        <td>${name}</td>
+        <td>Rs ${item.price}</td>
+        <td>${item.quantity}</td>
+        <td>Rs ${item.price * item.quantity}</td>
+      </tr>`).join('');
+
     orderElem.innerHTML = `
-      <h3>Order #${index + 1}</h3>
-      <p><strong>Table:</strong> ${order.table}</p>
-      <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
-      <p><strong>Discount:</strong> Rs ${order.discount}</p>
-      <p><strong>Discounted Total:</strong> Rs ${order.discountedTotal}</p>
-      <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
-      <p><strong>Timestamp:</strong> ${formattedTimestamp}</p>
+      <div class="order-header">
+        <h3>Order #${index + 1}</h3>
+        <p><strong>Table:</strong> ${order.table}</p>
+        <p><strong>Date:</strong> ${formattedTimestamp}</p>
+      </div>
+      <div class="order-details">
+        <p><strong>Total Price:</strong> Rs ${order.totalPrice}</p>
+        <p><strong>Discount:</strong> ${order.discount}%</p>
+        <p><strong>Discounted Total:</strong> Rs ${order.discountedTotal}</p>
+      </div>
+      <div class="order-items">
+        <p><strong>Items:</strong></p>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsList}
+          </tbody>
+        </table>
+      </div>
+      <div class="order-payments">
+        <p><strong>Payments:</strong> ${order.payments.map(payment => `${payment.method}: Rs ${payment.amount}`).join(', ')}</p>
+      </div>
     `;
     orderHistoryContainer.appendChild(orderElem);
   });
@@ -801,6 +831,7 @@ function renderOrderHistory() {
   // Check order history length
   checkOrderHistoryLength();
 }
+
 
 function checkOrderHistoryLength() {
   const historyLength = orderHistory.length;

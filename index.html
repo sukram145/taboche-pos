@@ -9,6 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
 </head>
 <body>
+  
   <header>
     <div class="logo">Taboche POS</div>
     <div class="datetime" id="datetime">Loading...</div>
@@ -16,6 +17,8 @@
       <span id="user-role">Guest</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
+
+
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
   <div class="sidebar" id="sidebar">
@@ -33,16 +36,6 @@
   
   <div id="content"></div>
   
-  <!-- Login Dialog -->
-  <div id="login-dialog" class="login-dialog">
-    <div class="login-dialog-content">
-      <span class="close-login" onclick="closeLoginDialog()">&times;</span>
-      <h2>Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-    </div>
-  </div>
 
 
 
@@ -433,7 +426,7 @@
     <p>Spicy Wings</p>
     <div class="price">Rs 480</div>
   </div>
-  <div class="menu-item" data-name="Veg Burger" data-price="260" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Burger" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/burger_veg.jpg" alt="Veg Burger">
     <p>Veg Burger</p>
     <div class="price">Rs 280</div>
@@ -549,15 +542,15 @@
     <p>Flavored Latte (Vanilla)</p>
     <div class="price">Rs 240</div>
   </div>
-  <div class="menu-item" data-name="Hot Chocolate" data-price="240" data-category="Hot Coffee" data-section="Bar">
+  <div class="menu-item" data-name="Hot Chocolate" data-price="230" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_chocolate.jpg" alt="Hot Chocolate">
     <p>Hot Chocolate</p>
-    <div class="price">Rs 240</div>
+    <div class="price">Rs 230</div>
   </div>
-  <div class="menu-item" data-name="Hot Vanilla" data-price="240" data-category="Hot Coffee" data-section="Bar">
+  <div class="menu-item" data-name="Hot Vanilla" data-price="230" data-category="Hot Coffee" data-section="Bar">
     <img src="images/hot_vanilla.jpg" alt="Hot Vanilla">
     <p>Hot Vanilla</p>
-    <div class="price">Rs 240</div>
+    <div class="price">Rs 230</div>
   </div>
   <div class="menu-item" data-name="Latte" data-price="170" data-category="Hot Coffee" data-section="Bar">
     <img src="images/latte.jpg" alt="Latte">
