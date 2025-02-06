@@ -61,11 +61,13 @@ function renderTables() {
   }
   dashboard.innerHTML = '';
   for (const [table, info] of Object.entries(tables)) {
-    const tableCard = document.createElement('div');
-    tableCard.className = `table-card ${info.status}`;
-    tableCard.textContent = table;
-    tableCard.onclick = () => selectTable(table);
-    dashboard.appendChild(tableCard);
+    if (table && info) {  // Ensure that table and info are not null or undefined
+      const tableCard = document.createElement('div');
+      tableCard.className = `table-card ${info.status}`;
+      tableCard.textContent = table;
+      tableCard.onclick = () => selectTable(table);
+      dashboard.appendChild(tableCard);
+    }
   }
 }
 
@@ -168,6 +170,15 @@ function removeFromOrder(name) {
     saveData();
   }
 }
+// Disable the remove button for finalized items
+function disableRemoveButtonForFinalizedItems() {
+  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
+    const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
+    if (removeButton) {
+      removeButton.disabled = true;
+    }
+  }
+}
 
 // Display order items in the order summary
 function displayOrderItems(orderItems) {
@@ -190,6 +201,9 @@ function displayOrderItems(orderItems) {
   tables[selectedTable].totalPrice = totalPrice;
   tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
   saveData();
+
+  // Disable remove buttons for finalized items
+  disableRemoveButtonForFinalizedItems();
 }
 
 // Update order summary
@@ -223,9 +237,6 @@ function resetOrderSummary() {
   document.getElementById('total-price').textContent = '0';
 }
 
-
-
-
 // Apply discount
 function applyDiscountHandler() {
   const discount = parseFloat(document.getElementById('discount').value);
@@ -243,12 +254,15 @@ function applyDiscountHandler() {
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
   for (const [name, item] of Object.entries(tables[selectedTable].order)) {
-    const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
-    if (removeButton) {
-      removeButton.disabled = true;
+    if (item.finalized) {
+      const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
+      if (removeButton) {
+        removeButton.disabled = true;
+      }
     }
   }
 }
+
 
 // Mark void mode
 function voidSelectedItem() {
@@ -256,10 +270,9 @@ function voidSelectedItem() {
   alert("Void mode activated. Select the item to void.");
 }
 
-// Add payment
 function addPayment(paymentMethod) {
   const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
-  if (isNaN(amount    ) || amount <= 0) {
+  if (isNaN(amount) || amount <= 0) {
     alert('Invalid amount. Please enter a valid number.');
     return;
   }
@@ -275,9 +288,24 @@ function addPayment(paymentMethod) {
     };
   }
   tables[selectedTable].payments.push({ method: paymentMethod, amount });
+
+  // Show QR code for mobile payment
+  if (paymentMethod === 'Mobile Payment') {
+    displayQRCode();
+  } else {
+    document.getElementById('qr-code').style.display = 'none';
+  }
+
   updatePaymentSummary();
   saveData();
 }
+
+function displayQRCode() {
+  const qrCodeElement = document.getElementById('qr-code');
+  qrCodeElement.style.display = 'block';
+  document.getElementById('qr-code-image').src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png'; // Replace with the correct path to your QR code image
+}
+
 
 // Function to update payment summary
 function updatePaymentSummary() {
@@ -333,6 +361,7 @@ function finalizeOrder() {
   const barOrders = [];
 
   for (const [name, item] of Object.entries(tables[selectedTable].order)) {
+    item.finalized = true;  // Mark the item as finalized
     const sectionElem = document.querySelector(`.menu-item[data-name="${name}"]`);
     if (sectionElem) {
       const section = sectionElem.getAttribute('data-section');
@@ -358,6 +387,7 @@ function finalizeOrder() {
   // Disable the remove button for finalized items
   disableRemoveButtonForFinalizedItems();
 }
+
 
 // Change table
 function changeTable() {

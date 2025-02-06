@@ -947,11 +947,9 @@
           <div class="discount-section">
             <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
             <button onclick="applyDiscountHandler()">Apply Discount</button>
-            
           </div>
           <div class="payment-methods">
             <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
-            
             <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
           </div>
           <ul id="payment-summary"></ul>
@@ -960,6 +958,10 @@
           </div>
           <div class="insufficient-amount" id="insufficient-amount" style="display: none;">
             <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
+          </div>
+          <div id="qr-code" style="display: none;">
+            <h3>"Thank you for dining with us!"</h3>
+            <img id="qr-code-image" src="https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png" alt="QR Code"> <!-- Update the path -->
           </div>
           <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
         </div>

@@ -793,3 +793,13 @@ button:hover {
     font-size: 0.7em;
   }
 }
+#qr-code {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#qr-code img {
+  width: 200px;
+  height: 200px;
+  margin-top: 10px;
+}
