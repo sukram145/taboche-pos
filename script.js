@@ -9,6 +9,7 @@ const firebaseConfig = {
   appId: "1:902721301924:web:c44ef0ade0ac7200ed6531",
   measurementId: "G-00TEQG2H1Z"
 };
+
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
 const tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8A', '8B', '9A', '9B', '10A', '10B', '10C', '11', '12'];
@@ -61,7 +62,7 @@ function renderTables() {
   }
   dashboard.innerHTML = '';
   for (const [table, info] of Object.entries(tables)) {
-    if (table && info) {  // Ensure that table and info are not null or undefined
+    if (table && info && table.startsWith('Table ')) {  // Ensure that table and info are not null or undefined
       const tableCard = document.createElement('div');
       tableCard.className = `table-card ${info.status}`;
       tableCard.textContent = table;
@@ -170,6 +171,7 @@ function removeFromOrder(name) {
     saveData();
   }
 }
+
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
   for (const [name, item] of Object.entries(tables[selectedTable].order)) {
@@ -206,6 +208,7 @@ function displayOrderItems(orderItems) {
   disableRemoveButtonForFinalizedItems();
 }
 
+
 // Update order summary
 function updateOrderSummary() {
   const order = tables[selectedTable];
@@ -237,19 +240,7 @@ function resetOrderSummary() {
   document.getElementById('total-price').textContent = '0';
 }
 
-// Apply discount
-function applyDiscountHandler() {
-  const discount = parseFloat(document.getElementById('discount').value);
-  if (isNaN(discount) || discount < 0 || discount > 100) {
-    alert('Please enter a valid discount percentage (0-100).');
-    return;
-  }
-  tables[selectedTable].discount = discount;
-  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - discount) / 100);
-  updateOrderSummary();
-  updatePaymentSummary(); // Reflect discount in payment summary
-  saveData();
-}
+
 
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
@@ -268,86 +259,6 @@ function disableRemoveButtonForFinalizedItems() {
 function voidSelectedItem() {
   isVoidMode = true;
   alert("Void mode activated. Select the item to void.");
-}
-
-function addPayment(paymentMethod) {
-  const amount = parseFloat(prompt(`Enter amount for ${paymentMethod}:`));
-  if (isNaN(amount) || amount <= 0) {
-    alert('Invalid amount. Please enter a valid number.');
-    return;
-  }
-  if (!tables[selectedTable]) {
-    tables[selectedTable] = {
-      payments: [],
-      totalSales: 0,
-      totalDiscounts: 0,
-      totalOrders: 0,
-      cashPayments: 0,
-      mobilePayments: 0,
-      status: 'occupied'
-    };
-  }
-  tables[selectedTable].payments.push({ method: paymentMethod, amount });
-
-  // Show QR code for mobile payment
-  if (paymentMethod === 'Mobile Payment') {
-    displayQRCode();
-  } else {
-    document.getElementById('qr-code').style.display = 'none';
-  }
-
-  updatePaymentSummary();
-  saveData();
-}
-
-function displayQRCode() {
-  const qrCodeElement = document.getElementById('qr-code');
-  qrCodeElement.style.display = 'block';
-  document.getElementById('qr-code-image').src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png'; // Replace with the correct path to your QR code image
-}
-
-
-// Function to update payment summary
-function updatePaymentSummary() {
-  const paymentSummaryElem = document.getElementById('payment-summary');
-  const changeAmountElem = document.getElementById('change-amount');
-  const insufficientAmountElem = document.getElementById('insufficient-amount');
-  const shortAmountElem = document.getElementById('short-amount');
-  let totalPaid = 0;
-  if (tables[selectedTable]?.payments) {
-    paymentSummaryElem.innerHTML = '';
-    tables[selectedTable].payments.forEach(payment => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${payment.method}: Rs ${payment.amount}`;
-      paymentSummaryElem.appendChild(listItem);
-      totalPaid += payment.amount;
-    });
-  }
-  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
-  const changeAmount = totalPaid - totalPrice;
-  if (changeAmount >= 0) {
-    changeAmountElem.textContent = changeAmount;
-    insufficientAmountElem.style.display = 'none';
-  } else {
-    shortAmountElem.textContent = Math.abs(changeAmount);
-    insufficientAmountElem.style.display = 'block';
-    changeAmountElem.textContent = 0;
-  }
-}
-
-// Show and close payment dialog
-function showPaymentDialog() {
-  const paymentDialog = document.getElementById('payment-dialog');
-  if (paymentDialog) {
-    paymentDialog.style.display = 'flex';
-  }
-}
-
-function closePaymentDialog() {
-  const paymentDialog = document.getElementById('payment-dialog');
-  if (paymentDialog) {
-    paymentDialog.style.display = 'none';
-  }
 }
 
 // Finalize the order and send to Kitchen and Bar
@@ -389,6 +300,7 @@ function finalizeOrder() {
 }
 
 
+
 // Change table
 function changeTable() {
   const newTable = prompt("Enter new table number:");
@@ -412,6 +324,117 @@ let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
 function saveOrderHistory() {
   localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+}
+
+// Function to display the QR code dialog
+function displayQRCode() {
+  const qrCodeElement = document.getElementById('qr-code-dialog');
+  qrCodeElement.style.display = 'block';
+  document.getElementById('qr-code-image').src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png'; // Replace with the correct path to your QR code image
+}
+
+// Function to close the QR code dialog
+function closeQRCodeDialog() {
+  const qrCodeDialog = document.getElementById('qr-code-dialog');
+  if (qrCodeDialog) {
+    qrCodeDialog.style.display = 'none';
+  }
+}
+// Function to display the QR code dialog
+function displayQRCode() {
+  const qrCodeElement = document.getElementById('qr-code-dialog');
+  qrCodeElement.style.display = 'block';
+  document.getElementById('qr-code-image').src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png'; // Replace with the correct path to your QR code image
+}
+
+// Function to close the QR code dialog
+function closeQRCodeDialog() {
+  const qrCodeDialog = document.getElementById('qr-code-dialog');
+  if (qrCodeDialog) {
+    qrCodeDialog.style.display = 'none';
+  }
+}
+
+// Function to update the total amount to be paid from the order summary
+function updateTotalAmount() {
+  const totalAmountElem = document.getElementById('total-amount');
+  const totalPrice = tables[selectedTable]?.totalPrice || 0;
+  totalAmountElem.textContent = totalPrice;
+}
+
+function addPayment(paymentMethod) {
+  const numericInput = document.getElementById('numeric-input');
+  const amount = parseFloat(numericInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    alert('Invalid amount. Please enter a valid number.');
+    return;
+  }
+  if (!tables[selectedTable]) {
+    tables[selectedTable] = {
+      payments: [],
+      totalSales: 0,
+      totalDiscounts: 0,
+      totalOrders: 0,
+      cashPayments: 0,
+      mobilePayments: 0,
+      status: 'occupied'
+    };
+  }
+  tables[selectedTable].payments.push({ method: paymentMethod, amount });
+
+  // Show QR code for mobile payment
+  if (paymentMethod === 'Mobile Payment') {
+    displayQRCode();
+  } else {
+    closeQRCodeDialog();
+  }
+
+  updatePaymentSummary();
+  saveData();
+  numericInput.value = ''; // Clear the numeric input after adding payment
+}
+
+function updatePaymentSummary() {
+  const paymentSummaryElem = document.getElementById('payment-summary');
+  const changeAmountElem = document.getElementById('change-amount');
+  const insufficientAmountElem = document.getElementById('insufficient-amount');
+  const shortAmountElem = document.getElementById('short-amount');
+  let totalPaid = 0;
+  if (tables[selectedTable]?.payments) {
+    paymentSummaryElem.innerHTML = '';
+    tables[selectedTable].payments.forEach(payment => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${payment.method}: Rs ${payment.amount}`;
+      paymentSummaryElem.appendChild(listItem);
+      totalPaid += payment.amount;
+    });
+  }
+  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
+  const changeAmount = totalPaid - totalPrice;
+  if (changeAmount >= 0) {
+    changeAmountElem.textContent = changeAmount;
+    insufficientAmountElem.style.display = 'none';
+  } else {
+    shortAmountElem.textContent = Math.abs(changeAmount);
+    insufficientAmountElem.style.display = 'block';
+    changeAmountElem.textContent = 0;
+  }
+}
+
+// Show and close payment dialog
+function showPaymentDialog() {
+  const paymentDialog = document.getElementById('payment-dialog');
+  if (paymentDialog) {
+    paymentDialog.style.display = 'flex';
+    updateTotalAmount(); // Update the total amount when showing the dialog
+  }
+}
+
+function closePaymentDialog() {
+  const paymentDialog = document.getElementById('payment-dialog');
+  if (paymentDialog) {
+    paymentDialog.style.display = 'none';
+  }
 }
 
 function completeOrder() {
@@ -497,6 +520,7 @@ function completeOrder() {
   }
 
   closePaymentDialog();
+  closeQRCodeDialog(); // Close the QR code dialog when the order is complete
   renderTables();
   updateOrderSummary();
   updatePaymentSummary();
@@ -505,6 +529,43 @@ function completeOrder() {
 
   generateSalesReport();
 }
+
+// Numeric pad functions
+function addNumber(num) {
+  const numericInput = document.getElementById('numeric-input');
+  numericInput.value += num;
+}
+
+function clearInput() {
+  const numericInput = document.getElementById('numeric-input');
+  numericInput.value = '';
+}
+
+function backspaceInput() {
+  const numericInput = document.getElementById('numeric-input');
+  numericInput.value = numericInput.value.slice(0, -1);
+}
+
+function addQuickAmount(amount) {
+  const numericInput = document.getElementById('numeric-input');
+  numericInput.value = amount;
+}
+
+function applyDiscountHandler() {
+  const discountInput = document.getElementById('discount');
+  const discount = parseFloat(discountInput.value);
+  if (isNaN(discount) || discount < 0 || discount > 100) {
+    alert('Invalid discount. Please enter a percentage between 0 and 100.');
+    return;
+  }
+  tables[selectedTable].discount = discount;
+  const totalPrice = tables[selectedTable]?.totalPrice || 0;
+  tables[selectedTable].discountedTotal = totalPrice * (1 - discount / 100);
+  updatePaymentSummary();
+}
+
+// Initially update the total amount to be paid
+updateTotalAmount();
 
 function printReceipt() {
   const logoUrl = 'http://localhost/images/RestaurantLogo.png'; // Update with your logo URL
@@ -545,12 +606,19 @@ function printReceipt() {
   printWindow.close();
 }
 
-
-
+document.addEventListener('DOMContentLoaded', function () {
+  generateSalesReport();
+});
 
 function generateSalesReport() {
   console.log('Generating sales report...');
   console.log('Sales Data:', salesData);
+
+  const salesReportElement = document.getElementById('salesReportOutput');
+  if (!salesReportElement) {
+    console.error('Element with ID "salesReportOutput" not found.');
+    return;
+  }
 
   const totalDiscounts = salesData.totalDiscounts || 0;
   const totalOrders = salesData.totalOrders || 0;
@@ -567,8 +635,31 @@ function generateSalesReport() {
     <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
     <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
-  document.getElementById('salesReportOutput').innerHTML = report;
+  salesReportElement.innerHTML = report;
 }
+
+function printAndResetSalesReport() {
+  // Your logic for printing and resetting the sales report
+}
+
+function openOrderHistoryDialog() {
+  const orderHistoryDialog = document.getElementById('order-history-dialog');
+  if (orderHistoryDialog) {
+    orderHistoryDialog.style.display = 'block';
+  }
+}
+
+function closeOrderHistoryDialog() {
+  const orderHistoryDialog = document.getElementById('order-history-dialog');
+  if (orderHistoryDialog) {
+    orderHistoryDialog.style.display = 'none';
+  }
+}
+
+function editItem() {
+  // Your logic for editing an item
+}
+
 
 // Function to print a specific element
 function printElement(elementId) {

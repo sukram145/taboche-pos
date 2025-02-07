@@ -506,6 +506,13 @@ h3 {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+}
+
 .dialog {
   position: fixed;
   top: 0;
@@ -519,25 +526,21 @@ h3 {
 }
 
 .dialog-content {
-  padding: 15px;
+  background-color: #fff;
   border-radius: 10px;
+  padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  width: 80%;
-  max-width: 500px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  transform: translateY(-10px);
-  opacity: 0;
-  animation: fadeInDialog 0.5s forwards;
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
 }
 
 .close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  align-self: flex-end;
   font-size: 1.5em;
   cursor: pointer;
   color: #333;
-  transition: color 0.3s ease;
 }
 
 .close:hover {
@@ -548,120 +551,239 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  color: #000;
+}
+
+.total-amount {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.content-section {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+.numeric-section {
+  margin-right: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.numeric-input {
+  width: 100%;
   padding: 15px;
+  font-size: 1.5em;
+  text-align: center;
+  margin-bottom: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin: 15px 0;
+  border: 2px solid #007BFF;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.numeric-input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  outline: none;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.keypad button {
+  padding: 20px;
+  font-size: 1.2em;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #007BFF, #0056b3);
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.keypad button:hover {
+  background: linear-gradient(145deg, #0056b3, #004494);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+}
+
+.keypad button:active {
+  background: linear-gradient(145deg, #48494b, #003366);
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-amounts {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.quick-amount-btn {
+  padding: 12px;
+  font-size: 1.1em;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #28A745, #218838);
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-amount-btn:hover {
+  background: linear-gradient(145deg, #218838, #1e7e34);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-amount-btn:active {
+  background: linear-gradient(145deg, #1e7e34, #19652a);
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .discount-section {
   display: flex;
-  align-items: center;
   gap: 10px;
-  margin: 15px 0;
+  margin-bottom: 10px;
 }
 
 .discount-section input {
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 10px;
   width: 100px;
-  font-size: 0.8em;
-  transition: border-color 0.3s ease;
-}
-
-.discount-section input:focus {
-  border-color: #007bff;
 }
 
 .discount-section button {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
+  padding: 10px;
   border: none;
+  border-radius: 10px;
+  background-color: #007bff;
+  color: #fff;
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
 
 .discount-section button:hover {
   background-color: #0056b3;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-.payments {
-  width: 100%;
-  text-align: center;
-}
-
-.payment-methods {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.payment-methods button {
+.cash-btn, .mobile-btn, .complete-btn {
   padding: 10px 20px;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
-  border-radius: 5px;
-  font-size: 0.8em;
-  color: white;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-size: 1em;
+  color: #fff;
+  transition: background-color 0.3s ease;
 }
 
-.payment-methods .cash-btn {
-  background: linear-gradient(135deg, #28a745, #218838);
+.cash-btn {
+  background-color: #28a745;
 }
 
-.payment-methods .cash-btn:hover {
+.cash-btn:hover {
   background-color: #218838;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-.payment-methods .card-btn {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
+.mobile-btn {
+  background-color: #ffc107;
 }
 
-.payment-methods .card-btn:hover {
+.mobile-btn:hover {
   background-color: #e0a800;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-.payment-methods .mobile-btn {
-  background: linear-gradient(135deg, #17a2b8, #138496);
+.complete-btn {
+  background-color: #007bff;
 }
 
-.payment-methods .mobile-btn:hover {
-  background-color: #138496;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+.complete-btn:hover {
+  background-color: #0056b3;
 }
 
-#payment-summary {
+.payment-summary {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.payment-summary ul {
   list-style: none;
   padding: 0;
-  margin: 15px 0;
 }
 
-#payment-summary li {
-  padding: 8px 0;
+.payment-summary li {
+  padding: 5px 0;
   border-bottom: 1px solid #ccc;
 }
 
+.change, .insufficient-amount {
+  font-size: 1.2em;
+  margin-top: 20px;
+}
+
 .change {
-  font-size: 1em;
-  margin: 15px 0;
   color: green;
   font-weight: bold;
 }
 
 .insufficient-amount {
-  margin-top: 15px;
   color: red;
   font-weight: bold;
+}
+#qr-code-dialog {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#qr-code-dialog .dialog-content {
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background-color: #fff;
+  width: 80%;
+  max-width: 400px;
+  text-align: center;
+}
+
+#qr-code-dialog .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #333;
+}
+
+#qr-code-dialog .close:hover {
+  color: #ff0000;
 }
 
 /* Order History Styling */
@@ -803,3 +925,5 @@ button:hover {
   height: 200px;
   margin-top: 10px;
 }
+
+
