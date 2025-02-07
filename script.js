@@ -117,6 +117,11 @@ function filterCategory(category) {
     }
   });
 }
+// Mark void mode
+function voidSelectedItem() {
+  isVoidMode = true;
+  alert("Void mode activated. Select the item to void.");
+}
 
 // Add item to the order with negative price if in void mode
 function addToOrder(name, price) {
@@ -129,30 +134,22 @@ function addToOrder(name, price) {
     tables[selectedTable].order = {};
   }
   if (isVoidMode) {
-    price = -price;
-    isVoidMode = false;
-  }
-  if (!tables[selectedTable].order.hasOwnProperty(name)) {
-    tables[selectedTable].order[name] = { price: price, quantity: 1 };
+    removeFromOrder(name); // Directly call removeFromOrder function when void mode is active
+    isVoidMode = false; // Disable void mode after removing the item
   } else {
-    tables[selectedTable].order[name].quantity += 1;
+    if (!tables[selectedTable].order.hasOwnProperty(name)) {
+      tables[selectedTable].order[name] = { price: price, quantity: 1 };
+    } else {
+      tables[selectedTable].order[name].quantity += 1;
+    }
+    tables[selectedTable].totalPrice += price;
+    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
+    tables[selectedTable].status = "occupied";
+    renderTables();
+    updateOrderSummary();
+    saveData();
   }
-  tables[selectedTable].totalPrice += price;
-  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
-  tables[selectedTable].status = "occupied";
-  renderTables();
-  updateOrderSummary();
-  saveData();
 }
-
-document.querySelectorAll('.menu-item').forEach(item => {
-  item.addEventListener('click', (event) => {
-    event.stopImmediatePropagation();
-    const name = item.getAttribute('data-name');
-    const price = parseFloat(item.getAttribute('data-price'));
-    addToOrder(name, price);
-  });
-});
 
 // Remove item from the order
 function removeFromOrder(name) {
@@ -181,6 +178,16 @@ function disableRemoveButtonForFinalizedItems() {
     }
   }
 }
+
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', (event) => {
+    event.stopImmediatePropagation();
+    const name = item.getAttribute('data-name');
+    const price = parseFloat(item.getAttribute('data-price'));
+    addToOrder(name, price);
+  });
+});
+
 
 // Display order items in the order summary
 function displayOrderItems(orderItems) {
