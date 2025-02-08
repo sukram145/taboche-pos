@@ -504,21 +504,20 @@ h3 {
 .print-receipt-btn:hover {
   background-color: #563d7c;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
+}/* Global Styles */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f4f4f9;
 }
-
+/* Dialog Box */
 .dialog {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 40%;
+  height: 40%;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -527,26 +526,31 @@ body {
 
 .dialog-content {
   background-color: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  width: 90%;
-  max-width: 600px;
+  border-radius: 9px;
+  padding: 10px;
+  box-shadow: 0 3px 7.5px rgba(0, 0, 0, 0.15);
+  width: 50%; /* Adjusted width */
+  max-width: 300px; /* Adjusted max-width */
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Close Button */
 .close {
   align-self: flex-end;
-  font-size: 1.5em;
+  font-size: 1.125em;
   cursor: pointer;
   color: #333;
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .close:hover {
   color: #ff0000;
+  transform: scale(1.075);
 }
 
+/* Payment Section */
 .payment-section {
   display: flex;
   flex-direction: column;
@@ -554,18 +558,20 @@ body {
 }
 
 .total-amount {
-  font-size: 1.5em;
+  font-size: 1.2em;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
+/* Numeric Input Section */
 .content-section {
   display: flex;
   align-items: flex-start;
-  width: 100%;
+  width: 100%; /* Adjusted width */
 }
+
 .numeric-section {
-  margin-right: 20px;
+  margin-right: 10px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -573,109 +579,106 @@ body {
 }
 
 .numeric-input {
-  width: 100%;
-  padding: 15px;
-  font-size: 1.5em;
+  width: 80%; /* Adjusted width */
+  padding: 7.5px;
+  font-size: 1.125em;
   text-align: center;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  border: 2px solid #007BFF;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  border-radius: 7.5px;
+  border: 1.5px solid #007BFF;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.075);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   background-color: #f9f9f9;
 }
 
 .numeric-input:focus {
   border-color: #0056b3;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 3px 9px rgba(0, 123, 255, 0.225);
   outline: none;
 }
 
+/* Keypad Section */
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  gap: 7.5px;
 }
 
 .keypad button {
-  padding: 20px;
-  font-size: 1.2em;
-  border-radius: 12px;
+  padding: 10px;
+  font-size: 0.9em;
+  border-radius: 9px;
   background: linear-gradient(145deg, #007BFF, #0056b3);
   border: none;
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.075);
 }
 
 .keypad button:hover {
   background: linear-gradient(145deg, #0056b3, #004494);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4.5px 6px rgba(0, 0, 0, 0.075);
 }
 
 .keypad button:active {
   background: linear-gradient(145deg, #48494b, #003366);
-  transform: translateY(0);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: scale(0.99);
 }
 
+/* Quick Amount Buttons */
 .quick-amounts {
-  margin-top: 20px;
+  margin-top: 10px;
   display: flex;
-  gap: 15px;
+  gap: 7.5px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .quick-amount-btn {
-  padding: 12px;
-  font-size: 1.1em;
-  border-radius: 12px;
+  padding: 7.5px;
+  font-size: 0.825em;
+  border-radius: 9px;
   background: linear-gradient(145deg, #28A745, #218838);
   border: none;
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.075);
 }
 
 .quick-amount-btn:hover {
   background: linear-gradient(145deg, #218838, #1e7e34);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1.5px);
 }
 
-.quick-amount-btn:active {
-  background: linear-gradient(145deg, #1e7e34, #19652a);
-  transform: translateY(0);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
+/* Action Buttons */
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
 }
 
+/* Discount Section */
 .discount-section {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 7.5px;
+  margin-bottom: 7.5px;
 }
 
 .discount-section input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  width: 100px;
+  padding: 5px;
+  border: 0.75px solid #ccc;
+  border-radius: 7.5px;
+  width: 75px;
 }
 
 .discount-section button {
-  padding: 10px;
+  padding: 7.5px;
   border: none;
-  border-radius: 10px;
-  background-color: #007bff;
+  border-radius: 7.5px;
+  background-color: #007bff; /* Blue color for "Apply Discount" */
   color: #fff;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -685,18 +688,16 @@ body {
   background-color: #0056b3;
 }
 
-.cash-btn, .mobile-btn, .complete-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1em;
-  color: #fff;
-  transition: background-color 0.3s ease;
-}
-
+/* Payment Buttons */
 .cash-btn {
-  background-color: #28a745;
+  padding: 7.5px 10px;
+  border: none;
+  border-radius: 9px;
+  background-color: #28a745; /* Green color for "Cash" */
+  color: #fff;
+  font-size: 0.825em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .cash-btn:hover {
@@ -704,7 +705,14 @@ body {
 }
 
 .mobile-btn {
-  background-color: #ffc107;
+  padding: 7.5px 10px;
+  border: none;
+  border-radius: 9px;
+  background-color: #ffc107; /* Yellow color for "Mobile Payment" */
+  color: #fff;
+  font-size: 0.825em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .mobile-btn:hover {
@@ -712,16 +720,24 @@ body {
 }
 
 .complete-btn {
-  background-color: #007bff;
+  padding: 7.5px 10px;
+  border: none;
+  border-radius: 9px;
+  background-color: #007bff; /* Blue color for "Complete Order" */
+  color: #fff;
+  font-size: 0.825em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .complete-btn:hover {
   background-color: #0056b3;
 }
 
+/* Payment Summary */
 .payment-summary {
-  margin-top: 20px;
-  width: 100%;
+  margin-top: 10px;
+  width: 100%; /* Adjusted width */
 }
 
 .payment-summary ul {
@@ -730,13 +746,14 @@ body {
 }
 
 .payment-summary li {
-  padding: 5px 0;
-  border-bottom: 1px solid #ccc;
+  padding: 2.5px 0;
+  border-bottom: 0.75px solid #ccc;
 }
 
+/* Change & Insufficient Amount */
 .change, .insufficient-amount {
-  font-size: 1.2em;
-  margin-top: 20px;
+  font-size: 0.9em;
+  margin-top: 10px;
 }
 
 .change {
@@ -748,15 +765,16 @@ body {
   color: red;
   font-weight: bold;
 }
+
+/* QR Code Dialog */
 #qr-code-dialog {
   display: none;
   position: fixed;
   z-index: 1000;
   left: 0;
   top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
+  width: 50%;
+  height: 50%;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -764,20 +782,20 @@ body {
 }
 
 #qr-code-dialog .dialog-content {
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 7.5px;
+  border-radius: 9px;
+  box-shadow: 0 3px 7.5px rgba(0, 0, 0, 0.225);
   background-color: #fff;
-  width: 80%;
-  max-width: 400px;
+  width: 40%;
+  max-width: 200px;
   text-align: center;
 }
 
 #qr-code-dialog .close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 1.5em;
+  top: 5px;
+  right: 5px;
+  font-size: 1.125em;
   cursor: pointer;
   color: #333;
 }
@@ -785,6 +803,31 @@ body {
 #qr-code-dialog .close:hover {
   color: #ff0000;
 }
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive Fixes */
+@media screen and (max-width: 480px) {
+  .dialog-content {
+    width: 60%;
+    padding: 7.5px;
+  }
+  .keypad {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
 
 /* Order History Styling */
 .order-history-item {

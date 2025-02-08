@@ -33,10 +33,64 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   mobilePayments: 0
 };
 
-// Define the editItem function
-function editItem() {
-  console.log('Edit item function called!');
+function openAddItemModal() {
+  document.getElementById("addItemModal").style.display = "flex";
 }
+
+function closeAddItemModal() {
+  document.getElementById("addItemModal").style.display = "none";
+}
+
+function updateExtrasOptions() {
+  let itemSelect = document.getElementById("itemSelect").value;
+  let extraOptionsDiv = document.getElementById("extraOptions");
+  extraOptionsDiv.innerHTML = ""; // Clear previous options
+  
+  if (itemSelect === "food") {
+      extraOptionsDiv.innerHTML = `
+          <label><img src="cheese.jpg" alt="Cheese"> <input type="checkbox" value="75" class="extra"> Cheese (Rs 75)</label><br>
+          <label><img src="sausage.jpg" alt="Sausage"> <input type="checkbox" value="40" class="extra"> Sausage (Rs 40)</label><br>
+          <label><img src="egg.jpg" alt="Egg"> <input type="checkbox" value="50" class="extra"> Egg (Rs 50)</label><br>
+          <label><img src="salad.jpg" alt="Salad"> <input type="checkbox" value="75" class="extra"> Salad (Rs 75)</label><br>
+          <label><img src="toast.jpg" alt="Toast"> <input type="checkbox" value="50" class="extra"> Toast (Rs 50)</label>
+      `;
+  } else if (itemSelect === "drink") {
+      extraOptionsDiv.innerHTML = `
+          <label><img src="boba.jpg" alt="Boba"> <input type="checkbox" value="50" class="extra"> Boba (Rs 50)</label><br>
+          <label><img src="flavour.jpg" alt="Flavour"> <input type="checkbox" value="50" class="extra"> Flavour (Rs 50)</label><br>
+          <label><img src="coil.jpg" alt="Extra Coil"> <input type="checkbox" value="50" class="extra"> Extra Coil (Rs 50)</label><br>
+          <label><img src="extraflavour.jpg" alt="Extra Flavour"> <input type="checkbox" value="250" class="extra"> Extra Flavour (Rs 250)</label>
+      `;
+  }
+}
+
+function applyExtras() {
+  let selectedExtras = [];
+  let extraCost = 0;
+  document.querySelectorAll('#extraOptions input[type="checkbox"]:checked').forEach(checkbox => {
+      selectedExtras.push(`+ extra ${checkbox.parentElement.textContent.trim().split(' ')[0]} Rs ${checkbox.value}`);
+      extraCost += parseFloat(checkbox.value);
+  });
+  
+  let itemName = document.getElementById("itemSelect").value;
+  if (!itemName) {
+      alert("Please select an item");
+      return;
+  }
+  
+  let orderItemsList = document.getElementById('order-items');
+  let orderItem = document.createElement('li');
+  orderItem.textContent = `${itemName} (${selectedExtras.join(", ")}) - Rs ${extraCost}`;
+  orderItemsList.appendChild(orderItem);
+  
+  let totalPriceElem = document.getElementById('total-price');
+  let totalPrice = parseFloat(totalPriceElem.textContent) || 0;
+  totalPrice += extraCost;
+  totalPriceElem.textContent = totalPrice.toFixed(2);
+  
+  closeAddItemModal();
+}
+
 
 // Function to update date, time, and day of the week
 function updateDateTime() {
@@ -117,6 +171,11 @@ function filterCategory(category) {
     }
   });
 }
+// Mark void mode
+function voidSelectedItem() {
+  isVoidMode = true;
+  alert("Void mode activated. Select the item to void.");
+}
 
 // Add item to the order with negative price if in void mode
 function addToOrder(name, price) {
@@ -129,37 +188,43 @@ function addToOrder(name, price) {
     tables[selectedTable].order = {};
   }
   if (isVoidMode) {
-    price = -price;
-    isVoidMode = false;
-  }
-  if (!tables[selectedTable].order.hasOwnProperty(name)) {
-    tables[selectedTable].order[name] = { price: price, quantity: 1 };
+    removeFromOrder(name); // Directly call removeFromOrder function when void mode is active
+    isVoidMode = false; // Disable void mode after removing the item
   } else {
-    tables[selectedTable].order[name].quantity += 1;
+    if (!tables[selectedTable].order.hasOwnProperty(name)) {
+      tables[selectedTable].order[name] = { price: price, quantity: 1 };
+    } else {
+      tables[selectedTable].order[name].quantity += 1;
+    }
+    tables[selectedTable].totalPrice += price;
+    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
+    tables[selectedTable].status = "occupied";
+    renderTables();
+    updateOrderSummary();
+    saveData();
   }
-  tables[selectedTable].totalPrice += price;
-  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
-  tables[selectedTable].status = "occupied";
-  renderTables();
-  updateOrderSummary();
-  saveData();
+}
+// Mark void mode
+function voidSelectedItem() {
+  isVoidMode = true;
+  alert("Void mode activated. Select the item to void.");
 }
 
-document.querySelectorAll('.menu-item').forEach(item => {
-  item.addEventListener('click', (event) => {
-    event.stopImmediatePropagation();
-    const name = item.getAttribute('data-name');
-    const price = parseFloat(item.getAttribute('data-price'));
-    addToOrder(name, price);
-  });
-});
-
-// Remove item from the order
+// Remove item from the order and record void details
 function removeFromOrder(name) {
   if (tables[selectedTable].order[name]) {
-    tables[selectedTable].totalPrice -= tables[selectedTable].order[name].price;
-    tables[selectedTable].order[name].quantity -= 1;
-    if (tables[selectedTable].order[name].quantity <= 0) {
+    const item = tables[selectedTable].order[name];
+    const voidEntry = {
+      name: name,
+      amount: item.price,
+      time: new Date().toLocaleTimeString()
+    };
+    voidHistory.push(voidEntry);
+    localStorage.setItem('voidHistory', JSON.stringify(voidHistory)); // Save void history to localStorage
+
+    tables[selectedTable].totalPrice -= item.price;
+    item.quantity -= 1;
+    if (item.quantity <= 0) {
       delete tables[selectedTable].order[name];
     }
     if (tables[selectedTable].totalPrice === 0) {
@@ -169,16 +234,6 @@ function removeFromOrder(name) {
     renderTables();
     updateOrderSummary();
     saveData();
-  }
-}
-
-// Disable the remove button for finalized items
-function disableRemoveButtonForFinalizedItems() {
-  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
-    const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
-    if (removeButton) {
-      removeButton.disabled = true;
-    }
   }
 }
 
@@ -207,7 +262,6 @@ function displayOrderItems(orderItems) {
   // Disable remove buttons for finalized items
   disableRemoveButtonForFinalizedItems();
 }
-
 
 // Update order summary
 function updateOrderSummary() {
@@ -240,8 +294,6 @@ function resetOrderSummary() {
   document.getElementById('total-price').textContent = '0';
 }
 
-
-
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
   for (const [name, item] of Object.entries(tables[selectedTable].order)) {
@@ -254,12 +306,15 @@ function disableRemoveButtonForFinalizedItems() {
   }
 }
 
-
-// Mark void mode
-function voidSelectedItem() {
-  isVoidMode = true;
-  alert("Void mode activated. Select the item to void.");
-}
+// Menu item click event to add items to the order
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', (event) => {
+    event.stopImmediatePropagation();
+    const name = item.getAttribute('data-name');
+    const price = parseFloat(item.getAttribute('data-price'));
+    addToOrder(name, price);
+  });
+});
 
 // Finalize the order and send to Kitchen and Bar
 function finalizeOrder() {
@@ -434,8 +489,49 @@ function closePaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
   if (paymentDialog) {
     paymentDialog.style.display = 'none';
+
+    // Reset payment summary
+    const paymentSummaryElem = document.getElementById('payment-summary');
+    const changeAmountElem = document.getElementById('change-amount');
+    const insufficientAmountElem = document.getElementById('insufficient-amount');
+    const shortAmountElem = document.getElementById('short-amount');
+
+    if (paymentSummaryElem) paymentSummaryElem.innerHTML = ''; // Clear payment list
+    if (changeAmountElem) changeAmountElem.textContent = '0'; // Reset change amount
+    if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
+    if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
+
+    // Reset the payments array for the selected table
+    if (tables[selectedTable]) {
+      tables[selectedTable].payments = [];
+    }
   }
 }
+
+function resetPaymentDialog() {
+  // Reset payment summary display
+  const paymentSummaryElem = document.getElementById('payment-summary');
+  const changeAmountElem = document.getElementById('change-amount');
+  const insufficientAmountElem = document.getElementById('insufficient-amount');
+  const shortAmountElem = document.getElementById('short-amount');
+
+  if (paymentSummaryElem) paymentSummaryElem.innerHTML = ''; // Clear payment list
+  if (changeAmountElem) changeAmountElem.textContent = '0'; // Reset change amount
+  if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
+  if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
+
+  // Reset the payments array for the selected table
+  if (tables[selectedTable]) {
+    tables[selectedTable].payments = [];
+  }
+
+  // Clear the input field
+  const numericInput = document.getElementById('numeric-input');
+  if (numericInput) numericInput.value = '';
+
+  updatePaymentSummary(); // Refresh payment summary
+}
+
 
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
@@ -605,6 +701,8 @@ function printReceipt() {
   printWindow.print();
   printWindow.close();
 }
+// Track void history
+let voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || [];
 
 document.addEventListener('DOMContentLoaded', function () {
   generateSalesReport();
@@ -636,10 +734,23 @@ function generateSalesReport() {
     <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
   salesReportElement.innerHTML = report;
+
+  // Display void history
+  displayVoidHistory();
 }
 
-function printAndResetSalesReport() {
-  // Your logic for printing and resetting the sales report
+function displayVoidHistory() {
+  const voidHistoryElem = document.getElementById('voidHistoryOutput');
+  if (!voidHistoryElem) {
+    console.error('Element with ID "voidHistoryOutput" not found.');
+    return;
+  }
+
+  let voidHistoryHTML = '<h3>Void History</h3>';
+  voidHistory.forEach(entry => {
+    voidHistoryHTML += `<p>${entry.time}: ${entry.name} - Rs ${entry.amount}</p>`;
+  });
+  voidHistoryElem.innerHTML = voidHistoryHTML;
 }
 
 function openOrderHistoryDialog() {
@@ -660,7 +771,6 @@ function editItem() {
   // Your logic for editing an item
 }
 
-
 // Function to print a specific element
 function printElement(elementId) {
   const element = document.getElementById(elementId);
@@ -679,6 +789,7 @@ function printElement(elementId) {
   printWindow.print();
   printWindow.close();
 }
+
 // Function to print and reset the sales report
 function printAndResetSalesReport() {
   console.log('Sales Report:', salesData);
@@ -700,7 +811,11 @@ function printAndResetSalesReport() {
   // Clear sales data from local storage
   localStorage.removeItem('salesData');
 
-  alert('Sales report and order history have been reset.');
+  // Clear void history
+  voidHistory = [];
+  localStorage.removeItem('voidHistory');
+
+  alert('Sales report, order history, and void history have been reset.');
 
   // Re-render the order history and sales report
   renderOrderHistory();
@@ -727,11 +842,15 @@ function resetSalesReport() {
   // Clear sales data from local storage
   localStorage.removeItem('salesData');
 
-  alert('Sales report, total orders, and order history have been reset.');
+  // Clear void history
+  voidHistory = [];
+  localStorage.removeItem('voidHistory');
+
+  alert('Sales report, total orders, order history, and void history have been reset.');
 
   // Re-render the order history and sales report
   renderOrderHistory();
-  displaySalesReport();
+  generateSalesReport();
 }
 
 // Function to show home content
