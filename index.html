@@ -129,10 +129,10 @@
         <p>Lavender Packet</p>
         <div class="price">Rs 300</div>
       </div>
-      <div class="menu-item" data-name="peppermint" data-price="200" data-category="Retail">
+      <div class="menu-item" data-name="peppermint" data-price="250" data-category="Retail">
         <img src="images/peppermint.jpg" alt="Peppermint Packet">
         <p>Peppermint Packet</p>
-        <div class="price">Rs 200</div>
+        <div class="price">Rs 250</div>
       </div>
       <div class="menu-item" data-name="strainer1" data-price="250" data-category="Retail">
         <img src="images/strainer1.jpg" alt="Strainer 1 Packet">
@@ -943,16 +943,12 @@
     <img src="images/jasmine.jpg" alt="Jasmine">
     <p>Jasmine</p>
     <div class="price">Rs 150</div>
+  
   </div>
-  <div class="menu-item" data-name="Black Tea" data-price="100" data-category="Tea" data-section="Bar">
-    <img src="images/black_tea.jpg" alt="Black Tea">
-    <p>Black Tea</p>
-    <div class="price">Rs 100</div>
-  </div>
-  <div class="menu-item" data-name="Organic Black Tea" data-price="120" data-category="Tea" data-section="Bar">
+  <div class="menu-item" data-name="Organic Black Tea" data-price="100" data-category="Tea" data-section="Bar">
     <img src="images/organic_black_tea.jpg" alt="Organic Black Tea">
     <p>Organic Black Tea</p>
-    <div class="price">Rs 120</div>
+    <div class="price">Rs 100</div>
   </div>
   <div class="menu-item" data-name="Himalayan Pearl Black Tea" data-price="120" data-category="Tea" data-section="Bar">
     <img src="images/himalayan_pearl_black_tea.jpg" alt="Himalayan Pearl Black Tea">
@@ -979,8 +975,8 @@
     <p>lavender rose</p>
     <div class="price">Rs 220</div>
   </div>
-  <div class="menu-item" data-name="Organic Green Tea" data-price="150" data-category="Tea" data-section="Bar">
-    <img src="images/organic_green_tea.jpg" alt="Organic Green Tea">
+  <div class="menu-item" data-name="Pearl Green Tea" data-price="150" data-category="Tea" data-section="Bar">
+    <img src="images/pearl_green_tea.jpg" alt="Pearl Green Tea">
     <p>Organic Green Tea</p>
     <div class="price">Rs 150</div>
   </div>
@@ -989,11 +985,7 @@
     <p>Himalayan Green Tea</p>
     <div class="price">Rs 150</div>
   </div>
-  <div class="menu-item" data-name="pearl Green Tea" data-price="150" data-category="Tea" data-section="Bar">
-    <img src="images/pearl_green_tea.jpg" alt="pearl Green Tea">
-    <p>pearl Green Tea</p>
-    <div class="price">Rs 150</div>
-  </div>
+
 </div>         
                 
                 
@@ -1022,62 +1014,63 @@
     
 
    
-        <!-- Payment Dialog -->
-        <div id="payment-dialog" class="dialog" style="display: none;">
-            <div class="dialog-content">
-                <span class="close" onclick="closePaymentDialog()">&times;</span>
-                <div class="payment-section">
-                    <div class="total-amount">
-                        <strong>Total Amount to be Paid: Rs </strong><span id="total-amount">0</span>
-                    </div>
-                    <div class="content-section">
-                        <div class="numeric-section">
-                            <input type="text" id="numeric-input" class="numeric-input" readonly placeholder="Enter amount">
-                            <div class="keypad">
-                                <button onclick="addNumber(1)">1</button>
-                                <button onclick="addNumber(2)">2</button>
-                                <button onclick="addNumber(3)">3</button>
-                                <button onclick="addNumber(4)">4</button>
-                                <button onclick="addNumber(5)">5</button>
-                                <button onclick="addNumber(6)">6</button>
-                                <button onclick="addNumber(7)">7</button>
-                                <button onclick="addNumber(8)">8</button>
-                                <button onclick="addNumber(9)">9</button>
-                                <button onclick="clearInput()">C</button>
-                                <button onclick="addNumber(0)">0</button>
-                                <button onclick="backspaceInput()">⌫</button>
-                            </div>
-                            <div class="quick-amounts">
-                                <button class="quick-amount-btn" onclick="addQuickAmount(50)">50</button>
-                                <button class="quick-amount-btn" onclick="addQuickAmount(100)">100</button>
-                                <button class="quick-amount-btn" onclick="addQuickAmount(500)">500</button>
-                                <button class="quick-amount-btn" onclick="addQuickAmount(1000)">1000</button>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            <div class="discount-section">
-                                <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
-                                <button class="apply-btn" onclick="applyDiscountHandler()">Apply Discount</button>
-                            </div>
-                            <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
-                            <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
-                            <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
-                            <button onclick="resetPaymentDialog()">clear</button>
-                        </div>
-                    </div>
-                    <div class="payment-summary">
-                        <strong>Payment Summary:</strong>
-                        <ul id="payment-summary"></ul>
-                    </div>
-                    <div class="change">
-                        <strong>Change:</strong> Rs <span id="change-amount">0</span>
-                    </div>
-                    <div class="insufficient-amount" id="insufficient-amount" style="display: none;">
-                        <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Payment Dialog -->
+<div id="payment-dialog" class="dialog" style="display: none;">
+  <div class="dialog-content">
+      <span class="close" onclick="closePaymentDialog()">&times;</span>
+      <div class="payment-section">
+          <div class="total-amount">
+              <strong>Total Amount to be Paid: Rs </strong><span id="total-amount">350</span>
+          </div>
+          <div class="content-section">
+              <div class="numeric-section">
+                  <input type="text" id="numeric-input" class="numeric-input" readonly placeholder="Enter amount">
+                  <div class="keypad">
+                      <button onclick="addNumber(1)">1</button>
+                      <button onclick="addNumber(2)">2</button>
+                      <button onclick="addNumber(3)">3</button>
+                      <button onclick="addNumber(4)">4</button>
+                      <button onclick="addNumber(5)">5</button>
+                      <button onclick="addNumber(6)">6</button>
+                      <button onclick="addNumber(7)">7</button>
+                      <button onclick="addNumber(8)">8</button>
+                      <button onclick="addNumber(9)">9</button>
+                      <button onclick="clearInput()">C</button>
+                      <button onclick="addNumber(0)">0</button>
+                      <button onclick="backspaceInput()">⌫</button>
+                  </div>
+                  <div class="quick-amounts">
+                      <button class="quick-amount-btn" onclick="addQuickAmount(50)">50</button>
+                      <button class="quick-amount-btn" onclick="addQuickAmount(100)">100</button>
+                      <button class="quick-amount-btn" onclick="addQuickAmount(500)">500</button>
+                      <button class="quick-amount-btn" onclick="addQuickAmount(1000)">1000</button>
+                  </div>
+              </div>
+              <div class="action-buttons">
+                  <div class="discount-section">
+                      <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
+                      <button class="apply-btn" onclick="applyDiscountHandler()">Apply Discount</button>
+                  </div>
+                  <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
+                  <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
+                  <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
+                  <button onclick="resetPaymentDialog()">Clear</button>
+              </div>
+          </div>
+          <div class="payment-summary">
+              <strong>Payment Summary:</strong>
+              <ul id="payment-summary"></ul>
+          </div>
+          <div class="change">
+              <strong>Change:</strong> Rs <span id="change-amount">0</span>
+          </div>
+          <div class="insufficient-amount" id="insufficient-amount" style="display: none;">
+              <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
+          </div>
+      </div>
+  </div>
+</div>
+
     
         <!-- QR Code Dialog -->
         <div id="qr-code-dialog" class="dialog" style="display: none;">
@@ -1131,7 +1124,6 @@
 
 
 
-<script src="script.js"></script>
 
 
   <script src="script.js"></script>
