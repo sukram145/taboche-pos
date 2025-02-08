@@ -33,10 +33,64 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   mobilePayments: 0
 };
 
-// Define the editItem function
-function editItem() {
-  console.log('Edit item function called!');
+function openAddItemModal() {
+  document.getElementById("addItemModal").style.display = "flex";
 }
+
+function closeAddItemModal() {
+  document.getElementById("addItemModal").style.display = "none";
+}
+
+function updateExtrasOptions() {
+  let itemSelect = document.getElementById("itemSelect").value;
+  let extraOptionsDiv = document.getElementById("extraOptions");
+  extraOptionsDiv.innerHTML = ""; // Clear previous options
+  
+  if (itemSelect === "food") {
+      extraOptionsDiv.innerHTML = `
+          <label><img src="cheese.jpg" alt="Cheese"> <input type="checkbox" value="75" class="extra"> Cheese (Rs 75)</label><br>
+          <label><img src="sausage.jpg" alt="Sausage"> <input type="checkbox" value="40" class="extra"> Sausage (Rs 40)</label><br>
+          <label><img src="egg.jpg" alt="Egg"> <input type="checkbox" value="50" class="extra"> Egg (Rs 50)</label><br>
+          <label><img src="salad.jpg" alt="Salad"> <input type="checkbox" value="75" class="extra"> Salad (Rs 75)</label><br>
+          <label><img src="toast.jpg" alt="Toast"> <input type="checkbox" value="50" class="extra"> Toast (Rs 50)</label>
+      `;
+  } else if (itemSelect === "drink") {
+      extraOptionsDiv.innerHTML = `
+          <label><img src="boba.jpg" alt="Boba"> <input type="checkbox" value="50" class="extra"> Boba (Rs 50)</label><br>
+          <label><img src="flavour.jpg" alt="Flavour"> <input type="checkbox" value="50" class="extra"> Flavour (Rs 50)</label><br>
+          <label><img src="coil.jpg" alt="Extra Coil"> <input type="checkbox" value="50" class="extra"> Extra Coil (Rs 50)</label><br>
+          <label><img src="extraflavour.jpg" alt="Extra Flavour"> <input type="checkbox" value="250" class="extra"> Extra Flavour (Rs 250)</label>
+      `;
+  }
+}
+
+function applyExtras() {
+  let selectedExtras = [];
+  let extraCost = 0;
+  document.querySelectorAll('#extraOptions input[type="checkbox"]:checked').forEach(checkbox => {
+      selectedExtras.push(`+ extra ${checkbox.parentElement.textContent.trim().split(' ')[0]} Rs ${checkbox.value}`);
+      extraCost += parseFloat(checkbox.value);
+  });
+  
+  let itemName = document.getElementById("itemSelect").value;
+  if (!itemName) {
+      alert("Please select an item");
+      return;
+  }
+  
+  let orderItemsList = document.getElementById('order-items');
+  let orderItem = document.createElement('li');
+  orderItem.textContent = `${itemName} (${selectedExtras.join(", ")}) - Rs ${extraCost}`;
+  orderItemsList.appendChild(orderItem);
+  
+  let totalPriceElem = document.getElementById('total-price');
+  let totalPrice = parseFloat(totalPriceElem.textContent) || 0;
+  totalPrice += extraCost;
+  totalPriceElem.textContent = totalPrice.toFixed(2);
+  
+  closeAddItemModal();
+}
+
 
 // Function to update date, time, and day of the week
 function updateDateTime() {
