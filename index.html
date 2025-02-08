@@ -670,10 +670,10 @@
     <p>Iced Hazelnut Latte</p>
     <div class="price">Rs 240</div>
   </div>
-   <div class="menu-item" data-name="Filter Coffee Cold" data-price="200" data-category="Cold Coffee" data-section="Bar">
+   <div class="menu-item" data-name="Filter Coffee Cold" data-price="300" data-category="Cold Coffee" data-section="Bar">
   <img src="images/filter_coffee_cold.jpg" alt="Filter Coffee Cold">
   <p>Filter Coffee Cold</p>
-  <div class="price">Rs 200</div>
+  <div class="price">Rs 300</div>
    </div>
   </div>
 
@@ -1062,6 +1062,7 @@
                             <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
                             <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
                             <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
+                            <button onclick="resetPaymentDialog()">clear</button>
                         </div>
                     </div>
                     <div class="payment-summary">
@@ -1094,10 +1095,12 @@
     <div id="content"></div>
   
 
+
   <div id="sales-report" class="sales-report"></div>
+  <div id="voidHistoryOutput"></div>
   <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
   <button class="view-order-history-btn" onclick="openOrderHistoryDialog()">View Order History</button>
-
+  
   <div id="order-history-dialog" class="dialog" style="display: none;">
     <div class="dialog-content">
       <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>

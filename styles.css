@@ -504,8 +504,7 @@ h3 {
 .print-receipt-btn:hover {
   background-color: #563d7c;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
+}/* Global Styles */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -513,6 +512,7 @@ body {
   background-color: #f4f4f9;
 }
 
+/* Dialog Box */
 .dialog {
   position: fixed;
   top: 0;
@@ -527,26 +527,31 @@ body {
 
 .dialog-content {
   background-color: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 600px;
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Close Button */
 .close {
   align-self: flex-end;
   font-size: 1.5em;
   cursor: pointer;
   color: #333;
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .close:hover {
   color: #ff0000;
+  transform: scale(1.1);
 }
 
+/* Payment Section */
 .payment-section {
   display: flex;
   flex-direction: column;
@@ -554,16 +559,18 @@ body {
 }
 
 .total-amount {
-  font-size: 1.5em;
+  font-size: 1.6em;
   font-weight: bold;
   margin-bottom: 20px;
 }
 
+/* Numeric Input Section */
 .content-section {
   display: flex;
   align-items: flex-start;
   width: 100%;
 }
+
 .numeric-section {
   margin-right: 20px;
   flex-grow: 1;
@@ -591,6 +598,7 @@ body {
   outline: none;
 }
 
+/* Keypad Section */
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -605,7 +613,7 @@ body {
   border: none;
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease-in-out;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -617,15 +625,16 @@ body {
 
 .keypad button:active {
   background: linear-gradient(145deg, #48494b, #003366);
-  transform: translateY(0);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: scale(0.98);
 }
 
+/* Quick Amount Buttons */
 .quick-amounts {
   margin-top: 20px;
   display: flex;
   gap: 15px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .quick-amount-btn {
@@ -636,28 +645,23 @@ body {
   border: none;
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease-in-out;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .quick-amount-btn:hover {
   background: linear-gradient(145deg, #218838, #1e7e34);
   transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
 }
 
-.quick-amount-btn:active {
-  background: linear-gradient(145deg, #1e7e34, #19652a);
-  transform: translateY(0);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
+/* Action Buttons */
 .action-buttons {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Discount Section */
 .discount-section {
   display: flex;
   gap: 10px;
@@ -685,13 +689,14 @@ body {
   background-color: #0056b3;
 }
 
+/* Payment Buttons */
 .cash-btn, .mobile-btn, .complete-btn {
-  padding: 10px 20px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1em;
+  border-radius: 12px;
+  font-size: 1.1em;
   color: #fff;
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
@@ -719,6 +724,7 @@ body {
   background-color: #0056b3;
 }
 
+/* Payment Summary */
 .payment-summary {
   margin-top: 20px;
   width: 100%;
@@ -734,6 +740,7 @@ body {
   border-bottom: 1px solid #ccc;
 }
 
+/* Change & Insufficient Amount */
 .change, .insufficient-amount {
   font-size: 1.2em;
   margin-top: 20px;
@@ -748,6 +755,8 @@ body {
   color: red;
   font-weight: bold;
 }
+
+/* QR Code Dialog */
 #qr-code-dialog {
   display: none;
   position: fixed;
@@ -756,7 +765,6 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -765,8 +773,8 @@ body {
 
 #qr-code-dialog .dialog-content {
   padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
   background-color: #fff;
   width: 80%;
   max-width: 400px;
@@ -785,6 +793,30 @@ body {
 #qr-code-dialog .close:hover {
   color: #ff0000;
 }
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive Fixes */
+@media screen and (max-width: 480px) {
+  .dialog-content {
+    width: 95%;
+    padding: 15px;
+  }
+  .keypad {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 
 /* Order History Styling */
 .order-history-item {
