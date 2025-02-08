@@ -33,63 +33,133 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   mobilePayments: 0
 };
 
+// Function to open the modal
 function openAddItemModal() {
-  document.getElementById("addItemModal").style.display = "flex";
+  const modal = document.getElementById('addItemModal');
+  modal.style.display = 'flex';
+  setTimeout(() => modal.style.opacity = '1', 50); // Smooth fade-in
 }
 
+// Function to close the modal
 function closeAddItemModal() {
-  document.getElementById("addItemModal").style.display = "none";
+  const modal = document.getElementById('addItemModal');
+  modal.style.opacity = '0';
+  setTimeout(() => modal.style.display = 'none', 300); // Smooth fade-out
 }
 
+// Function to update extras options based on selected item
 function updateExtrasOptions() {
-  let itemSelect = document.getElementById("itemSelect").value;
-  let extraOptionsDiv = document.getElementById("extraOptions");
+  const itemSelect = document.getElementById('itemSelect').value;
+  const extraOptionsDiv = document.getElementById('extraOptions');
   extraOptionsDiv.innerHTML = ""; // Clear previous options
   
   if (itemSelect === "food") {
       extraOptionsDiv.innerHTML = `
-          <label><img src="cheese.jpg" alt="Cheese"> <input type="checkbox" value="75" class="extra"> Cheese (Rs 75)</label><br>
-          <label><img src="sausage.jpg" alt="Sausage"> <input type="checkbox" value="40" class="extra"> Sausage (Rs 40)</label><br>
-          <label><img src="egg.jpg" alt="Egg"> <input type="checkbox" value="50" class="extra"> Egg (Rs 50)</label><br>
-          <label><img src="salad.jpg" alt="Salad"> <input type="checkbox" value="75" class="extra"> Salad (Rs 75)</label><br>
-          <label><img src="toast.jpg" alt="Toast"> <input type="checkbox" value="50" class="extra"> Toast (Rs 50)</label>
+          <div class="extra-item" onclick="addItem('Cheese', 75)">
+            <img src="images/cheese.jpg" alt="Cheese">
+            <span>Cheese</span>
+            <span>Rs 75</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Sausage', 40)">
+            <img src="images/sausage.jpg" alt="Sausage">
+            <span>Sausage</span>
+            <span>Rs 40</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Egg', 50)">
+            <img src="images/egg.jpg" alt="Egg">
+            <span>Egg</span>
+            <span>Rs 50</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Salad', 75)">
+            <img src="images/salad.jpg" alt="Salad">
+            <span>Salad</span>
+            <span>Rs 75</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Toast', 50)">
+            <img src="images/toast.jpg" alt="Toast">
+            <span>Toast</span>
+            <span>Rs 50</span>
+          </div>
       `;
   } else if (itemSelect === "drink") {
       extraOptionsDiv.innerHTML = `
-          <label><img src="boba.jpg" alt="Boba"> <input type="checkbox" value="50" class="extra"> Boba (Rs 50)</label><br>
-          <label><img src="flavour.jpg" alt="Flavour"> <input type="checkbox" value="50" class="extra"> Flavour (Rs 50)</label><br>
-          <label><img src="coil.jpg" alt="Extra Coil"> <input type="checkbox" value="50" class="extra"> Extra Coil (Rs 50)</label><br>
-          <label><img src="extraflavour.jpg" alt="Extra Flavour"> <input type="checkbox" value="250" class="extra"> Extra Flavour (Rs 250)</label>
+          <div class="extra-item" onclick="addItem('Boba', 50)">
+            <img src="images/boba.jpg" alt="Boba">
+            <span>Boba</span>
+            <span>Rs 50</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Flavour', 50)">
+            <img src="images/flavour.jpg" alt="Flavour">
+            <span>Flavour</span>
+            <span>Rs 50</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Extra Coil', 50)">
+            <img src="images/coil.jpg" alt="Extra Coil">
+            <span>Extra Coil</span>
+            <span>Rs 50</span>
+          </div>
+          <div class="extra-item" onclick="addItem('Extra Flavour', 250)">
+            <img src="images/extraflavour.jpg" alt="Extra Flavour">
+            <span>Extra Flavour</span>
+            <span>Rs 250</span>
+          </div>
       `;
   }
 }
 
-function applyExtras() {
-  let selectedExtras = [];
-  let extraCost = 0;
-  document.querySelectorAll('#extraOptions input[type="checkbox"]:checked').forEach(checkbox => {
-      selectedExtras.push(`+ extra ${checkbox.parentElement.textContent.trim().split(' ')[0]} Rs ${checkbox.value}`);
-      extraCost += parseFloat(checkbox.value);
-  });
-  
-  let itemName = document.getElementById("itemSelect").value;
-  if (!itemName) {
-      alert("Please select an item");
-      return;
+// Function to add item to the order summary
+function addItem(itemName, itemPrice) {
+  const orderItemsList = document.getElementById('order-items');
+  const existingItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
+
+  if (existingItem) {
+    const itemCount = parseInt(existingItem.dataset.count) + 1;
+    existingItem.dataset.count = itemCount;
+    existingItem.querySelector('.item-count').textContent = `x${itemCount}`;
+    existingItem.querySelector('.item-total').textContent = `Rs ${itemPrice * itemCount}`;
+  } else {
+    const orderItem = document.createElement('li');
+    orderItem.className = 'order-item';
+    orderItem.dataset.name = itemName;
+    orderItem.dataset.count = 1;
+    orderItem.innerHTML = `
+      ${itemName} <span class="item-count">x1</span> - <span class="item-total">Rs ${itemPrice}</span>
+      <button class="btn remove-btn" onclick="removeItem('${itemName}', ${itemPrice})">Remove</button>
+    `;
+    orderItemsList.appendChild(orderItem);
   }
-  
-  let orderItemsList = document.getElementById('order-items');
-  let orderItem = document.createElement('li');
-  orderItem.textContent = `${itemName} (${selectedExtras.join(", ")}) - Rs ${extraCost}`;
-  orderItemsList.appendChild(orderItem);
-  
-  let totalPriceElem = document.getElementById('total-price');
+
+  // Update total price
+  const totalPriceElem = document.getElementById('total-price');
   let totalPrice = parseFloat(totalPriceElem.textContent) || 0;
-  totalPrice += extraCost;
+  totalPrice += itemPrice;
   totalPriceElem.textContent = totalPrice.toFixed(2);
-  
-  closeAddItemModal();
 }
+
+// Function to remove item from the order summary
+function removeItem(itemName, itemPrice) {
+  const orderItemsList = document.getElementById('order-items');
+  const item = [...orderItemsList.children].find(item => item.dataset.name === itemName);
+  
+  if (item) {
+    const itemCount = parseInt(item.dataset.count) - 1;
+    
+    if (itemCount === 0) {
+      orderItemsList.removeChild(item);
+    } else {
+      item.dataset.count = itemCount;
+      item.querySelector('.item-count').textContent = `x${itemCount}`;
+      item.querySelector('.item-total').textContent = `Rs ${itemPrice * itemCount}`;
+    }
+
+    // Update total price
+    const totalPriceElem = document.getElementById('total-price');
+    let totalPrice = parseFloat(totalPriceElem.textContent) || 0;
+    totalPrice -= itemPrice;
+    totalPriceElem.textContent = totalPrice.toFixed(2);
+  }
+}
+
 
 
 // Function to update date, time, and day of the week
