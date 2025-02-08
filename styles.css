@@ -601,12 +601,12 @@ body {
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 7.5px;
+  gap: 15px; /* Increased gap size */
 }
 
 .keypad button {
-  padding: 10px;
-  font-size: 0.9em;
+  padding: 20px; /* Increased padding */
+  font-size: 1.2em; /* Increased font size */
   border-radius: 9px;
   background: linear-gradient(145deg, #007BFF, #0056b3);
   border: none;
@@ -631,14 +631,14 @@ body {
 .quick-amounts {
   margin-top: 10px;
   display: flex;
-  gap: 7.5px;
+  gap: 10px; /* Increased gap size */
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .quick-amount-btn {
-  padding: 7.5px;
-  font-size: 0.825em;
+  padding: 15px; /* Increased padding */
+  font-size: 1.2em; /* Increased font size */
   border-radius: 9px;
   background: linear-gradient(145deg, #28A745, #218838);
   border: none;
@@ -786,9 +786,10 @@ body {
   border-radius: 9px;
   box-shadow: 0 3px 7.5px rgba(0, 0, 0, 0.225);
   background-color: #fff;
-  width: 40%;
-  max-width: 200px;
+  width: 60%;
+  max-width: 300px;
   text-align: center;
+  overflow: hidden; /* Ensure no scrolling */
 }
 
 #qr-code-dialog .close {
