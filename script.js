@@ -228,8 +228,8 @@ function renderTables() {
 }
 
 function selectTable(table) {
-  // Automatically finalize the current table's order before switching
-  if (selectedTable && selectedTable !== "None" && Object.keys(tables[selectedTable].order).length > 0) {
+  // Automatically finalize the current table's order before switching if new items were added
+  if (selectedTable && selectedTable !== "None" && tables[selectedTable].newItemsAdded) {
     finalizeOrder();  // Finalize the current table's order
   }
 
@@ -298,7 +298,6 @@ function voidSelectedItem() {
   alert("Void mode activated. Select the item to void.");
 }
 
-// Add item to the order with negative price if in void mode
 function addToOrder(name, price) {
   console.log(`Adding to order: ${name}, Price: ${price}, Selected Table: ${selectedTable}`);
   if (selectedTable === "None") {
@@ -313,13 +312,14 @@ function addToOrder(name, price) {
     isVoidMode = false; // Disable void mode after removing the item
   } else {
     if (!tables[selectedTable].order.hasOwnProperty(name)) {
-      tables[selectedTable].order[name] = { price: price, quantity: 1 };
+      tables[selectedTable].order[name] = { price: price, quantity: 1, finalized: false };
     } else {
       tables[selectedTable].order[name].quantity += 1;
     }
     tables[selectedTable].totalPrice += price;
     tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
     tables[selectedTable].status = "occupied";
+    tables[selectedTable].newItemsAdded = true; // Set the flag to true
     renderTables();
     updateOrderSummary();
     saveData();
@@ -444,7 +444,9 @@ document.querySelectorAll('.menu-item').forEach(item => {
     addToOrder(name, price);
   });
 });
-// Finalize the order and send to Kitchen and Bar
+
+
+
 function finalizeOrder() {
   if (selectedTable === "None") {
     alert("Please select a table first!");
@@ -477,6 +479,9 @@ function finalizeOrder() {
   }
 
   alert('Order finalized and sent to Kitchen and Bar!');
+
+  // Reset the flag after finalizing
+  tables[selectedTable].newItemsAdded = false;
 
   // Disable the remove button for finalized items
   disableRemoveButtonForFinalizedItems();
