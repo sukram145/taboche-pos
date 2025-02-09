@@ -32,7 +32,6 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   cashPayments: 0,
   mobilePayments: 0
 };
-
 // Function to open the modal
 function openAddItemModal() {
   const modal = document.getElementById('addItemModal');
@@ -47,63 +46,64 @@ function closeAddItemModal() {
   setTimeout(() => modal.style.display = 'none', 300); // Smooth fade-out
 }
 
-// Function to update extras options based on selected item
-function updateExtrasOptions() {
-  const itemSelect = document.getElementById('itemSelect').value;
-  const extraOptionsDiv = document.getElementById('extraOptions');
-  extraOptionsDiv.innerHTML = ""; // Clear previous options
-  
-  if (itemSelect === "food") {
-      extraOptionsDiv.innerHTML = `
-          <div class="extra-item" onclick="addItem('Cheese', 75)">
-            <img src="images/cheese.jpg" alt="Cheese">
-            <span>Cheese</span>
-            <span>Rs 75</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Sausage', 40)">
-            <img src="images/sausage.jpg" alt="Sausage">
-            <span>Sausage</span>
-            <span>Rs 40</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Egg', 50)">
-            <img src="images/egg.jpg" alt="Egg">
-            <span>Egg</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Salad', 75)">
-            <img src="images/salad.jpg" alt="Salad">
-            <span>Salad</span>
-            <span>Rs 75</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Toast', 50)">
-            <img src="images/toast.jpg" alt="Toast">
-            <span>Toast</span>
-            <span>Rs 50</span>
-          </div>
+// Function to handle item selection
+function selectItem(itemType) {
+  const extraOptions = document.getElementById('extraOptions');
+  if (extraOptions) {
+    let optionsHTML = '';
+    if (itemType === 'food') {
+      optionsHTML = `
+        <div class="extra-item" onclick="addItem('Cheese', 75)">
+          <img src="images/cheese.jpg" alt="Cheese">
+          <span>Cheese</span>
+          <span>Rs 75</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Sausage', 40)">
+          <img src="images/sausage.jpg" alt="Sausage">
+          <span>Sausage</span>
+          <span>Rs 40</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Egg', 50)">
+          <img src="images/egg.jpg" alt="Egg">
+          <span>Egg</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Salad', 75)">
+          <img src="images/salad.jpg" alt="Salad">
+          <span>Salad</span>
+          <span>Rs 75</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Toast', 50)">
+          <img src="images/toast.jpg" alt="Toast">
+          <span>Toast</span>
+          <span>Rs 50</span>
+        </div>
       `;
-  } else if (itemSelect === "drink") {
-      extraOptionsDiv.innerHTML = `
-          <div class="extra-item" onclick="addItem('Boba', 50)">
-            <img src="images/boba.jpg" alt="Boba">
-            <span>Boba</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Flavour', 50)">
-            <img src="images/flavour.jpg" alt="Flavour">
-            <span>Flavour</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Extra Coil', 50)">
-            <img src="images/coil.jpg" alt="Extra Coil">
-            <span>Extra Coil</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Extra Flavour', 250)">
-            <img src="images/extraflavour.jpg" alt="Extra Flavour">
-            <span>Extra Flavour</span>
-            <span>Rs 250</span>
-          </div>
+    } else if (itemType === 'drink') {
+      optionsHTML = `
+        <div class="extra-item" onclick="addItem('Boba', 50)">
+          <img src="images/boba.jpg" alt="Boba">
+          <span>Boba</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Flavour', 50)">
+          <img src="images/flavour.jpg" alt="Flavour">
+          <span>Flavour</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Coil', 50)">
+          <img src="images/coil.jpg" alt="Extra Coil">
+          <span>Extra Coil</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Flavour', 250)">
+          <img src="images/extraflavour.jpg" alt="Extra Flavour">
+          <span>Extra Flavour</span>
+          <span>Rs 250</span>
+        </div>
       `;
+    }
+    extraOptions.innerHTML = optionsHTML;
   }
 }
 
