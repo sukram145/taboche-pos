@@ -107,8 +107,28 @@ function updateExtrasOptions() {
   }
 }
 
+// Function to save table data to localStorage
+function saveData() {
+  localStorage.setItem('tables', JSON.stringify(tables));
+}
+
 // Function to add item to the order summary
 function addItem(itemName, itemPrice) {
+  if (!selectedTable) {
+    alert("Please select a table first!");
+    return;
+  }
+
+  const table = tables[selectedTable];
+  if (!table.order[itemName]) {
+    table.order[itemName] = { price: itemPrice, quantity: 1 };
+  } else {
+    table.order[itemName].quantity += 1;
+  }
+  table.totalPrice += itemPrice;
+  table.discountedTotal = table.totalPrice * ((100 - table.discount) / 100);
+  table.status = "occupied";
+
   const orderItemsList = document.getElementById('order-items');
   const existingItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
 
@@ -131,34 +151,45 @@ function addItem(itemName, itemPrice) {
 
   // Update total price
   const totalPriceElem = document.getElementById('total-price');
-  let totalPrice = parseFloat(totalPriceElem.textContent) || 0;
-  totalPrice += itemPrice;
-  totalPriceElem.textContent = totalPrice.toFixed(2);
+  totalPriceElem.textContent = table.totalPrice.toFixed(2);
+
+  saveData(); // Save data to localStorage after adding item
 }
 
 // Function to remove item from the order summary
 function removeItem(itemName, itemPrice) {
-  const orderItemsList = document.getElementById('order-items');
-  const item = [...orderItemsList.children].find(item => item.dataset.name === itemName);
-  
+  if (!selectedTable) {
+    alert("Please select a table first!");
+    return;
+  }
+
+  const table = tables[selectedTable];
+  const item = table.order[itemName];
+
   if (item) {
-    const itemCount = parseInt(item.dataset.count) - 1;
+    table.totalPrice -= item.price * item.quantity;
+    delete table.order[itemName];
+    table.discountedTotal = table.totalPrice * ((100 - table.discount) / 100);
     
-    if (itemCount === 0) {
-      orderItemsList.removeChild(item);
-    } else {
-      item.dataset.count = itemCount;
-      item.querySelector('.item-count').textContent = `x${itemCount}`;
-      item.querySelector('.item-total').textContent = `Rs ${itemPrice * itemCount}`;
+    const orderItemsList = document.getElementById('order-items');
+    const orderItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
+
+    if (orderItem) {
+      orderItemsList.removeChild(orderItem);
     }
 
     // Update total price
     const totalPriceElem = document.getElementById('total-price');
-    let totalPrice = parseFloat(totalPriceElem.textContent) || 0;
-    totalPrice -= itemPrice;
-    totalPriceElem.textContent = totalPrice.toFixed(2);
+    totalPriceElem.textContent = table.totalPrice.toFixed(2);
+
+    if (table.totalPrice === 0) {
+      table.status = "available";
+    }
+
+    saveData(); // Save data to localStorage after removing item
   }
 }
+
 
 
 
@@ -196,8 +227,12 @@ function renderTables() {
   }
 }
 
-// Select a table and update UI
 function selectTable(table) {
+  // Automatically finalize the current table's order before switching
+  if (selectedTable && selectedTable !== "None" && Object.keys(tables[selectedTable].order).length > 0) {
+    finalizeOrder();  // Finalize the current table's order
+  }
+
   selectedTable = table;
   const selectedTableDisplayElem = document.getElementById('selected-table-display');
   const orderSection = document.getElementById('order-section');
@@ -214,7 +249,23 @@ function selectTable(table) {
   }
 
   updateOrderSummary();
+
+  // Disable remove buttons for items from the previously selected table
+  const removeButtons = document.querySelectorAll('.remove-item');
+  removeButtons.forEach(button => {
+    if (button.getAttribute('data-table') !== selectedTable) {
+      button.disabled = true;
+    } else {
+      button.disabled = false;
+    }
+  });
+
+  // Disable remove buttons for finalized items
+  disableRemoveButtonForFinalizedItems();
 }
+
+
+
 
 // Function to search menu items
 function searchMenu() {
@@ -274,6 +325,8 @@ function addToOrder(name, price) {
     saveData();
   }
 }
+
+
 // Mark void mode
 function voidSelectedItem() {
   isVoidMode = true;
@@ -307,7 +360,6 @@ function removeFromOrder(name) {
   }
 }
 
-// Display order items in the order summary
 function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
   orderItemsList.innerHTML = '';
@@ -320,6 +372,7 @@ function displayOrderItems(orderItems) {
     removeButton.textContent = 'Remove';
     removeButton.className = 'remove-item';
     removeButton.setAttribute('data-name', name);
+    removeButton.setAttribute('data-table', selectedTable); // Store table info
     removeButton.onclick = () => removeFromOrder(name);
     orderItem.appendChild(removeButton);
     totalPrice += item.price * item.quantity;
@@ -332,6 +385,8 @@ function displayOrderItems(orderItems) {
   // Disable remove buttons for finalized items
   disableRemoveButtonForFinalizedItems();
 }
+
+
 
 // Update order summary
 function updateOrderSummary() {
@@ -353,7 +408,11 @@ function updateOrderSummary() {
       Discounted Total: Rs ${order.discountedTotal.toFixed(2)}
     `;
   }
+
+  // Call the function to disable remove buttons for finalized items
+  disableRemoveButtonForFinalizedItems();
 }
+
 
 // Reset order summary
 function resetOrderSummary() {
@@ -385,7 +444,6 @@ document.querySelectorAll('.menu-item').forEach(item => {
     addToOrder(name, price);
   });
 });
-
 // Finalize the order and send to Kitchen and Bar
 function finalizeOrder() {
   if (selectedTable === "None") {
@@ -403,7 +461,7 @@ function finalizeOrder() {
       const section = sectionElem.getAttribute('data-section');
       if (section === 'Kitchen') {
         kitchenOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
-      } else if ( section === 'Bar') {
+      } else if (section === 'Bar') {
         barOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
       }
     } else {
@@ -426,7 +484,9 @@ function finalizeOrder() {
 
 
 
-// Change table
+
+
+// Function to change table
 function changeTable() {
   const newTable = prompt("Enter new table number:");
   if (newTable && tables[`Table ${newTable}`]) {
@@ -439,6 +499,7 @@ function changeTable() {
     selectedTable = `Table ${newTable}`;
     renderTables();
     updateOrderSummary();
+    disableRemoveButtons(); // Disable remove buttons after changing table
     saveData();
   } else {
     alert("Invalid table number or table does not exist.");
@@ -490,10 +551,13 @@ function updateTotalAmount() {
 function addPayment(paymentMethod) {
   const numericInput = document.getElementById('numeric-input');
   const amount = parseFloat(numericInput.value);
+  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
+
   if (isNaN(amount) || amount <= 0) {
     alert('Invalid amount. Please enter a valid number.');
     return;
   }
+
   if (!tables[selectedTable]) {
     tables[selectedTable] = {
       payments: [],
@@ -505,6 +569,18 @@ function addPayment(paymentMethod) {
       status: 'occupied'
     };
   }
+
+  // Calculate the total amount paid so far
+  const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+
+  if (paymentMethod === 'Mobile Payment') {
+    const remainingAmount = totalPrice - totalPaid;
+    if (amount > remainingAmount) {
+      alert(`Amount exceeds the remaining balance. Please enter an amount up to Rs ${remainingAmount}.`);
+      return;
+    }
+  }
+
   tables[selectedTable].payments.push({ method: paymentMethod, amount });
 
   // Show QR code for mobile payment
@@ -601,7 +677,6 @@ function resetPaymentDialog() {
 
   updatePaymentSummary(); // Refresh payment summary
 }
-
 
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
@@ -733,6 +808,7 @@ function applyDiscountHandler() {
 // Initially update the total amount to be paid
 updateTotalAmount();
 
+
 function printReceipt() {
   const logoUrl = 'http://localhost/images/RestaurantLogo.png'; // Update with your logo URL
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
@@ -808,7 +884,6 @@ function generateSalesReport() {
   // Display void history
   displayVoidHistory();
 }
-
 function displayVoidHistory() {
   const voidHistoryElem = document.getElementById('voidHistoryOutput');
   if (!voidHistoryElem) {
@@ -816,11 +891,26 @@ function displayVoidHistory() {
     return;
   }
 
-  let voidHistoryHTML = '<h3>Void History</h3>';
+  let voidHistoryHTML = '';
   voidHistory.forEach(entry => {
     voidHistoryHTML += `<p>${entry.time}: ${entry.name} - Rs ${entry.amount}</p>`;
   });
   voidHistoryElem.innerHTML = voidHistoryHTML;
+}
+
+function openVoidHistoryDialog() {
+  const voidHistoryDialog = document.getElementById('void-history-dialog');
+  if (voidHistoryDialog) {
+    displayVoidHistory(); // Populate the void history content
+    voidHistoryDialog.style.display = 'block';
+  }
+}
+
+function closeVoidHistoryDialog() {
+  const voidHistoryDialog = document.getElementById('void-history-dialog');
+  if (voidHistoryDialog) {
+    voidHistoryDialog.style.display = 'none';
+  }
 }
 
 function openOrderHistoryDialog() {
@@ -836,6 +926,7 @@ function closeOrderHistoryDialog() {
     orderHistoryDialog.style.display = 'none';
   }
 }
+
 
 function editItem() {
   // Your logic for editing an item

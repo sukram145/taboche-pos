@@ -1088,20 +1088,31 @@
     <div id="content"></div>
   
 
+    <div id="sales-report" class="sales-report"></div>
 
-  <div id="sales-report" class="sales-report"></div>
-  <div id="voidHistoryOutput"></div>
-  <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
-  <button class="view-order-history-btn" onclick="openOrderHistoryDialog()">View Order History</button>
-  
-  <div id="order-history-dialog" class="dialog" style="display: none;">
-    <div class="dialog-content">
-      <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
-      <h2>Order History</h2>
-      <div id="order-history-container"></div>
+    <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
+    <button class="view-order-history-btn" onclick="openOrderHistoryDialog()">View Order History</button>
+    
+    <!-- Order History Dialog -->
+    <div id="order-history-dialog" class="dialog" style="display: none;">
+      <div class="dialog-content">
+        <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
+        <h2>Order History</h2>
+        <div id="order-history-container"></div>
+      </div>
     </div>
-  </div>
-
+    
+    <!-- Void History Dialog -->
+    <div id="void-history-dialog" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); border:1px solid #ccc; background-color:#fff; padding:20px; z-index:1000;">
+      <h3>Void History</h3>
+      <div id="voidHistoryOutput"></div>
+      <button onclick="closeVoidHistoryDialog()">Close</button>
+    </div>
+    
+    <!-- Buttons to Open Dialogs -->
+    <button onclick="openVoidHistoryDialog()">Show Void History</button>
+   
+    
 
   
     <!-- Add Item Button -->
