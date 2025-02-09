@@ -32,11 +32,166 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   cashPayments: 0,
   mobilePayments: 0
 };
-
-// Define the editItem function
-function editItem() {
-  console.log('Edit item function called!');
+// Function to open the modal
+function openAddItemModal() {
+  const modal = document.getElementById('addItemModal');
+  modal.style.display = 'flex';
+  setTimeout(() => modal.style.opacity = '1', 50); // Smooth fade-in
 }
+
+// Function to close the modal
+function closeAddItemModal() {
+  const modal = document.getElementById('addItemModal');
+  modal.style.opacity = '0';
+  setTimeout(() => modal.style.display = 'none', 300); // Smooth fade-out
+}
+
+// Function to handle item selection
+function selectItem(itemType) {
+  const extraOptions = document.getElementById('extraOptions');
+  if (extraOptions) {
+    let optionsHTML = '';
+    if (itemType === 'food') {
+      optionsHTML = `
+        <div class="extra-item" onclick="addItem('Cheese', 75)">
+          <img src="images/cheese.jpg" alt="Cheese">
+          <span>Cheese</span>
+          <span>Rs 75</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Sausage', 40)">
+          <img src="images/sausage.jpg" alt="Sausage">
+          <span>Sausage</span>
+          <span>Rs 40</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Egg', 50)">
+          <img src="images/egg.jpg" alt="Egg">
+          <span>Egg</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Salad', 75)">
+          <img src="images/salad.jpg" alt="Salad">
+          <span>Salad</span>
+          <span>Rs 75</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Toast', 50)">
+          <img src="images/toast.jpg" alt="Toast">
+          <span>Toast</span>
+          <span>Rs 50</span>
+        </div>
+      `;
+    } else if (itemType === 'drink') {
+      optionsHTML = `
+        <div class="extra-item" onclick="addItem('Boba', 50)">
+          <img src="images/boba.jpg" alt="Boba">
+          <span>Boba</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Flavour', 50)">
+          <img src="images/flavour.jpg" alt="Flavour">
+          <span>Flavour</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Coil', 50)">
+          <img src="images/coil.jpg" alt="Extra Coil">
+          <span>Extra Coil</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Flavour', 250)">
+          <img src="images/extraflavour.jpg" alt="Extra Flavour">
+          <span>Extra Flavour</span>
+          <span>Rs 250</span>
+        </div>
+      `;
+    }
+    extraOptions.innerHTML = optionsHTML;
+  }
+}
+
+// Function to save table data to localStorage
+function saveData() {
+  localStorage.setItem('tables', JSON.stringify(tables));
+}
+
+// Function to add item to the order summary
+function addItem(itemName, itemPrice) {
+  if (!selectedTable) {
+    alert("Please select a table first!");
+    return;
+  }
+
+  const table = tables[selectedTable];
+  if (!table.order[itemName]) {
+    table.order[itemName] = { price: itemPrice, quantity: 1 };
+  } else {
+    table.order[itemName].quantity += 1;
+  }
+  table.totalPrice += itemPrice;
+  table.discountedTotal = table.totalPrice * ((100 - table.discount) / 100);
+  table.status = "occupied";
+
+  const orderItemsList = document.getElementById('order-items');
+  const existingItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
+
+  if (existingItem) {
+    const itemCount = parseInt(existingItem.dataset.count) + 1;
+    existingItem.dataset.count = itemCount;
+    existingItem.querySelector('.item-count').textContent = `x${itemCount}`;
+    existingItem.querySelector('.item-total').textContent = `Rs ${itemPrice * itemCount}`;
+  } else {
+    const orderItem = document.createElement('li');
+    orderItem.className = 'order-item';
+    orderItem.dataset.name = itemName;
+    orderItem.dataset.count = 1;
+    orderItem.innerHTML = `
+      ${itemName} <span class="item-count">x1</span> - <span class="item-total">Rs ${itemPrice}</span>
+      <button class="btn remove-btn" onclick="removeItem('${itemName}', ${itemPrice})">Remove</button>
+    `;
+    orderItemsList.appendChild(orderItem);
+  }
+
+  // Update total price
+  const totalPriceElem = document.getElementById('total-price');
+  totalPriceElem.textContent = table.totalPrice.toFixed(2);
+
+  saveData(); // Save data to localStorage after adding item
+}
+
+// Function to remove item from the order summary
+function removeItem(itemName, itemPrice) {
+  if (!selectedTable) {
+    alert("Please select a table first!");
+    return;
+  }
+
+  const table = tables[selectedTable];
+  const item = table.order[itemName];
+
+  if (item) {
+    table.totalPrice -= item.price * item.quantity;
+    delete table.order[itemName];
+    table.discountedTotal = table.totalPrice * ((100 - table.discount) / 100);
+    
+    const orderItemsList = document.getElementById('order-items');
+    const orderItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
+
+    if (orderItem) {
+      orderItemsList.removeChild(orderItem);
+    }
+
+    // Update total price
+    const totalPriceElem = document.getElementById('total-price');
+    totalPriceElem.textContent = table.totalPrice.toFixed(2);
+
+    if (table.totalPrice === 0) {
+      table.status = "available";
+    }
+
+    saveData(); // Save data to localStorage after removing item
+  }
+}
+
+
+
 
 // Function to update date, time, and day of the week
 function updateDateTime() {
@@ -72,8 +227,12 @@ function renderTables() {
   }
 }
 
-// Select a table and update UI
 function selectTable(table) {
+  // Automatically finalize the current table's order before switching
+  if (selectedTable && selectedTable !== "None" && Object.keys(tables[selectedTable].order).length > 0) {
+    finalizeOrder();  // Finalize the current table's order
+  }
+
   selectedTable = table;
   const selectedTableDisplayElem = document.getElementById('selected-table-display');
   const orderSection = document.getElementById('order-section');
@@ -90,7 +249,23 @@ function selectTable(table) {
   }
 
   updateOrderSummary();
+
+  // Disable remove buttons for items from the previously selected table
+  const removeButtons = document.querySelectorAll('.remove-item');
+  removeButtons.forEach(button => {
+    if (button.getAttribute('data-table') !== selectedTable) {
+      button.disabled = true;
+    } else {
+      button.disabled = false;
+    }
+  });
+
+  // Disable remove buttons for finalized items
+  disableRemoveButtonForFinalizedItems();
 }
+
+
+
 
 // Function to search menu items
 function searchMenu() {
@@ -151,12 +326,28 @@ function addToOrder(name, price) {
   }
 }
 
-// Remove item from the order
+
+// Mark void mode
+function voidSelectedItem() {
+  isVoidMode = true;
+  alert("Void mode activated. Select the item to void.");
+}
+
+// Remove item from the order and record void details
 function removeFromOrder(name) {
   if (tables[selectedTable].order[name]) {
-    tables[selectedTable].totalPrice -= tables[selectedTable].order[name].price;
-    tables[selectedTable].order[name].quantity -= 1;
-    if (tables[selectedTable].order[name].quantity <= 0) {
+    const item = tables[selectedTable].order[name];
+    const voidEntry = {
+      name: name,
+      amount: item.price,
+      time: new Date().toLocaleTimeString()
+    };
+    voidHistory.push(voidEntry);
+    localStorage.setItem('voidHistory', JSON.stringify(voidHistory)); // Save void history to localStorage
+
+    tables[selectedTable].totalPrice -= item.price;
+    item.quantity -= 1;
+    if (item.quantity <= 0) {
       delete tables[selectedTable].order[name];
     }
     if (tables[selectedTable].totalPrice === 0) {
@@ -169,27 +360,6 @@ function removeFromOrder(name) {
   }
 }
 
-// Disable the remove button for finalized items
-function disableRemoveButtonForFinalizedItems() {
-  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
-    const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
-    if (removeButton) {
-      removeButton.disabled = true;
-    }
-  }
-}
-
-document.querySelectorAll('.menu-item').forEach(item => {
-  item.addEventListener('click', (event) => {
-    event.stopImmediatePropagation();
-    const name = item.getAttribute('data-name');
-    const price = parseFloat(item.getAttribute('data-price'));
-    addToOrder(name, price);
-  });
-});
-
-
-// Display order items in the order summary
 function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
   orderItemsList.innerHTML = '';
@@ -202,6 +372,7 @@ function displayOrderItems(orderItems) {
     removeButton.textContent = 'Remove';
     removeButton.className = 'remove-item';
     removeButton.setAttribute('data-name', name);
+    removeButton.setAttribute('data-table', selectedTable); // Store table info
     removeButton.onclick = () => removeFromOrder(name);
     orderItem.appendChild(removeButton);
     totalPrice += item.price * item.quantity;
@@ -214,6 +385,7 @@ function displayOrderItems(orderItems) {
   // Disable remove buttons for finalized items
   disableRemoveButtonForFinalizedItems();
 }
+
 
 
 // Update order summary
@@ -236,7 +408,11 @@ function updateOrderSummary() {
       Discounted Total: Rs ${order.discountedTotal.toFixed(2)}
     `;
   }
+
+  // Call the function to disable remove buttons for finalized items
+  disableRemoveButtonForFinalizedItems();
 }
+
 
 // Reset order summary
 function resetOrderSummary() {
@@ -246,8 +422,6 @@ function resetOrderSummary() {
   document.getElementById('order-items').innerHTML = '';
   document.getElementById('total-price').textContent = '0';
 }
-
-
 
 // Disable the remove button for finalized items
 function disableRemoveButtonForFinalizedItems() {
@@ -261,13 +435,15 @@ function disableRemoveButtonForFinalizedItems() {
   }
 }
 
-
-// Mark void mode
-function voidSelectedItem() {
-  isVoidMode = true;
-  alert("Void mode activated. Select the item to void.");
-}
-
+// Menu item click event to add items to the order
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', (event) => {
+    event.stopImmediatePropagation();
+    const name = item.getAttribute('data-name');
+    const price = parseFloat(item.getAttribute('data-price'));
+    addToOrder(name, price);
+  });
+});
 // Finalize the order and send to Kitchen and Bar
 function finalizeOrder() {
   if (selectedTable === "None") {
@@ -285,7 +461,7 @@ function finalizeOrder() {
       const section = sectionElem.getAttribute('data-section');
       if (section === 'Kitchen') {
         kitchenOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
-      } else if ( section === 'Bar') {
+      } else if (section === 'Bar') {
         barOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
       }
     } else {
@@ -308,7 +484,9 @@ function finalizeOrder() {
 
 
 
-// Change table
+
+
+// Function to change table
 function changeTable() {
   const newTable = prompt("Enter new table number:");
   if (newTable && tables[`Table ${newTable}`]) {
@@ -321,6 +499,7 @@ function changeTable() {
     selectedTable = `Table ${newTable}`;
     renderTables();
     updateOrderSummary();
+    disableRemoveButtons(); // Disable remove buttons after changing table
     saveData();
   } else {
     alert("Invalid table number or table does not exist.");
@@ -372,10 +551,13 @@ function updateTotalAmount() {
 function addPayment(paymentMethod) {
   const numericInput = document.getElementById('numeric-input');
   const amount = parseFloat(numericInput.value);
+  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
+
   if (isNaN(amount) || amount <= 0) {
     alert('Invalid amount. Please enter a valid number.');
     return;
   }
+
   if (!tables[selectedTable]) {
     tables[selectedTable] = {
       payments: [],
@@ -387,6 +569,18 @@ function addPayment(paymentMethod) {
       status: 'occupied'
     };
   }
+
+  // Calculate the total amount paid so far
+  const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+
+  if (paymentMethod === 'Mobile Payment') {
+    const remainingAmount = totalPrice - totalPaid;
+    if (amount > remainingAmount) {
+      alert(`Amount exceeds the remaining balance. Please enter an amount up to Rs ${remainingAmount}.`);
+      return;
+    }
+  }
+
   tables[selectedTable].payments.push({ method: paymentMethod, amount });
 
   // Show QR code for mobile payment
@@ -441,7 +635,47 @@ function closePaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
   if (paymentDialog) {
     paymentDialog.style.display = 'none';
+
+    // Reset payment summary
+    const paymentSummaryElem = document.getElementById('payment-summary');
+    const changeAmountElem = document.getElementById('change-amount');
+    const insufficientAmountElem = document.getElementById('insufficient-amount');
+    const shortAmountElem = document.getElementById('short-amount');
+
+    if (paymentSummaryElem) paymentSummaryElem.innerHTML = ''; // Clear payment list
+    if (changeAmountElem) changeAmountElem.textContent = '0'; // Reset change amount
+    if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
+    if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
+
+    // Reset the payments array for the selected table
+    if (tables[selectedTable]) {
+      tables[selectedTable].payments = [];
+    }
   }
+}
+
+function resetPaymentDialog() {
+  // Reset payment summary display
+  const paymentSummaryElem = document.getElementById('payment-summary');
+  const changeAmountElem = document.getElementById('change-amount');
+  const insufficientAmountElem = document.getElementById('insufficient-amount');
+  const shortAmountElem = document.getElementById('short-amount');
+
+  if (paymentSummaryElem) paymentSummaryElem.innerHTML = ''; // Clear payment list
+  if (changeAmountElem) changeAmountElem.textContent = '0'; // Reset change amount
+  if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
+  if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
+
+  // Reset the payments array for the selected table
+  if (tables[selectedTable]) {
+    tables[selectedTable].payments = [];
+  }
+
+  // Clear the input field
+  const numericInput = document.getElementById('numeric-input');
+  if (numericInput) numericInput.value = '';
+
+  updatePaymentSummary(); // Refresh payment summary
 }
 
 function completeOrder() {
@@ -574,6 +808,7 @@ function applyDiscountHandler() {
 // Initially update the total amount to be paid
 updateTotalAmount();
 
+
 function printReceipt() {
   const logoUrl = 'http://localhost/images/RestaurantLogo.png'; // Update with your logo URL
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
@@ -612,6 +847,8 @@ function printReceipt() {
   printWindow.print();
   printWindow.close();
 }
+// Track void history
+let voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || [];
 
 document.addEventListener('DOMContentLoaded', function () {
   generateSalesReport();
@@ -643,10 +880,37 @@ function generateSalesReport() {
     <button onclick="printElement('salesReportOutput')">Print Report</button>
   `;
   salesReportElement.innerHTML = report;
+
+  // Display void history
+  displayVoidHistory();
+}
+function displayVoidHistory() {
+  const voidHistoryElem = document.getElementById('voidHistoryOutput');
+  if (!voidHistoryElem) {
+    console.error('Element with ID "voidHistoryOutput" not found.');
+    return;
+  }
+
+  let voidHistoryHTML = '';
+  voidHistory.forEach(entry => {
+    voidHistoryHTML += `<p>${entry.time}: ${entry.name} - Rs ${entry.amount}</p>`;
+  });
+  voidHistoryElem.innerHTML = voidHistoryHTML;
 }
 
-function printAndResetSalesReport() {
-  // Your logic for printing and resetting the sales report
+function openVoidHistoryDialog() {
+  const voidHistoryDialog = document.getElementById('void-history-dialog');
+  if (voidHistoryDialog) {
+    displayVoidHistory(); // Populate the void history content
+    voidHistoryDialog.style.display = 'block';
+  }
+}
+
+function closeVoidHistoryDialog() {
+  const voidHistoryDialog = document.getElementById('void-history-dialog');
+  if (voidHistoryDialog) {
+    voidHistoryDialog.style.display = 'none';
+  }
 }
 
 function openOrderHistoryDialog() {
@@ -663,10 +927,10 @@ function closeOrderHistoryDialog() {
   }
 }
 
+
 function editItem() {
   // Your logic for editing an item
 }
-
 
 // Function to print a specific element
 function printElement(elementId) {
@@ -686,6 +950,7 @@ function printElement(elementId) {
   printWindow.print();
   printWindow.close();
 }
+
 // Function to print and reset the sales report
 function printAndResetSalesReport() {
   console.log('Sales Report:', salesData);
@@ -707,7 +972,11 @@ function printAndResetSalesReport() {
   // Clear sales data from local storage
   localStorage.removeItem('salesData');
 
-  alert('Sales report and order history have been reset.');
+  // Clear void history
+  voidHistory = [];
+  localStorage.removeItem('voidHistory');
+
+  alert('Sales report, order history, and void history have been reset.');
 
   // Re-render the order history and sales report
   renderOrderHistory();
@@ -734,11 +1003,15 @@ function resetSalesReport() {
   // Clear sales data from local storage
   localStorage.removeItem('salesData');
 
-  alert('Sales report, total orders, and order history have been reset.');
+  // Clear void history
+  voidHistory = [];
+  localStorage.removeItem('voidHistory');
+
+  alert('Sales report, total orders, order history, and void history have been reset.');
 
   // Re-render the order history and sales report
   renderOrderHistory();
-  displaySalesReport();
+  generateSalesReport();
 }
 
 // Function to show home content
