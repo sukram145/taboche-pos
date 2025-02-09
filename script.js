@@ -32,7 +32,6 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   cashPayments: 0,
   mobilePayments: 0
 };
-
 // Function to open the modal
 function openAddItemModal() {
   const modal = document.getElementById('addItemModal');
@@ -47,63 +46,64 @@ function closeAddItemModal() {
   setTimeout(() => modal.style.display = 'none', 300); // Smooth fade-out
 }
 
-// Function to update extras options based on selected item
-function updateExtrasOptions() {
-  const itemSelect = document.getElementById('itemSelect').value;
-  const extraOptionsDiv = document.getElementById('extraOptions');
-  extraOptionsDiv.innerHTML = ""; // Clear previous options
-  
-  if (itemSelect === "food") {
-      extraOptionsDiv.innerHTML = `
-          <div class="extra-item" onclick="addItem('Cheese', 75)">
-            <img src="images/cheese.jpg" alt="Cheese">
-            <span>Cheese</span>
-            <span>Rs 75</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Sausage', 40)">
-            <img src="images/sausage.jpg" alt="Sausage">
-            <span>Sausage</span>
-            <span>Rs 40</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Egg', 50)">
-            <img src="images/egg.jpg" alt="Egg">
-            <span>Egg</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Salad', 75)">
-            <img src="images/salad.jpg" alt="Salad">
-            <span>Salad</span>
-            <span>Rs 75</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Toast', 50)">
-            <img src="images/toast.jpg" alt="Toast">
-            <span>Toast</span>
-            <span>Rs 50</span>
-          </div>
+// Function to handle item selection
+function selectItem(itemType) {
+  const extraOptions = document.getElementById('extraOptions');
+  if (extraOptions) {
+    let optionsHTML = '';
+    if (itemType === 'food') {
+      optionsHTML = `
+        <div class="extra-item" onclick="addItem('Cheese', 75)">
+          <img src="images/cheese.jpg" alt="Cheese">
+          <span>Cheese</span>
+          <span>Rs 75</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Sausage', 40)">
+          <img src="images/sausage.jpg" alt="Sausage">
+          <span>Sausage</span>
+          <span>Rs 40</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Egg', 50)">
+          <img src="images/egg.jpg" alt="Egg">
+          <span>Egg</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Salad', 75)">
+          <img src="images/salad.jpg" alt="Salad">
+          <span>Salad</span>
+          <span>Rs 75</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Toast', 50)">
+          <img src="images/toast.jpg" alt="Toast">
+          <span>Toast</span>
+          <span>Rs 50</span>
+        </div>
       `;
-  } else if (itemSelect === "drink") {
-      extraOptionsDiv.innerHTML = `
-          <div class="extra-item" onclick="addItem('Boba', 50)">
-            <img src="images/boba.jpg" alt="Boba">
-            <span>Boba</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Flavour', 50)">
-            <img src="images/flavour.jpg" alt="Flavour">
-            <span>Flavour</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Extra Coil', 50)">
-            <img src="images/coil.jpg" alt="Extra Coil">
-            <span>Extra Coil</span>
-            <span>Rs 50</span>
-          </div>
-          <div class="extra-item" onclick="addItem('Extra Flavour', 250)">
-            <img src="images/extraflavour.jpg" alt="Extra Flavour">
-            <span>Extra Flavour</span>
-            <span>Rs 250</span>
-          </div>
+    } else if (itemType === 'drink') {
+      optionsHTML = `
+        <div class="extra-item" onclick="addItem('Boba', 50)">
+          <img src="images/boba.jpg" alt="Boba">
+          <span>Boba</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Flavour', 50)">
+          <img src="images/flavour.jpg" alt="Flavour">
+          <span>Flavour</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Coil', 50)">
+          <img src="images/coil.jpg" alt="Extra Coil">
+          <span>Extra Coil</span>
+          <span>Rs 50</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Flavour', 250)">
+          <img src="images/extraflavour.jpg" alt="Extra Flavour">
+          <span>Extra Flavour</span>
+          <span>Rs 250</span>
+        </div>
       `;
+    }
+    extraOptions.innerHTML = optionsHTML;
   }
 }
 
@@ -228,8 +228,8 @@ function renderTables() {
 }
 
 function selectTable(table) {
-  // Automatically finalize the current table's order before switching
-  if (selectedTable && selectedTable !== "None" && Object.keys(tables[selectedTable].order).length > 0) {
+  // Automatically finalize the current table's order before switching if new items were added
+  if (selectedTable && selectedTable !== "None" && tables[selectedTable].newItemsAdded) {
     finalizeOrder();  // Finalize the current table's order
   }
 
@@ -298,7 +298,6 @@ function voidSelectedItem() {
   alert("Void mode activated. Select the item to void.");
 }
 
-// Add item to the order with negative price if in void mode
 function addToOrder(name, price) {
   console.log(`Adding to order: ${name}, Price: ${price}, Selected Table: ${selectedTable}`);
   if (selectedTable === "None") {
@@ -313,13 +312,14 @@ function addToOrder(name, price) {
     isVoidMode = false; // Disable void mode after removing the item
   } else {
     if (!tables[selectedTable].order.hasOwnProperty(name)) {
-      tables[selectedTable].order[name] = { price: price, quantity: 1 };
+      tables[selectedTable].order[name] = { price: price, quantity: 1, finalized: false };
     } else {
       tables[selectedTable].order[name].quantity += 1;
     }
     tables[selectedTable].totalPrice += price;
     tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
     tables[selectedTable].status = "occupied";
+    tables[selectedTable].newItemsAdded = true; // Set the flag to true
     renderTables();
     updateOrderSummary();
     saveData();
@@ -444,7 +444,9 @@ document.querySelectorAll('.menu-item').forEach(item => {
     addToOrder(name, price);
   });
 });
-// Finalize the order and send to Kitchen and Bar
+
+
+
 function finalizeOrder() {
   if (selectedTable === "None") {
     alert("Please select a table first!");
@@ -477,6 +479,9 @@ function finalizeOrder() {
   }
 
   alert('Order finalized and sent to Kitchen and Bar!');
+
+  // Reset the flag after finalizing
+  tables[selectedTable].newItemsAdded = false;
 
   // Disable the remove button for finalized items
   disableRemoveButtonForFinalizedItems();

@@ -1115,27 +1115,25 @@
     
 
   
-    <!-- Add Item Button -->
-    <button class="btn primary-btn" onclick="openAddItemModal()">Add Item</button>
-  
-    <!-- Add Item Modal -->
-    <div id="addItemModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeAddItemModal()">&times;</span>
-        <h2>Add Item</h2>
-        <label for="itemSelect">Select Item:</label>
-        <select id="itemSelect" class="select" onchange="updateExtrasOptions()">
-          <option value="">-- Select --</option>
-          <option value="food">Food</option>
-          <option value="drink">Drink</option>
-        </select>
-        <div id="extraOptions" class="extras-container"></div>
-        <div class="modal-buttons">
-          <button class="btn" onclick="closeAddItemModal()">Close</button>
-        </div>
-      </div>
+<!-- Add Item Button -->
+<button class="btn primary-btn" onclick="openAddItemModal()">Add Item</button>
+
+<!-- Add Item Modal -->
+<div id="addItemModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAddItemModal()">&times;</span>
+    <h2>Add Item</h2>
+    <div class="modal-buttons">
+      <button class="btn" onclick="selectItem('food')">Food</button>
+      <button class="btn" onclick="selectItem('drink')">Drink</button>
     </div>
-  
+    <div id="extraOptions" class="extras-container"></div>
+    <div class="modal-buttons">
+      <button class="btn" onclick="closeAddItemModal()">Close</button>
+    </div>
+  </div>
+</div>
+
    
 
 
