@@ -340,16 +340,50 @@ main {
   font-size: 0.8em;
   margin-top: 5px;
 }
-
-/* Order Summary */
 .order-summary {
-  background: #fff;
-  border-left: 5px solid #007bff;
+  width: 400px; /* Make the order summary box wider */
+  max-height: 600px; /* Set a maximum height */
+  overflow-y: auto; /* Enable scrolling if content exceeds the box height */
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 300px; /* Adjust width as needed */
-  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+}
+
+.order-item {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.item-container {
+  display: flex;
+  flex-direction: column; /* Stack item details and comments vertically */
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.item-name {
+  cursor: pointer; /* Make the item name clickable for adding comments */
+}
+
+.item-comments {
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+}
+
+.remove-item {
+  margin-left: 10px;
+  padding: 5px;
+  cursor: pointer;
 }
 
 h3 {
