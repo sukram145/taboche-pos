@@ -292,12 +292,64 @@ function filterCategory(category) {
     }
   });
 }
+
 // Mark void mode
 function voidSelectedItem() {
   isVoidMode = true;
   alert("Void mode activated. Select the item to void.");
 }
 
+// Remove item from the order and record void details with reason/comment if void mode is active
+function removeFromOrder(name) {
+  if (tables[selectedTable].order[name]) {
+    const item = tables[selectedTable].order[name];
+
+    // Check if void mode is active before recording void details
+    if (isVoidMode) {
+      let comment;
+      while (!comment) {
+        comment = prompt("Please enter the reason for voiding this item:");
+        if (!comment) {
+          alert("Reason for voiding is required.");
+        }
+      }
+      const voidEntry = {
+        name: name,
+        amount: item.price,
+        time: new Date().toLocaleTimeString(),
+        comment: comment // Include the void reason/comment
+      };
+      voidHistory.push(voidEntry);
+      localStorage.setItem('voidHistory', JSON.stringify(voidHistory)); // Save void history to localStorage
+
+      // Reset void mode after recording void details
+      isVoidMode = false;
+      alert("Item voided and recorded.");
+    }
+
+    tables[selectedTable].totalPrice -= item.price;
+    item.quantity -= 1;
+    if (item.quantity <= 0) {
+      delete tables[selectedTable].order[name];
+    }
+    if (tables[selectedTable].totalPrice === 0) {
+      tables[selectedTable].status = "available";
+    }
+    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
+    renderTables();
+    updateOrderSummary();
+    saveData();
+  }
+}
+
+/**
+ * Adds an item to the order for the selected table.
+ * @param {string} name - The name of the item to add.
+ * @param {number} price - The price of the item to add.
+ */
+
+
+// Function to add an item to the order or void it if void mode is active
 function addToOrder(name, price) {
   console.log(`Adding to order: ${name}, Price: ${price}, Selected Table: ${selectedTable}`);
   if (selectedTable === "None") {
@@ -326,39 +378,14 @@ function addToOrder(name, price) {
   }
 }
 
+/**
+ * Displays the order items on the UI.
+ * @param {object} orderItems - The items in the order to display.
+ */
 
-// Mark void mode
-function voidSelectedItem() {
-  isVoidMode = true;
-  alert("Void mode activated. Select the item to void.");
-}
 
-// Remove item from the order and record void details
-function removeFromOrder(name) {
-  if (tables[selectedTable].order[name]) {
-    const item = tables[selectedTable].order[name];
-    const voidEntry = {
-      name: name,
-      amount: item.price,
-      time: new Date().toLocaleTimeString()
-    };
-    voidHistory.push(voidEntry);
-    localStorage.setItem('voidHistory', JSON.stringify(voidHistory)); // Save void history to localStorage
 
-    tables[selectedTable].totalPrice -= item.price;
-    item.quantity -= 1;
-    if (item.quantity <= 0) {
-      delete tables[selectedTable].order[name];
-    }
-    if (tables[selectedTable].totalPrice === 0) {
-      tables[selectedTable].status = "available";
-    }
-    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
-    renderTables();
-    updateOrderSummary();
-    saveData();
-  }
-}
+
 
 function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
@@ -366,18 +393,28 @@ function displayOrderItems(orderItems) {
   let totalPrice = 0;
   for (const [name, item] of Object.entries(orderItems)) {
     const orderItem = document.createElement('li');
-    orderItem.textContent = `${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}`;
+    orderItem.classList.add('order-item'); // Add a class for styling
+    orderItem.innerHTML = `
+      <div class="item-container">
+        <div class="item-header">
+          <div>
+            <span class="item-name">${name}</span>
+            <div class="item-comments">${item.comments || ''}</div>
+          </div>
+          <div class="item-details">
+            <span class="item-quantity">x ${item.quantity}</span>
+            <span class="item-price">Rs ${item.price}</span>
+            <span class="item-total">= Rs ${item.price * item.quantity}</span>
+            <button class="remove-item" data-name="${name}" data-table="${selectedTable}" onclick="removeFromOrder('${name}')">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
     orderItemsList.appendChild(orderItem);
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
-    removeButton.className = 'remove-item';
-    removeButton.setAttribute('data-name', name);
-    removeButton.setAttribute('data-table', selectedTable); // Store table info
-    removeButton.onclick = () => removeFromOrder(name);
-    orderItem.appendChild(removeButton);
+
     totalPrice += item.price * item.quantity;
   }
-  document.getElementById('total-price').textContent = totalPrice;
+  document.getElementById('total-price').textContent = `Total: Rs ${totalPrice}`;
   tables[selectedTable].totalPrice = totalPrice;
   tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
   saveData();
@@ -386,9 +423,9 @@ function displayOrderItems(orderItems) {
   disableRemoveButtonForFinalizedItems();
 }
 
-
-
-// Update order summary
+/**
+ * Updates the order summary and displays it on the UI.
+ */
 function updateOrderSummary() {
   const order = tables[selectedTable];
   displayOrderItems(order.order);
@@ -400,18 +437,22 @@ function updateOrderSummary() {
   if (selectedTimeElem) {
     selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
   }
-  const orderSummary = document.getElementById('orderSummary');
-  if (orderSummary) {
-    orderSummary.innerHTML = `
-      Total Price: Rs ${order.totalPrice.toFixed(2)}<br>
-      Discount: ${order.discount}%<br>
-      Discounted Total: Rs ${order.discountedTotal.toFixed(2)}
-    `;
-  }
-
-  // Call the function to disable remove buttons for finalized items
-  disableRemoveButtonForFinalizedItems();
 }
+
+/**
+ * Disables the remove buttons for finalized items.
+ */
+function disableRemoveButtonForFinalizedItems() {
+  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
+    if (item.finalized) {
+      const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
+      if (removeButton) {
+        removeButton.disabled = true;
+      }
+    }
+  }
+}
+
 
 
 // Reset order summary
@@ -423,7 +464,85 @@ function resetOrderSummary() {
   document.getElementById('total-price').textContent = '0';
 }
 
-// Disable the remove button for finalized items
+/**
+ * Displays the order items on the UI.
+ * @param {object} orderItems - The items in the order to display.
+ */
+function displayOrderItems(orderItems) {
+  const orderItemsList = document.getElementById('order-items');
+  orderItemsList.innerHTML = '';
+  let totalPrice = 0;
+  for (const [name, item] of Object.entries(orderItems)) {
+    const orderItem = document.createElement('li');
+    orderItem.classList.add('order-item'); // Add a class for styling
+    orderItem.innerHTML = `
+      <div class="item-header" onclick="promptAndAddComment('${name}')">
+        <span class="item-name">${name}</span>
+        <span class="item-quantity">x ${item.quantity}</span>
+        <span class="item-price">Rs ${item.price}</span>
+        <span class="item-total">= Rs ${item.price * item.quantity}</span>
+        <button class="remove-item" data-name="${name}" data-table="${selectedTable}" onclick="removeFromOrder('${name}')">Remove</button>
+      </div>
+      <div class="item-comments">${item.comments || ''}</div>
+    `;
+    orderItemsList.appendChild(orderItem);
+
+    totalPrice += item.price * item.quantity;
+  }
+  document.getElementById('total-price').textContent = `Total: Rs ${totalPrice}`;
+  tables[selectedTable].totalPrice = totalPrice;
+  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
+  saveData();
+
+  // Disable remove buttons for finalized items
+  disableRemoveButtonForFinalizedItems();
+}
+
+/**
+ * Prompts the user for a comment and adds it to the specified order item.
+ * @param {string} name - The name of the item to comment on.
+ */
+function promptAndAddComment(name) {
+  const comment = prompt('Enter your comment:');
+  if (comment !== null) {
+    addCommentToOrderItem(name, comment);
+  }
+}
+
+/**
+ * Adds a comment to an order item.
+ * @param {string} name - The name of the item to comment on.
+ * @param {string} comment - The comment to add.
+ */
+function addCommentToOrderItem(name, comment) {
+  if (tables[selectedTable].order[name]) {
+    tables[selectedTable].order[name].comments = comment;
+    updateOrderSummary();
+    saveData();
+  } else {
+    alert('Item not found in order.');
+  }
+}
+
+/**
+ * Updates the order summary and displays it on the UI.
+ */
+function updateOrderSummary() {
+  const order = tables[selectedTable];
+  displayOrderItems(order.order);
+  const selectedTableElem = document.getElementById('selected-table');
+  const selectedTimeElem = document.getElementById('selected-time');
+  if (selectedTableElem) {
+    selectedTableElem.textContent = selectedTable;
+  }
+  if (selectedTimeElem) {
+    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
+  }
+}
+
+/**
+ * Disables the remove buttons for finalized items.
+ */
 function disableRemoveButtonForFinalizedItems() {
   for (const [name, item] of Object.entries(tables[selectedTable].order)) {
     if (item.finalized) {
@@ -434,6 +553,7 @@ function disableRemoveButtonForFinalizedItems() {
     }
   }
 }
+
 
 // Menu item click event to add items to the order
 document.querySelectorAll('.menu-item').forEach(item => {
@@ -450,6 +570,12 @@ document.querySelectorAll('.menu-item').forEach(item => {
 function finalizeOrder() {
   if (selectedTable === "None") {
     alert("Please select a table first!");
+    return;
+  }
+
+  // Check if the order summary is empty
+  if (Object.keys(tables[selectedTable].order).length === 0) {
+    alert("Order summary is empty. Please add items before finalizing.");
     return;
   }
 
@@ -776,6 +902,7 @@ function completeOrder() {
   generateSalesReport();
 }
 
+
 // Numeric pad functions
 function addNumber(num) {
   const numericInput = document.getElementById('numeric-input');
@@ -796,6 +923,24 @@ function addQuickAmount(amount) {
   const numericInput = document.getElementById('numeric-input');
   numericInput.value = amount;
 }
+
+// Event listener for keyboard input
+document.addEventListener('keydown', function(event) {
+  const key = event.key;
+
+  // Check if the key is a digit (0-9)
+  if (!isNaN(key) && key !== ' ') {
+    addNumber(key);
+  } else if (key === 'Backspace') {
+    backspaceInput();
+  } else if (key === 'Delete') {
+    clearInput();
+  } else if (key === 'Enter') {
+    // You can customize this to add a quick amount if needed
+    // Example: addQuickAmount(100); // Adds 100 to the input
+  }
+});
+
 
 function applyDiscountHandler() {
   const discountInput = document.getElementById('discount');
@@ -889,6 +1034,7 @@ function generateSalesReport() {
   // Display void history
   displayVoidHistory();
 }
+
 function displayVoidHistory() {
   const voidHistoryElem = document.getElementById('voidHistoryOutput');
   if (!voidHistoryElem) {
@@ -898,7 +1044,7 @@ function displayVoidHistory() {
 
   let voidHistoryHTML = '';
   voidHistory.forEach(entry => {
-    voidHistoryHTML += `<p>${entry.time}: ${entry.name} - Rs ${entry.amount}</p>`;
+    voidHistoryHTML += `<p>${entry.time}: ${entry.name} - Rs ${entry.amount}<br>Reason: ${entry.comment}</p>`;
   });
   voidHistoryElem.innerHTML = voidHistoryHTML;
 }
@@ -1186,7 +1332,6 @@ function saveData() {
   localStorage.setItem('tables', JSON.stringify(tables));
   localStorage.setItem('salesData', JSON.stringify(salesData));
 }
-
 // Order History Functions
 function openOrderHistoryDialog() {
   document.getElementById('order-history-dialog').style.display = 'block';
@@ -1196,6 +1341,7 @@ function openOrderHistoryDialog() {
 function closeOrderHistoryDialog() {
   document.getElementById('order-history-dialog').style.display = 'none';
 }
+
 function renderOrderHistory() {
   const orderHistoryContainer = document.getElementById('order-history-container');
 
@@ -1261,16 +1407,15 @@ function renderOrderHistory() {
   checkOrderHistoryLength();
 }
 
-
 function checkOrderHistoryLength() {
   const historyLength = orderHistory.length;
   console.log(`Order history length: ${historyLength}`);
 
-  if (historyLength === 100) {
-    alert('There are exactly 100 orders in the order history.');
-  } else {
-    alert(`There are ${historyLength} orders in the order history.`);
-  }
+  const message = historyLength === 100 
+    ? 'There are exactly 100 orders in the order history.' 
+    : `There are ${historyLength} orders in the order history.`;
+
+  alert(message);
 }
 
 // Call this function to check the length of order history
