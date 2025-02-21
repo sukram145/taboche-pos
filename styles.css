@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Base styles (applied to all devices) */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -790,3 +791,1168 @@ button:hover {
 .order-payments {
   margin-top: 20px;
 }
+=======
+/* Base styles (applied to all devices) */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-10%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInDialog {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #292b2c;
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-in-out;
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  letter-spacing: 1px;
+  animation: slideInLeft 1s ease-in-out;
+}
+
+.datetime {
+  font-size: 0.9em;
+  font-weight: 300;
+  animation: slideInRight 1s ease-in-out;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  width: 250px;
+  height: 100%;
+  position: fixed;
+  left: -250px;
+  top: 0;
+  background-color: #111;
+  padding-top: 20px;
+  transition: left 0.3s ease-in-out, background-color 0.3s;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar a, .dropdown-btn {
+  padding: 12px 20px;
+  text-decoration: none;
+  color: white;
+  display: block;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  animation: fadeIn 0.5s ease-in-out;
+  font-size: 1em;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar a:hover, .dropdown-btn:hover {
+  background-color: #575757;
+}
+
+.dropdown-container {
+  display: none;
+  background-color: #262626;
+  padding-left: 16px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.dropdown-btn.active + .dropdown-container {
+  display: block;
+  animation: slideDown 0.5s ease-in-out;
+}
+
+.content-container {
+  display: none;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#mainContent {
+  margin-left: 260px;
+  padding: 20px;
+}
+
+/* Login Dialog */
+.login-dialog {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  border-radius: 8px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.login-dialog-content {
+  position: relative;
+}
+
+.close-login {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #888;
+  transition: color 0.2s ease-in-out;
+}
+
+.close-login:hover {
+  color: #333;
+}
+
+.login-dialog h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-dialog input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.login-dialog input:focus {
+  border-color: #007bff;
+}
+
+.login-dialog button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.login-dialog button:hover {
+  background: #0056b3;
+}
+
+/* Main Layout */
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  padding: 15px;
+  gap: 10px;
+}
+
+.flex-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.table-management, .order-section, .payment-section {
+  flex: 1;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  margin: 0;
+  min-width: 280px;
+}
+
+.tables-dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.table-btn {
+  padding: 8px;
+  border: 1px solid #ccc;
+  background-color: #f4f4f4;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.table-btn:hover {
+  background-color: #ddd;
+  transform: translateY(-3px);
+}
+
+.table-card {
+  padding: 8px;
+  border: 1px solid #ccc;
+  background-color: #f4f4f4;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  border-radius: 10px;
+}
+
+.table-card.occupied {
+  background-color: #ff0707;
+  color: white;
+}
+
+.table-card.available {
+  background-color: #28a745;
+  color: white;
+}
+
+.table-card:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+}
+
+.order-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-bar input {
+  width: 100%;
+  height: 25px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.8em;
+  padding: 5px;
+  transition: border-color 0.3s ease;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
+}
+
+.categories {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px 0;
+}
+
+.categories button {
+  display: inline-block;
+  padding: 8px 12px;
+  background-color: #666;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  border-radius: 5px;
+  font-size: 0.8em;
+  margin: 0 3px;
+}
+
+.categories button:hover {
+  background-color: #555;
+  transform: translateY(-3px);
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-height: 400px; /* Adjust this value as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu-item img {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.menu-item:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item p, .menu-item .price {
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+.order-summary {
+  width: 400px; /* Make the order summary box wider */
+  max-height: 600px; /* Set a maximum height */
+  overflow-y: auto; /* Enable scrolling if content exceeds the box height */
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+}
+
+.order-item {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.item-container {
+  display: flex;
+  flex-direction: column; /* Stack item details and comments vertically */
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.item-name {
+  cursor: pointer; /* Make the item name clickable for adding comments */
+}
+
+.item-comments {
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+}
+
+.remove-item {
+  margin-left: 10px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+h3 {
+  font-size: 26px;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+  font-weight: 600;
+}
+
+#selected-table {
+  color: #007bff;
+}
+
+#order-summary {
+  margin-bottom: 20px;
+}
+
+#selected-time {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #555;
+  text-align: center;
+}
+
+#order-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#order-items li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  color: #333;
+}
+
+.item-name {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.item-qty-price {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  color: #777;
+}
+
+.item-qty {
+  margin-right: 20px;
+}
+
+#order-items li button {
+  padding: 6px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#order-items li button:hover {
+  background-color: #c82333;
+}
+
+.total {
+  margin-top: 20px;
+  font-size: 1.2em;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #333;
+}
+
+.total strong {
+  color: #000;
+}
+
+.checkout-btn, .finalize-btn, .complete-btn, .change-table-btn, .void-btn, .print-receipt-btn {
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 5px;
+  margin: 15px 0;
+  font-size: 0.8em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-btn {
+  background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.checkout-btn:hover {
+  background-color: #218838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.finalize-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.finalize-btn:hover {
+  background-color: #0056b3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.complete-btn {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.complete-btn:hover {
+  background-color: #e0a800;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.change-table-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.change-table-btn:hover {
+  background-color: #138496;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.void-btn {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.void-btn:hover {
+  background-color: #c82333;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.print-receipt-btn {
+  background: linear-gradient(135deg, #6f42c1, #563d7c);
+}
+
+.print-receipt-btn:hover {
+  background-color: #563d7c;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}/* Global Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+}
+/* Dialog Box */
+.dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 40%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-content {
+  background-color: #fff;
+  border-radius: 9px;
+  padding: 10px;
+  box-shadow: 0 3px 7.5px rgba(0, 0, 0, 0.15);
+  width: 50%; /* Adjusted width */
+  max-width: 300px; /* Adjusted max-width */
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Close Button */
+.close {
+  align-self: flex-end;
+  font-size: 1.125em;
+  cursor: pointer;
+  color: #333;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.close:hover {
+  color: #ff0000;
+  transform: scale(1.075);
+}
+
+/* Payment Section */
+.payment-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.total-amount {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Numeric Input Section */
+.content-section {
+  display: flex;
+  align-items: flex-start;
+  width: 100%; /* Adjusted width */
+}
+
+.numeric-section {
+  margin-right: 10px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.numeric-input {
+  width: 80%; /* Adjusted width */
+  padding: 7.5px;
+  font-size: 1.125em;
+  text-align: center;
+  margin-bottom: 10px;
+  border-radius: 7.5px;
+  border: 1.5px solid #007BFF;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.075);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.numeric-input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 3px 9px rgba(0, 123, 255, 0.225);
+  outline: none;
+}
+
+/* Keypad Section */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px; /* Increased gap size */
+}
+
+.keypad button {
+  padding: 20px; /* Increased padding */
+  font-size: 1.2em; /* Increased font size */
+  border-radius: 9px;
+  background: linear-gradient(145deg, #007BFF, #0056b3);
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.075);
+}
+
+.keypad button:hover {
+  background: linear-gradient(145deg, #0056b3, #004494);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4.5px 6px rgba(0, 0, 0, 0.075);
+}
+
+.keypad button:active {
+  background: linear-gradient(145deg, #48494b, #003366);
+  transform: scale(0.99);
+}
+
+/* Quick Amount Buttons */
+.quick-amounts {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px; /* Increased gap size */
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-amount-btn {
+  padding: 15px; /* Increased padding */
+  font-size: 1.2em; /* Increased font size */
+  border-radius: 9px;
+  background: linear-gradient(145deg, #28A745, #218838);
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.075);
+}
+
+.quick-amount-btn:hover {
+  background: linear-gradient(145deg, #218838, #1e7e34);
+  transform: translateY(-1.5px);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Discount Section */
+.discount-section {
+  display: flex;
+  gap: 7.5px;
+  margin-bottom: 7.5px;
+}
+
+.discount-section input {
+  padding: 5px;
+  border: 0.75px solid #ccc;
+  border-radius: 7.5px;
+  width: 75px;
+}
+
+.discount-section button {
+  padding: 7.5px;
+  border: none;
+  border-radius: 7.5px;
+  background-color: #007bff; /* Blue color for "Apply Discount" */
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.discount-section button:hover {
+  background-color: #0056b3;
+}
+
+/* Payment Buttons */
+.cash-btn {
+  padding: 15px 20px; /* Increased padding */
+  border: none;
+  border-radius: 9px;
+  background-color: #28a745; /* Green color for "Cash" */
+  color: #fff;
+  font-size: 1em; /* Increased font size */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cash-btn:hover {
+  background-color: #218838;
+}
+
+.mobile-btn {
+  padding: 15px 20px; /* Increased padding */
+  border: none;
+  border-radius: 9px;
+  background-color: #302506; /* Yellow color for "Mobile Payment" */
+  color: #fff;
+  font-size: 1em; /* Increased font size */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.mobile-btn:hover {
+  background-color: #2900e0;
+}
+
+.complete-btn {
+  padding: 15px 20px; /* Increased padding */
+  border: none;
+  border-radius: 9px;
+  background-color: #007bff; /* Blue color for "Complete Order" */
+  color: #fff;
+  font-size: 1em; /* Increased font size */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.complete-btn:hover {
+  background-color: #0056b3;
+}
+
+.clear-btn {
+  padding: 15px 20px; /* Increased padding */
+  border: none;
+  border-radius: 9px;
+  background-color: #6c757d; /* Grey color for "Clear" */
+  color: #fff;
+  font-size: 1em; /* Increased font size */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.clear-btn:hover {
+  background-color: #5a6268;
+}
+
+
+/* Payment Summary */
+.payment-summary {
+  margin-top: 10px;
+  width: 100%; /* Adjusted width */
+}
+
+.payment-summary ul {
+  list-style: none;
+  padding: 0;
+}
+
+.payment-summary li {
+  padding: 2.5px 0;
+  border-bottom: 0.75px solid #ccc;
+}
+
+/* Change & Insufficient Amount */
+.change, .insufficient-amount {
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.change {
+  color: green;
+  font-weight: bold;
+}
+
+.insufficient-amount {
+  color: red;
+  font-weight: bold;
+}
+/* QR Code Dialog */
+#qr-code-dialog {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#qr-code-dialog .dialog-content {
+  padding: 10px; /* Increased padding for better fit */
+  border-radius: 9px;
+  box-shadow: 0 3px 7.5px rgba(0, 0, 0, 0.225);
+  background-color: #fff;
+  width: 90%; /* Adjusted width for mobile fit */
+  max-width: 350px; /* Adjusted max-width */
+  text-align: center;
+  overflow: hidden; /* Ensure no scrolling */
+}
+
+#qr-code-dialog .close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 1.125em;
+  cursor: pointer;
+  color: #333;
+}
+
+#qr-code-dialog .close:hover {
+  color: #ff0000;
+}
+
+
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive Fixes */
+@media screen and (max-width: 480px) {
+  .dialog-content {
+    width: 60%;
+    padding: 7.5px;
+  }
+  .keypad {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+
+/* Order History Styling */
+.order-history-item {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-header h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
+.order-header p {
+  margin: 0;
+  color: #555;
+}
+
+.order-details {
+  margin-top: 15px;
+  line-height: 1.6;
+}
+
+.order-details p {
+  margin: 5px 0;
+}
+
+.order-items {
+  margin-top: 20px;
+}
+
+.order-items table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.order-items th, .order-items td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.order-items th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.order-payments {
+  margin-top: 20px;
+}
+
+/* Button styles */
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Dialog box styles */
+.dialog {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.dialog-content {
+  background-color: white;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 10px;
+}
+
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 600px) {
+  body {
+    font-size: 12px;
+  }
+  .container {
+    width: 100%;
+  }
+  main {
+    flex-direction: column;
+    padding: 10px;
+  }
+  .table-management, .order-section, .payment-section {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  .menu-item img {
+    width: 60px;
+    height: 48px;
+  }
+  .menu-item p, .menu-item .price {
+    font-size: 0.7em;
+  }
+}
+#qr-code {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#qr-code img {
+  width: 200px;
+  height: 200px;
+  margin-top: 10px;
+}
+
+
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.primary-btn {
+  background-color: #007BFF;
+  color: white;
+}
+
+.primary-btn:hover {
+  background-color: #0056b3;
+}
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  animation: fadeIn 0.5s; /* Smooth fade-in animation */
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #ccc;
+  width: 90%;
+  max-width: 600px; /* Limit max width */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a shadow */
+  border-radius: 8px; /* Rounded corners */
+  animation: slideIn 0.5s; /* Smooth slide-in animation */
+}
+
+@keyframes slideIn {
+  from {transform: translateY(-100px);}
+  to {transform: translateY(0);}
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover, .close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.select {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.extras-container {
+  margin: 15px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.extra-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 16px; /* Rounded corners to resemble app icons */
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.extra-item:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-5px);
+}
+
+.extra-item img {
+  width: 50px; /* Smaller width to resemble app icons */
+  height: 50px; /* Smaller height to resemble app icons */
+  border-radius: 12px; /* Rounded corners for images */
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.extra-item span {
+  text-align: center;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.order-items-list {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.total-price-container {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+>>>>>>> 9bd0a927c87e2ce7c5ce6e796c7cdf53029ce585
