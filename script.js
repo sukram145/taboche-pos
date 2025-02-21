@@ -63,6 +63,18 @@ function selectItem(itemType) {
           <span>Sausage</span>
           <span>Rs 40</span>
         </div>
+        <div class="extra-item" onclick="addItem('Extra Chicken', 120)">
+         <img src="images/extra_chicken.jpg" alt="Extra Chicken">
+         <span>Extra Chicken</span>
+         <span>Rs 120</span>
+        </div>
+         <div class="extra-item" onclick="addItem('Extra Buff', 100)">
+        <img src="images/extra_buff.jpg" alt="Extra Buff">
+        <span>Extra Buff</span>
+        <span>Rs 100</span>
+        </div>
+
+
         <div class="extra-item" onclick="addItem('Egg', 50)">
           <img src="images/egg.jpg" alt="Egg">
           <span>Egg</span>
