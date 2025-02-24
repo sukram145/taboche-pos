@@ -1010,6 +1010,8 @@ function printReceipt() {
   printWindow.print();
   printWindow.close();
 }
+
+
 // Track void history
 let voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || [];
 
@@ -1224,42 +1226,109 @@ function showMenuManagementContent() {
   toggleSidebar();
 }
 
-// Function to show sales reports content
-function showSalesReportsContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = `
-    <h1>Sales Reports</h1>
-    <button type="button" onclick="generateSalesReport()">Generate Sales Report</button>
-    <div id="salesReportOutput"></div>
+
+
+function generateSalesReport() {
+  const totalDiscounts = salesData.totalDiscounts || 0;
+  const totalOrders = salesData.totalOrders || 0;
+  const cashSales = salesData.cashSales || 0;
+  const mobileSales = salesData.mobileSales || 0;
+  const totalSales = salesData.totalSales || 0;
+
+  const report = `
+    <h3>Sales Report</h3>
+    <p>Total Discounts: Rs ${totalDiscounts}</p>
+    <p>Total Cash Sales: Rs ${cashSales}</p>
+    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
+    <p>Total Orders: ${totalOrders}</p>
+    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
+    <button onclick="printElement('modalContent')">Print Report</button>
+    <button onclick="closeModal()">Close</button>
   `;
-  toggleSidebar();
+  return report;
 }
 
-// Function to show settings content
+function displaySalesReport(report) {
+  const modalContent = document.getElementById('modalContent');
+  if (!modalContent) {
+    console.error('Element with ID "modalContent" not found.');
+    return;
+  }
+  modalContent.innerHTML = report;
+  openModal();
+}
+
+function openModal() {
+  const modal = document.getElementById('salesReportModal');
+  modal.style.display = 'block';
+
+  const span = document.getElementsByClassName('close')[0];
+  span.onclick = function() {
+    modal.style.display = 'none';
+  };
+
+  window.onclick = function(event) {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  };
+}
+
+function closeModal() {
+  const modal = document.getElementById('salesReportModal');
+  modal.style.display = 'none';
+}
+
+function showSalesReportsContent() {
+  const report = generateSalesReport();
+  displaySalesReport(report);
+}
+
+// Show Settings Content for Table Management
 function showSettingsContent() {
   const content = document.getElementById('content');
   if (!content) {
     console.error('Content element not found');
     return;
   }
+
   content.innerHTML = `
-    <h1>Settings</h1>
-    <form id="settingsForm">
-      <label for="currency">Currency:</label>
-      <input type="text" id="currency" name="currency"><br>
-      <label for="taxRate">Tax Rate:</label>
-      <input type="text" id="taxRate" name="taxRate"><br>
-      <label for="layoutColor">Layout Color:</label>
-      <input type="color" id="layoutColor" name="layoutColor"><br>
-      <button type="button" onclick="saveSettings()">Save Settings</button>
-    </form>
+    <div id="manage-tables">
+      <input type="text" id="add-table-input" placeholder="Enter new table number">
+      <button onclick="addTable()">Add Table</button>
+      <input type="text" id="remove-table-input" placeholder="Enter table number to remove">
+      <button onclick="removeTable()">Remove Table</button>
+    </div>
   `;
-  toggleSidebar();
 }
+
+// Function to Add Table
+function addTable() {
+  const newTableNumber = document.getElementById('add-table-input').value;
+  if (newTableNumber && !tables[`Table ${newTableNumber}`]) {
+    tables[`Table ${newTableNumber}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0, time: null };
+    renderTables();
+    saveData();
+    document.getElementById('add-table-input').value = ''; // Clear input field after adding
+  } else {
+    alert('Table number already exists or invalid input!');
+  }
+}
+
+// Function to Remove Table
+function removeTable() {
+  const tableNumber = document.getElementById('remove-table-input').value;
+  if (tableNumber && tables[`Table ${tableNumber}`]) {
+    delete tables[`Table ${tableNumber}`];
+    renderTables();
+    saveData();
+    document.getElementById('remove-table-input').value = ''; // Clear input field after removing
+  } else {
+    alert('Table number not found or invalid input!');
+  }
+}
+
+
 
 // Function to show admin panel content
 function showAdminPanelContent() {
