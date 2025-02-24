@@ -1277,7 +1277,38 @@
   </div>
 </div>
 
+<div id="salesReportModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="modalContent"></div>
+  </div>
+</div>
    
+<!-- Add this within your HTML body -->
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSettingsModal()">&times;</span>
+    <div id="manage-tables">
+      <input type="text" id="add-table-input" placeholder="Enter new table number">
+      <button onclick="addTable()">Add Table</button>
+      <input type="text" id="remove-table-input" placeholder="Enter table number to remove">
+      <button onclick="removeTable()">Remove Table</button>
+    </div>
+  </div>
+</div>
+  <!-- Menu Management Section -->
+  <div id="menuManagementContent" style="display:none;">
+    <h2>Menu Management</h2>
+    <form id="menuForm">
+      <input type="text" id="itemName" placeholder="Item Name">
+      <input type="text" id="itemPrice" placeholder="Item Price">
+      <input type="text" id="itemCategory" placeholder="Item Category">
+      <input type="file" id="itemImage">
+      <button type="button" onclick="addItem()">Add Item</button>
+      <button type="button" onclick="updateItem()">Update Item</button>
+      <button type="button" onclick="deleteItem()">Delete Item</button>
+    </form>
+  
 
 
   <script src="script.js"></script>
