@@ -669,35 +669,32 @@ function saveOrderHistory() {
   localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
 }
 
+// Function to display the QR code dialog
 function displayQRCode() {
   const qrCodeImage = document.getElementById('qr-code-image');
+  const qrCodeDialog = document.getElementById('qr-code-dialog');
+
   if (!qrCodeImage) {
     console.error('QR code element not found');
     return;
   }
-  qrCodeImage.src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png';
-  document.getElementById('qr-code-dialog').style.display = 'block';
-}
 
-// Function to close the QR code dialog
-function closeQRCodeDialog() {
-  const qrCodeDialog = document.getElementById('qr-code-dialog');
+  qrCodeImage.src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png';
   if (qrCodeDialog) {
-    qrCodeDialog.style.display = 'none';
+    qrCodeDialog.style.display = 'flex'; // Change to 'flex' to match the CSS layout
+  } else {
+    console.error('QR code dialog element not found');
   }
 }
-// Function to display the QR code dialog
-function displayQRCode() {
-  const qrCodeElement = document.getElementById('qr-code-dialog');
-  qrCodeElement.style.display = 'block';
-  document.getElementById('qr-code-image').src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png'; // Replace with the correct path to your QR code image
-}
 
 // Function to close the QR code dialog
 function closeQRCodeDialog() {
   const qrCodeDialog = document.getElementById('qr-code-dialog');
+
   if (qrCodeDialog) {
     qrCodeDialog.style.display = 'none';
+  } else {
+    console.error('QR code dialog element not found');
   }
 }
 
@@ -722,6 +719,10 @@ function addPayment(paymentMethod) {
   if (paymentMethod === 'Mobile Payment' && (totalPaid + amount) > discountedTotal) {
     alert(`Amount exceeds remaining balance. Max allowed: Rs${discountedTotal - totalPaid}`);
     return;
+  }
+
+  if (paymentMethod === 'Mobile Payment') {
+    displayQRCode(); // Show QR code before processing the payment
   }
 
   tables[selectedTable].payments.push({ method: paymentMethod, amount });
