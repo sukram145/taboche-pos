@@ -1,22 +1,17 @@
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyA74YCQAfmUdu96AKIk41uSdiMS6imJz6E",
-  authDomain: "taboche-pos.firebaseapp.com",
-  databaseURL: "https://taboche-pos.firebaseio.com",
-  projectId: "taboche-pos",
-  storageBucket: "taboche-pos.firebasestorage.app",
-  messagingSenderId: "902721301924",
-  appId: "1:902721301924:web:c44ef0ade0ac7200ed6531",
-  measurementId: "G-00TEQG2H1Z"
-};
-
 // Initialize tables from localStorage or create default structure
 let tables = JSON.parse(localStorage.getItem('tables')) || {};
 const tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8A', '8B', '9A', '9B', '10A', '10B', '10C', '11', '12'];
-
 tableNumbers.forEach(table => {
   if (!tables[`Table ${table}`]) {
-    tables[`Table ${table}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0, time: null };
+    tables[`Table ${table}`] = { 
+      order: {}, 
+      totalPrice: 0, 
+      status: "available", 
+      payments: [], 
+      discount: 0, 
+      discountedTotal: 0, 
+      time: null 
+    };
   }
 });
 
@@ -24,14 +19,24 @@ tableNumbers.forEach(table => {
 let isVoidMode = false;
 let selectedTable = null;
 
-// Initialize sales data from localStorage or create default structure
+// Initialize sales data from localStorage or create default structure with items
 let salesData = JSON.parse(localStorage.getItem('salesData')) || {
   totalSales: 0,
   totalDiscounts: 0,
   totalOrders: 0,
-  cashPayments: 0,
-  mobilePayments: 0
+  cashSales: 0,
+  mobileSales: 0,
+  items: []  // New property to track individual item sales details
 };
+
+// In case salesData existed without an 'items' property, add it and update localStorage
+if (!salesData.items) {
+  salesData.items = [];
+  localStorage.setItem('salesData', JSON.stringify(salesData));
+}
+
+
+
 // Function to open the modal
 function openAddItemModal() {
   const modal = document.getElementById('addItemModal');
@@ -124,85 +129,61 @@ function saveData() {
   localStorage.setItem('tables', JSON.stringify(tables));
 }
 
-// Function to add item to the order summary
 function addItem(itemName, itemPrice) {
   if (!selectedTable) {
     alert("Please select a table first!");
     return;
   }
-
   const table = tables[selectedTable];
-  if (!table.order[itemName]) {
-    table.order[itemName] = { price: itemPrice, quantity: 1 };
-  } else {
-    table.order[itemName].quantity += 1;
-  }
-  table.totalPrice += itemPrice;
-  table.discountedTotal = table.totalPrice * ((100 - table.discount) / 100);
+  
+// In addItem() and addToOrder() functions:
+if (!table.order[itemName]) {
+  table.order[itemName] = { 
+    price: itemPrice, 
+    quantity: 1,
+    finalized: false,
+    timeAdded: Date.now() // Add timestamp
+  };
+} else {
+  table.order[itemName].quantity += 1;
+}
+  
+  table.totalPrice = parseFloat((table.totalPrice + itemPrice).toFixed(2));
+  table.discountedTotal = parseFloat((table.totalPrice * (1 - table.discount / 100)).toFixed(2));
   table.status = "occupied";
-
-  const orderItemsList = document.getElementById('order-items');
-  const existingItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
-
-  if (existingItem) {
-    const itemCount = parseInt(existingItem.dataset.count) + 1;
-    existingItem.dataset.count = itemCount;
-    existingItem.querySelector('.item-count').textContent = `x${itemCount}`;
-    existingItem.querySelector('.item-total').textContent = `Rs ${itemPrice * itemCount}`;
-  } else {
-    const orderItem = document.createElement('li');
-    orderItem.className = 'order-item';
-    orderItem.dataset.name = itemName;
-    orderItem.dataset.count = 1;
-    orderItem.innerHTML = `
-      ${itemName} <span class="item-count">x1</span> - <span class="item-total">Rs ${itemPrice}</span>
-      <button class="btn remove-btn" onclick="removeItem('${itemName}', ${itemPrice})">Remove</button>
-    `;
-    orderItemsList.appendChild(orderItem);
-  }
-
-  // Update total price
-  const totalPriceElem = document.getElementById('total-price');
-  totalPriceElem.textContent = table.totalPrice.toFixed(2);
-
-  saveData(); // Save data to localStorage after adding item
+  table.newItemsAdded = true; // Flag for new items
+  
+  updateOrderSummary(); // Unified UI update
+  saveData();
 }
 
-// Function to remove item from the order summary
-function removeItem(itemName, itemPrice) {
+function removeItem(itemName) {
   if (!selectedTable) {
     alert("Please select a table first!");
     return;
   }
-
+  
   const table = tables[selectedTable];
   const item = table.order[itemName];
-
-  if (item) {
-    table.totalPrice -= item.price * item.quantity;
-    delete table.order[itemName];
-    table.discountedTotal = table.totalPrice * ((100 - table.discount) / 100);
-    
-    const orderItemsList = document.getElementById('order-items');
-    const orderItem = [...orderItemsList.children].find(item => item.dataset.name === itemName);
-
-    if (orderItem) {
-      orderItemsList.removeChild(orderItem);
-    }
-
-    // Update total price
-    const totalPriceElem = document.getElementById('total-price');
-    totalPriceElem.textContent = table.totalPrice.toFixed(2);
-
-    if (table.totalPrice === 0) {
-      table.status = "available";
-    }
-
-    saveData(); // Save data to localStorage after removing item
+  
+  if (!item) return;
+  
+  if (item.finalized) {
+    alert("Cannot remove finalized items. Use Void Mode.");
+    return;
   }
+  
+  table.totalPrice = parseFloat((table.totalPrice - item.price * item.quantity).toFixed(2));
+  delete table.order[itemName];
+  
+  if (Object.keys(table.order).length === 0) {
+    table.status = "available";
+    table.time = null;
+  }
+  
+  updateOrderSummary();
+  saveData();
 }
-
-
 
 
 // Function to update date, time, and day of the week
@@ -305,10 +286,13 @@ function filterCategory(category) {
   });
 }
 
-// Mark void mode
 function voidSelectedItem() {
   isVoidMode = true;
-  alert("Void mode activated. Select the item to void.");
+  const confirmVoid = confirm("Void mode activated. Select the item to void. Press 'Cancel' to exit void mode.");
+  if (!confirmVoid) {
+    isVoidMode = false;
+    alert("Void mode canceled.");
+  }
 }
 
 // Remove item from the order and record void details with reason/comment if void mode is active
@@ -354,86 +338,95 @@ function removeFromOrder(name) {
   }
 }
 
-/**
- * Adds an item to the order for the selected table.
- * @param {string} name - The name of the item to add.
- * @param {number} price - The price of the item to add.
- */
 
-
-// Function to add an item to the order or void it if void mode is active
 function addToOrder(name, price) {
-  console.log(`Adding to order: ${name}, Price: ${price}, Selected Table: ${selectedTable}`);
   if (selectedTable === "None") {
     alert("Please select a table first!");
     return;
   }
+
   if (!tables[selectedTable].order) {
     tables[selectedTable].order = {};
   }
+
   if (isVoidMode) {
-    removeFromOrder(name); // Directly call removeFromOrder function when void mode is active
-    isVoidMode = false; // Disable void mode after removing the item
-  } else {
-    if (!tables[selectedTable].order.hasOwnProperty(name)) {
-      tables[selectedTable].order[name] = { price: price, quantity: 1, finalized: false };
-    } else {
-      tables[selectedTable].order[name].quantity += 1;
-    }
-    tables[selectedTable].totalPrice += price;
-    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
-    tables[selectedTable].status = "occupied";
-    tables[selectedTable].newItemsAdded = true; // Set the flag to true
-    renderTables();
-    updateOrderSummary();
-    saveData();
+    removeFromOrder(name);
+    isVoidMode = false;
+    return;
   }
+
+  // Add or update item with timestamp
+  if (!tables[selectedTable].order[name]) {
+    tables[selectedTable].order[name] = { 
+      price: price, 
+      quantity: 1, 
+      finalized: false,
+      timeAdded: Date.now() // Add timestamp here
+    };
+  } else {
+    tables[selectedTable].order[name].quantity += 1;
+  }
+
+  // Update totals and status
+  tables[selectedTable].totalPrice += price;
+  tables[selectedTable].discountedTotal = 
+    tables[selectedTable].totalPrice * (1 - tables[selectedTable].discount / 100);
+  tables[selectedTable].status = "occupied";
+  tables[selectedTable].newItemsAdded = true;
+
+  // Update UI and storage
+  renderTables();
+  updateOrderSummary();
+  saveData();
 }
-
-/**
- * Displays the order items on the UI.
- * @param {object} orderItems - The items in the order to display.
- */
-
-
-
-
 
 function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
   orderItemsList.innerHTML = '';
   let totalPrice = 0;
+
   for (const [name, item] of Object.entries(orderItems)) {
+    const comments = item.comments || '';
     const orderItem = document.createElement('li');
-    orderItem.classList.add('order-item'); // Add a class for styling
     orderItem.innerHTML = `
       <div class="item-container">
-        <div class="item-header">
-          <div>
-            <span class="item-name">${name}</span>
-            <div class="item-comments">${item.comments || ''}</div>
-          </div>
-          <div class="item-details">
-            <span class="item-quantity">x ${item.quantity}</span>
-            <span class="item-price">Rs ${item.price}</span>
-            <span class="item-total">= Rs ${item.price * item.quantity}</span>
-            <button class="remove-item" data-name="${name}" data-table="${selectedTable}" onclick="removeFromOrder('${name}')">Remove</button>
-          </div>
+        <div class="item-header" onclick="promptAndAddComment('${name}')">
+          <span class="item-name">${name}</span>
+          <span class="item-quantity">x${item.quantity}</span>
+          <span class="item-price">Rs${item.price}</span>
+          <span class="item-total">= Rs${item.price * item.quantity}</span>
+          <button class="remove-item" onclick="removeFromOrder('${name}')">Remove</button>
         </div>
+        <div class="item-comments">${comments}</div>
+        <div class="item-timer" data-time-added="${item.timeAdded}"></div> <!-- Timer -->
       </div>
     `;
     orderItemsList.appendChild(orderItem);
-
     totalPrice += item.price * item.quantity;
   }
-  document.getElementById('total-price').textContent = `Total: Rs ${totalPrice}`;
-  tables[selectedTable].totalPrice = totalPrice;
-  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
-  saveData();
 
-  // Disable remove buttons for finalized items
-  disableRemoveButtonForFinalizedItems();
+  document.getElementById('total-price').textContent = `Total: Rs${totalPrice}`;
+  updatePaymentSummary();
+  
+  // Start timer update interval
+  if (!window.timerInterval) {
+    window.timerInterval = setInterval(updateTimers, 1000);
+  }
 }
+
+function updateTimers() {
+  const timers = document.querySelectorAll('.item-timer');
+  timers.forEach(timer => {
+    const timeAdded = parseInt(timer.dataset.timeAdded);
+    if (isNaN(timeAdded)) return;
+    
+    const elapsedTime = Date.now() - timeAdded;
+    const minutes = Math.floor(elapsedTime / 60000);
+    const seconds = Math.floor((elapsedTime % 60000) / 1000);
+    timer.textContent = `Added ${minutes}m ${seconds}s ago`;
+  });
+}
+
 
 /**
  * Updates the order summary and displays it on the UI.
@@ -536,21 +529,7 @@ function addCommentToOrderItem(name, comment) {
   }
 }
 
-/**
- * Updates the order summary and displays it on the UI.
- */
-function updateOrderSummary() {
-  const order = tables[selectedTable];
-  displayOrderItems(order.order);
-  const selectedTableElem = document.getElementById('selected-table');
-  const selectedTimeElem = document.getElementById('selected-time');
-  if (selectedTableElem) {
-    selectedTableElem.textContent = selectedTable;
-  }
-  if (selectedTimeElem) {
-    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
-  }
-}
+
 
 /**
  * Disables the remove buttons for finalized items.
@@ -567,66 +546,101 @@ function disableRemoveButtonForFinalizedItems() {
 }
 
 
-// Menu item click event to add items to the order
-document.querySelectorAll('.menu-item').forEach(item => {
-  item.addEventListener('click', (event) => {
-    event.stopImmediatePropagation();
-    const name = item.getAttribute('data-name');
-    const price = parseFloat(item.getAttribute('data-price'));
+// Replace the existing menu item event listeners with this
+document.addEventListener('click', (e) => {
+  const menuItem = e.target.closest('.menu-item');
+  if (menuItem) {
+    const name = menuItem.getAttribute('data-name');
+    const price = parseFloat(menuItem.getAttribute('data-price'));
     addToOrder(name, price);
-  });
+  }
 });
 
-
-
 function finalizeOrder() {
-  if (selectedTable === "None") {
+  if (!selectedTable) {
     alert("Please select a table first!");
     return;
   }
 
-  // Check if the order summary is empty
-  if (Object.keys(tables[selectedTable].order).length === 0) {
-    alert("Order summary is empty. Please add items before finalizing.");
-    return;
-  }
+  const table = tables[selectedTable];
+  const newItems = {};
+  const now = new Date();
 
-  const kitchenOrders = [];
-  const barOrders = [];
-
-  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
-    item.finalized = true;  // Mark the item as finalized
-    const sectionElem = document.querySelector(`.menu-item[data-name="${name}"]`);
-    if (sectionElem) {
-      const section = sectionElem.getAttribute('data-section');
-      if (section === 'Kitchen') {
-        kitchenOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
-      } else if (section === 'Bar') {
-        barOrders.push(`${name} - Rs ${item.price} x ${item.quantity}`);
-      }
-    } else {
-      console.error(`Menu item element not found for ${name}`);
+  // Find new items that haven't been finalized yet
+  for (const [name, item] of Object.entries(table.order)) {
+    if (!item.finalized) {
+      newItems[name] = item;
+      item.finalized = true;
+      item.finalizedTime = now;
     }
   }
 
-  if (kitchenOrders.length > 0) {
-    console.log(`Sending to Kitchen: Table ${selectedTable}, Orders: ${kitchenOrders.join(', ')}`);
-  }
-  if (barOrders.length > 0) {
-    console.log(`Sending to Bar: Table ${selectedTable}, Orders: ${barOrders.join(', ')}`);
+  if (Object.keys(newItems).length === 0) {
+    alert("No new items to finalize!");
+    return;
   }
 
-  alert('Order finalized and sent to Kitchen and Bar!');
+  // Generate KOTs
+  const kot = {
+    table: selectedTable,
+    timestamp: now.toISOString(),
+    items: newItems,
+    kotNumber: generateKOTNumber()
+  };
 
-  // Reset the flag after finalizing
-  tables[selectedTable].newItemsAdded = false;
+  // Group items by section
+  const kotGroups = {
+    Bar: [],
+    Kitchen: []
+  };
 
-  // Disable the remove button for finalized items
-  disableRemoveButtonForFinalizedItems();
+  for (const [name, item] of Object.entries(newItems)) {
+    const menuItem = document.querySelector(`.menu-item[data-name="${name}"]`);
+    const section = menuItem?.getAttribute('data-section') || 'Kitchen';
+    kotGroups[section].push({
+      name,
+      quantity: item.quantity,
+      price: item.price,
+      comments: item.comments || ''
+    });
+  }
+
+  // Send KOTs to appropriate sections
+  for (const [section, items] of Object.entries(kotGroups)) {
+    if (items.length > 0) {
+      printKOT(section, items, kot.kotNumber);
+    }
+  }
+
+  updateOrderSummary();
+  saveData();
+  alert(`New KOT (#${kot.kotNumber}) generated for ${selectedTable}`);
 }
 
+let kotCounter = 1;
+function generateKOTNumber() {
+  return kotCounter++;
+}
 
-
+function printKOT(section, items, kotNumber) {
+  const kotContent = `
+    <div class="kot">
+      <h3>${section} KOT #${kotNumber}</h3>
+      <p>Table: ${selectedTable}</p>
+      <p>Time: ${new Date().toLocaleTimeString()}</p>
+      <ul>
+        ${items.map(item => `
+          <li>${item.name} x${item.quantity}${item.comments ? ` (${item.comments})` : ''}</li>
+        `).join('')}
+      </ul>
+    </div>
+  `;
+  
+  // For actual implementation, you'd want to send this to a printer
+  // Here we'll just log it and show an alert
+  console.log(kotContent);
+  alert(`Sent to ${section}:\n${items.map(i => `${i.name} x${i.quantity}`).join('\n')}`);
+}
 
 
 // Function to change table
@@ -655,11 +669,14 @@ function saveOrderHistory() {
   localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
 }
 
-// Function to display the QR code dialog
 function displayQRCode() {
-  const qrCodeElement = document.getElementById('qr-code-dialog');
-  qrCodeElement.style.display = 'block';
-  document.getElementById('qr-code-image').src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png'; // Replace with the correct path to your QR code image
+  const qrCodeImage = document.getElementById('qr-code-image');
+  if (!qrCodeImage) {
+    console.error('QR code element not found');
+    return;
+  }
+  qrCodeImage.src = 'https://raw.githubusercontent.com/sukram145/fonepay_qr.png/main/qr.png';
+  document.getElementById('qr-code-dialog').style.display = 'block';
 }
 
 // Function to close the QR code dialog
@@ -684,86 +701,138 @@ function closeQRCodeDialog() {
   }
 }
 
-// Function to update the total amount to be paid from the order summary
-function updateTotalAmount() {
-  const totalAmountElem = document.getElementById('total-amount');
-  const totalPrice = tables[selectedTable]?.totalPrice || 0;
-  totalAmountElem.textContent = totalPrice;
-}
 
 function addPayment(paymentMethod) {
-  const numericInput = document.getElementById('numeric-input');
-  const amount = parseFloat(numericInput.value);
-  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
-
-  if (isNaN(amount) || amount <= 0) {
-    alert('Invalid amount. Please enter a valid number.');
+  const validMethods = ['Cash', 'Mobile Payment'];
+  if (!validMethods.includes(paymentMethod)) {
+    alert('Invalid payment method.');
     return;
   }
 
-  if (!tables[selectedTable]) {
-    tables[selectedTable] = {
-      payments: [],
-      totalSales: 0,
-      totalDiscounts: 0,
-      totalOrders: 0,
-      cashPayments: 0,
-      mobilePayments: 0,
-      status: 'occupied'
-    };
+  const numericInput = document.getElementById('numeric-input');
+  const amount = parseFloat(numericInput?.value) || 0;
+  const discountedTotal = tables[selectedTable]?.discountedTotal || 0;
+  const totalPaid = tables[selectedTable]?.payments.reduce((sum, p) => sum + p.amount, 0) || 0;
+
+  if (amount <= 0) {
+    alert('Please enter a valid amount.');
+    return;
   }
 
-  // Calculate the total amount paid so far
-  const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-
-  if (paymentMethod === 'Mobile Payment') {
-    const remainingAmount = totalPrice - totalPaid;
-    if (amount > remainingAmount) {
-      alert(`Amount exceeds the remaining balance. Please enter an amount up to Rs ${remainingAmount}.`);
-      return;
-    }
+  if (paymentMethod === 'Mobile Payment' && (totalPaid + amount) > discountedTotal) {
+    alert(`Amount exceeds remaining balance. Max allowed: Rs${discountedTotal - totalPaid}`);
+    return;
   }
 
   tables[selectedTable].payments.push({ method: paymentMethod, amount });
-
-  // Show QR code for mobile payment
-  if (paymentMethod === 'Mobile Payment') {
-    displayQRCode();
-  } else {
-    closeQRCodeDialog();
-  }
-
   updatePaymentSummary();
+  numericInput.value = '';
   saveData();
-  numericInput.value = ''; // Clear the numeric input after adding payment
 }
 
+
+function updateOrderSummary() {
+  const order = tables[selectedTable];
+  if (!order) return;
+
+  // Display order items
+  displayOrderItems(order.order);
+
+  // Update selected table
+  const selectedTableElem = document.getElementById('selected-table');
+  if (selectedTableElem) {
+    selectedTableElem.textContent = selectedTable;
+  }
+
+  // Update selected time
+  const selectedTimeElem = document.getElementById('selected-time');
+  if (selectedTimeElem) {
+    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
+  }
+
+  // Display discounted total instead of regular total
+  const totalPriceElem = document.getElementById('total-price');
+  if (totalPriceElem) {
+    totalPriceElem.textContent = order.discountedTotal.toFixed(2);
+  }
+}
+
+function applyDiscount(percentage) {
+  if (!selectedTable) {
+    alert("Please select a table first!");
+    return;
+  }
+  const table = tables[selectedTable];
+  table.discount = Math.min(Math.max(percentage, 0), 100); // Clamp between 0-100
+  table.discountedTotal = table.totalPrice * (1 - table.discount / 100);
+
+  // Update all necessary summaries and save the data
+  updatePaymentSummary();
+  updateOrderSummary();
+  updateTotalAmount();
+  saveData();
+}
+
+
+/**
+ * Updates the payment summary and calculates change or shortfall.
+ */
 function updatePaymentSummary() {
-  const paymentSummaryElem = document.getElementById('payment-summary');
-  const changeAmountElem = document.getElementById('change-amount');
-  const insufficientAmountElem = document.getElementById('insufficient-amount');
-  const shortAmountElem = document.getElementById('short-amount');
+  const paymentSummaryElement = document.getElementById('payment-summary');
+  const changeAmountElement = document.getElementById('change-amount');
+  const insufficientAmountElement = document.getElementById('insufficient-amount');
+  const shortAmountElement = document.getElementById('short-amount');
+
   let totalPaid = 0;
+
+  // Clear and update the payment summary
   if (tables[selectedTable]?.payments) {
-    paymentSummaryElem.innerHTML = '';
+    paymentSummaryElement.innerHTML = '';
     tables[selectedTable].payments.forEach(payment => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${payment.method}: Rs ${payment.amount}`;
-      paymentSummaryElem.appendChild(listItem);
+      const paymentItem = document.createElement('li');
+      paymentItem.textContent = `${payment.method}: Rs ${payment.amount}`;
+      paymentSummaryElement.appendChild(paymentItem);
       totalPaid += payment.amount;
     });
   }
-  const totalPrice = tables[selectedTable]?.discountedTotal || 0;
-  const changeAmount = totalPaid - totalPrice;
-  if (changeAmount >= 0) {
-    changeAmountElem.textContent = changeAmount;
-    insufficientAmountElem.style.display = 'none';
-  } else {
-    shortAmountElem.textContent = Math.abs(changeAmount);
-    insufficientAmountElem.style.display = 'block';
-    changeAmountElem.textContent = 0;
+
+  const selectedTableDetails = tables[selectedTable];
+  if (selectedTableDetails) {
+    const discount = selectedTableDetails.discount || 0;
+    const discountedTotal = selectedTableDetails.totalPrice * ((100 - discount) / 100);
+    const changeAmount = totalPaid - discountedTotal;
+
+    if (changeAmount >= 0) {
+      // Display change amount
+      changeAmountElement.textContent = `Change: Rs ${changeAmount.toFixed(2)}`;
+      insufficientAmountElement.style.display = 'none';
+      shortAmountElement.style.display = 'none';
+    } else {
+      // Display insufficient payment details
+      insufficientAmountElement.style.display = 'block';
+      shortAmountElement.style.display = 'block';
+      shortAmountElement.textContent = `Short by: Rs ${Math.abs(changeAmount).toFixed(2)}`;
+      changeAmountElement.textContent = '';
+    }
   }
 }
+
+/**
+ * Updates the total amount displayed.
+ */
+function updateTotalAmount() {
+  // Get the HTML element where the total amount is displayed
+  const totalAmountElement = document.getElementById('total-amount');
+
+  // Fetch the discounted total price for the currently selected table
+  const discountedTotalPrice = tables[selectedTable]?.discountedTotal || 0;
+
+  // If the element exists, update its text content with the discounted total, formatted to 2 decimal places
+  if (totalAmountElement) {
+    totalAmountElement.textContent = discountedTotalPrice.toFixed(2);
+  }
+}
+
 
 // Show and close payment dialog
 function showPaymentDialog() {
@@ -790,12 +859,23 @@ function closePaymentDialog() {
     if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
     if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
 
-    // Reset the payments array for the selected table
+    // Reset the payments array and discount for the selected table
     if (tables[selectedTable]) {
       tables[selectedTable].payments = [];
+      tables[selectedTable].discount = 0;
+      tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
     }
   }
 }
+
+// Close the dialog when the user clicks outside of it
+window.onclick = function(event) {
+  const dialog = document.getElementById('payment-dialog');
+  if (event.target == dialog) {
+    dialog.style.display = 'none';
+  }
+}
+ 
 
 function resetPaymentDialog() {
   // Reset payment summary display
@@ -809,9 +889,11 @@ function resetPaymentDialog() {
   if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
   if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
 
-  // Reset the payments array for the selected table
+  // Reset the payments array and discount for the selected table
   if (tables[selectedTable]) {
     tables[selectedTable].payments = [];
+    tables[selectedTable].discount = 0;
+    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
   }
 
   // Clear the input field
@@ -819,8 +901,8 @@ function resetPaymentDialog() {
   if (numericInput) numericInput.value = '';
 
   updatePaymentSummary(); // Refresh payment summary
+  updateTotalAmount(); // Refresh total amount with no discount
 }
-
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
 
@@ -829,10 +911,11 @@ function completeOrder() {
     return;
   }
 
-  const totalPrice = parseFloat(totalPriceElem.textContent);
-  const discount = tables[selectedTable]?.discount || 0;
-  const discountedTotal = tables[selectedTable]?.discountedTotal || 0;
-  const totalPaid = tables[selectedTable]?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+  const table = tables[selectedTable];
+  const originalTotal = table?.totalPrice || 0;
+  const discountPercentage = table?.discount || 0;
+  const discountedTotal = table?.discountedTotal || 0;
+  const totalPaid = table?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
 
   if (totalPaid < discountedTotal) {
     const shortAmount = discountedTotal - totalPaid;
@@ -840,79 +923,89 @@ function completeOrder() {
     return;
   }
 
+  // Calculate actual discount amount
+  const discountAmount = originalTotal * (discountPercentage / 100);
+
+  // Track remaining balance for payment allocation
+  let remainingBalance = discountedTotal;
   let cashSalesAmount = 0;
   let mobileSalesAmount = 0;
-  let change = 0;
 
-  tables[selectedTable]?.payments.forEach(payment => {
-    const standardizedMethod = payment.method.toLowerCase().trim();
+  table.payments.forEach(payment => {
+    const method = payment.method.toLowerCase().trim();
+    const amount = payment.amount;
 
-    const standardizedMethodsMapping = {
-      'mobile payment': 'mobile_payment',
-      'cash': 'cash'
-    };
-
-    const finalMethod = standardizedMethodsMapping[standardizedMethod] || standardizedMethod;
-
-    switch (finalMethod) {
-      case 'cash':
-        cashSalesAmount += Math.min(discountedTotal - mobileSalesAmount, payment.amount);
-        change = payment.amount - cashSalesAmount;
-        break;
-      case 'mobile_payment':
-        mobileSalesAmount += Math.min(discountedTotal - cashSalesAmount, payment.amount);
-        break;
-      default:
-        console.error(`Invalid payment method: ${finalMethod}`);
-        return;
+    if (method === 'cash') {
+      const allocated = Math.min(remainingBalance, amount);
+      cashSalesAmount += allocated;
+      remainingBalance -= allocated;
+    } else if (method === 'mobile payment') {
+      const allocated = Math.min(remainingBalance, amount);
+      mobileSalesAmount += allocated;
+      remainingBalance -= allocated;
     }
   });
 
+  // Update global sales data
   salesData.cashSales = (salesData.cashSales || 0) + cashSalesAmount;
   salesData.mobileSales = (salesData.mobileSales || 0) + mobileSalesAmount;
   salesData.totalSales = (salesData.totalSales || 0) + discountedTotal;
-  salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discount;
+  salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discountAmount;
   salesData.totalOrders = (salesData.totalOrders || 0) + 1;
 
-  console.log('Updated Sales Data:', salesData);
-  saveData();
+  // Handle order completion
   printReceipt();
+  const change = totalPaid - discountedTotal;
+  if (change > 0) alert(`Customer change: Rs ${change.toFixed(2)}`);
 
-  if (change > 0) {
-    alert(`Customer change: Rs ${change}`);
-  }
-
+  // Update order history
   orderHistory.push({
     table: selectedTable,
-    order: tables[selectedTable].order,
-    totalPrice: totalPrice,
+    order: { ...table.order },
+    totalPrice: originalTotal,
     discountedTotal: discountedTotal.toFixed(2),
-    discount: discount,
-    payments: tables[selectedTable].payments,
+    discount: discountPercentage,
+    payments: [...table.payments],
     timestamp: new Date()
   });
 
-  saveOrderHistory();
-
-  if (tables[selectedTable]) {
-    tables[selectedTable].order = {};
-    tables[selectedTable].totalPrice = 0;
-    tables[selectedTable].status = "available";
-    tables[selectedTable].payments = [];
-    tables[selectedTable].discount = 0;
-    tables[selectedTable].time = null; // Reset the time for the table
+  // Track individual items
+  for (const [itemName, itemDetails] of Object.entries(table.order)) {
+    const existingItem = salesData.items.find(i => i.name === itemName);
+    if (existingItem) {
+      existingItem.qty += itemDetails.quantity;
+      existingItem.totalSold += itemDetails.price * itemDetails.quantity;
+    } else {
+      salesData.items.push({
+        name: itemName,
+        qty: itemDetails.quantity,
+        totalSold: itemDetails.price * itemDetails.quantity
+      });
+    }
   }
 
+  // Reset table state
+  table.order = {};
+  table.totalPrice = 0;
+  table.discountedTotal = 0;
+  table.status = "available";
+  table.payments = [];
+  table.discount = 0;
+  table.time = null;
+
+  // Update UI and storage
+  saveData();
+  saveOrderHistory();
   closePaymentDialog();
-  closeQRCodeDialog(); // Close the QR code dialog when the order is complete
+  closeQRCodeDialog();
   renderTables();
   updateOrderSummary();
   updatePaymentSummary();
+  generateSalesReport();
 
   alert("Order completed successfully!");
-
-  generateSalesReport();
 }
+
 
 
 // Numeric pad functions
@@ -969,14 +1062,47 @@ function applyDiscountHandler() {
 
 // Initially update the total amount to be paid
 updateTotalAmount();
-
-
 function printReceipt() {
-  const logoUrl = 'http://localhost/images/RestaurantLogo.png'; // Update with your logo URL
+  const logoUrl = 'images/RestaurantLogo.png'; // Ensure the logo URL is correct and accessible
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Receipt</title><style>body { font-family: Arial, sans-serif; } .header { text-align: center; } .details, .summary { margin-top: 20px; } .summary { border-top: 1px solid #000; padding-top: 10px; } </style></head><body>');
+
+  printWindow.document.write('<html><head><title>Receipt</title><style>');
+  printWindow.document.write(`
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .details, .summary {
+      margin-top: 20px;
+    }
+    .summary {
+      border-top: 1px solid #000;
+      padding-top: 10px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin: 5px 0;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+  `);
+  printWindow.document.write('</style></head><body>');
+
+  // Header Section
   printWindow.document.write('<div class="header">');
-  printWindow.document.write('<h1>Taboche Bhaktapur </h1>');
+  printWindow.document.write('<h1>Taboche Bhaktapur</h1>');
   printWindow.document.write(`<img src="${logoUrl}" alt="Restaurant Logo" style="width:100px;height:auto;">`);
   printWindow.document.write('<p>Siddha Pokhar, Bhaktapur, Nepal</p>');
   printWindow.document.write('<p>Phone: +977 981-0208828</p>');
@@ -984,68 +1110,49 @@ function printReceipt() {
   printWindow.document.write(`<p>Time: ${new Date().toLocaleTimeString()}</p>`);
   printWindow.document.write(`<p>Table: ${selectedTable}</p>`);
   printWindow.document.write('</div>');
+
+  // Order Details Section
   printWindow.document.write('<div class="details">');
+  printWindow.document.write('<h2>Order Details</h2>');
   printWindow.document.write('<ul>');
   Object.entries(tables[selectedTable].order).forEach(([name, item]) => {
-    printWindow.document.write(`<li>${name} - Rs ${item.price} x ${item.quantity} = Rs ${item.price * item.quantity}</li>`);
+    printWindow.document.write(`<li>${name}: Rs ${item.price} x ${item.quantity} = Rs ${(item.price * item.quantity).toFixed(2)}</li>`);
   });
   printWindow.document.write('</ul>');
   printWindow.document.write('</div>');
+
+  // Summary Section
   printWindow.document.write('<div class="summary">');
   printWindow.document.write(`<p>Total Price: Rs ${tables[selectedTable].totalPrice.toFixed(2)}</p>`);
   printWindow.document.write(`<p>Discount: ${tables[selectedTable].discount}%</p>`);
   printWindow.document.write(`<p>Discounted Total: Rs ${tables[selectedTable].discountedTotal.toFixed(2)}</p>`);
-  printWindow.document.write('<h2>Payments</h2>');
+  printWindow.document.write('<h2>Payment Details</h2>');
   printWindow.document.write('<ul>');
   tables[selectedTable].payments.forEach(payment => {
-    printWindow.document.write(`<li>${payment.method}: Rs ${payment.amount}</li>`);
+    printWindow.document.write(`<li>${payment.method}: Rs ${payment.amount.toFixed(2)}</li>`);
   });
   printWindow.document.write('</ul>');
   printWindow.document.write('</div>');
+
+  // Footer Section
+  printWindow.document.write('<div class="footer">');
   printWindow.document.write('<p>Thank you for dining with us!</p>');
+  printWindow.document.write('<p>We look forward to serving you again.</p>');
+  printWindow.document.write('</div>');
+
   printWindow.document.write('</body></html>');
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
   printWindow.close();
-}
+} 
+
 // Track void history
 let voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || [];
 
 document.addEventListener('DOMContentLoaded', function () {
   generateSalesReport();
 });
-
-function generateSalesReport() {
-  console.log('Generating sales report...');
-  console.log('Sales Data:', salesData);
-
-  const salesReportElement = document.getElementById('salesReportOutput');
-  if (!salesReportElement) {
-    console.error('Element with ID "salesReportOutput" not found.');
-    return;
-  }
-
-  const totalDiscounts = salesData.totalDiscounts || 0;
-  const totalOrders = salesData.totalOrders || 0;
-  const cashSales = salesData.cashSales || 0;
-  const mobileSales = salesData.mobileSales || 0;
-  const totalSales = salesData.totalSales || 0;
-
-  const report = `
-    <h3>Sales Report</h3>
-    <p>Total Discounts: Rs ${totalDiscounts}</p>
-    <p>Total Cash Sales: Rs ${cashSales}</p>
-    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
-    <p>Total Orders: ${totalOrders}</p>
-    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
-    <button onclick="printElement('salesReportOutput')">Print Report</button>
-  `;
-  salesReportElement.innerHTML = report;
-
-  // Display void history
-  displayVoidHistory();
-}
 
 function displayVoidHistory() {
   const voidHistoryElem = document.getElementById('voidHistoryOutput');
@@ -1091,9 +1198,6 @@ function closeOrderHistoryDialog() {
 }
 
 
-function editItem() {
-  // Your logic for editing an item
-}
 
 // Function to print a specific element
 function printElement(elementId) {
@@ -1112,6 +1216,75 @@ function printElement(elementId) {
   printWindow.focus();
   printWindow.print();
   printWindow.close();
+}
+
+
+function printReport() {
+  // Generate the sales report HTML
+  const reportContent = generateSalesReport();
+  
+  // Add restaurant name, date, and time
+  const restaurantName = "taboche Restaurent"; // Replace with your restaurant's name
+  const currentDate = new Date().toLocaleDateString();
+  const currentTime = new Date().toLocaleTimeString();
+  const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
+
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank');
+  
+  // Write the report content to the new window
+  printWindow.document.open();
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Sales Report</title>
+        <style>
+          /* Add basic styles for the report */
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f4f4f4;
+          }
+          header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          footer {
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+            font-size: 0.9em;
+          }
+        </style>
+      </head>
+      <body>
+        <header>
+          <h1>${restaurantName}</h1>
+          <p>Sales Report</p>
+          <p>Date: ${currentDate} | Day: ${currentDay} | Time: ${currentTime}</p>
+        </header>
+        ${reportContent}
+        <footer>
+          <p>Generated by Restaurant Sales Management System</p>
+        </footer>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+
+  // Trigger the print dialog
+  printWindow.print();
 }
 
 // Function to print and reset the sales report
@@ -1156,7 +1329,8 @@ function resetSalesReport() {
     mobileSales: 0,
     totalSales: 0,
     totalDiscounts: 0,
-    totalOrders: 0
+    totalOrders: 0,
+    items: [] // Clear the items array
   };
 
   // Reset the order history
@@ -1169,6 +1343,12 @@ function resetSalesReport() {
   // Clear void history
   voidHistory = [];
   localStorage.removeItem('voidHistory');
+
+  // Reset the items sales table
+  const itemsTable = document.querySelector('#items-sales-details tbody');
+  if (itemsTable) {
+    itemsTable.innerHTML = ''; // Clear all table rows
+  }
 
   alert('Sales report, total orders, order history, and void history have been reset.');
 
@@ -1223,42 +1403,131 @@ function showMenuManagementContent() {
   toggleSidebar();
 }
 
-// Function to show sales reports content
-function showSalesReportsContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
-  }
-  content.innerHTML = `
-    <h1>Sales Reports</h1>
-    <button type="button" onclick="generateSalesReport()">Generate Sales Report</button>
-    <div id="salesReportOutput"></div>
+function generateSalesReport() {
+  const totalDiscounts = salesData.totalDiscounts || 0;
+  const totalOrders = salesData.totalOrders || 0;
+  const cashSales = salesData.cashSales || 0;
+  const mobileSales = salesData.mobileSales || 0;
+  const totalSales = salesData.totalSales || 0;
+  const items = salesData.items || [];
+
+  // Create rows for each item in the items array
+  const itemRows = items.map(item => `
+    <tr>
+      <td>${item.name}</td>
+      <td>${item.qty}</td>
+      <td>Rs ${item.totalSold}</td>
+    </tr>
+  `).join("");
+
+  // Build the complete HTML report
+  const report = `
+    <p>Total Discounts: Rs ${totalDiscounts}</p>
+    <p>Total Cash Sales: Rs ${cashSales}</p>
+    <p>Total Mobile Payment Sales: Rs ${mobileSales}</p>
+    <p>Total Orders: ${totalOrders}</p>
+    <p>Total Sales (Cash + Mobile Payment): Rs ${totalSales}</p>
+    
+    <h4>Items Sales Details</h4>
+    <table border="1" cellspacing="0" cellpadding="5">
+      <thead>
+        <tr>
+          <th>Item Name</th>
+          <th>Quantity Sold</th>
+          <th>Total Sold (Rs)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemRows}
+      </tbody>
+    </table>
   `;
-  toggleSidebar();
+  
+  return report;
 }
 
-// Function to show settings content
+
+function displaySalesReport(report) {
+  const modalContent = document.getElementById('modalContent');
+  if (!modalContent) {
+    console.error('Element with ID "modalContent" not found.');
+    return;
+  }
+  modalContent.innerHTML = report;
+  openModal();
+}
+
+function openModal() {
+  const modal = document.getElementById('salesReportModal');
+  modal.style.display = 'block';
+
+  const span = document.getElementsByClassName('close')[0];
+  span.onclick = function() {
+    modal.style.display = 'none';
+  };
+
+  window.onclick = function(event) {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  };
+}
+
+function closeModal() {
+  const modal = document.getElementById('salesReportModal');
+  modal.style.display = 'none';
+}
+
+function showSalesReportsContent() {
+  const report = generateSalesReport();
+  displaySalesReport(report);
+}
+
+// Show Settings Content for Table Management
 function showSettingsContent() {
   const content = document.getElementById('content');
   if (!content) {
     console.error('Content element not found');
     return;
   }
+
   content.innerHTML = `
-    <h1>Settings</h1>
-    <form id="settingsForm">
-      <label for="currency">Currency:</label>
-      <input type="text" id="currency" name="currency"><br>
-      <label for="taxRate">Tax Rate:</label>
-      <input type="text" id="taxRate" name="taxRate"><br>
-      <label for="layoutColor">Layout Color:</label>
-      <input type="color" id="layoutColor" name="layoutColor"><br>
-      <button type="button" onclick="saveSettings()">Save Settings</button>
-    </form>
+    <div id="manage-tables">
+      <input type="text" id="add-table-input" placeholder="Enter new table number">
+      <button onclick="addTable()">Add Table</button>
+      <input type="text" id="remove-table-input" placeholder="Enter table number to remove">
+      <button onclick="removeTable()">Remove Table</button>
+    </div>
   `;
-  toggleSidebar();
 }
+
+// Function to Add Table
+function addTable() {
+  const newTableNumber = document.getElementById('add-table-input').value;
+  if (newTableNumber && !tables[`Table ${newTableNumber}`]) {
+    tables[`Table ${newTableNumber}`] = { order: {}, totalPrice: 0, status: "available", payments: [], discount: 0, discountedTotal: 0, time: null };
+    renderTables();
+    saveData();
+    document.getElementById('add-table-input').value = ''; // Clear input field after adding
+  } else {
+    alert('Table number already exists or invalid input!');
+  }
+}
+
+// Function to Remove Table
+function removeTable() {
+  const tableNumber = document.getElementById('remove-table-input').value;
+  if (tableNumber && tables[`Table ${tableNumber}`]) {
+    delete tables[`Table ${tableNumber}`];
+    renderTables();
+    saveData();
+    document.getElementById('remove-table-input').value = ''; // Clear input field after removing
+  } else {
+    alert('Table number not found or invalid input!');
+  }
+}
+
+
 
 // Function to show admin panel content
 function showAdminPanelContent() {
@@ -1344,14 +1613,25 @@ function saveData() {
   localStorage.setItem('tables', JSON.stringify(tables));
   localStorage.setItem('salesData', JSON.stringify(salesData));
 }
-// Order History Functions
+
+
 function openOrderHistoryDialog() {
-  document.getElementById('order-history-dialog').style.display = 'block';
-  renderOrderHistory(); // Render the order history inside the dialog
+  const dialog = document.getElementById('order-history-dialog');
+  if (dialog) {
+      dialog.style.display = 'block';
+      renderOrderHistory(); // Render the order history inside the dialog
+  } else {
+      console.error('Element with ID "order-history-dialog" not found.');
+  }
 }
 
 function closeOrderHistoryDialog() {
-  document.getElementById('order-history-dialog').style.display = 'none';
+  const dialog = document.getElementById('order-history-dialog');
+  if (dialog) {
+      dialog.style.display = 'none';
+  } else {
+      console.error('Element with ID "order-history-dialog" not found.');
+  }
 }
 
 function renderOrderHistory() {
@@ -1432,3 +1712,24 @@ function checkOrderHistoryLength() {
 
 // Call this function to check the length of order history
 checkOrderHistoryLength();
+
+
+const ITEMS_PER_PAGE = 20; // Adjust as needed
+let currentPage = 1;
+
+
+
+function nextPage() {
+  if (currentPage < Math.ceil(salesData.items.length / ITEMS_PER_PAGE)) currentPage++;
+  updateReport();
+}
+
+function prevPage() {
+  if (currentPage > 1) currentPage--;
+  updateReport();
+}
+
+function updateReport() {
+  const itemRows = filterAndPaginateItems();
+  document.getElementById('itemsTableBody').innerHTML = itemRows;
+}

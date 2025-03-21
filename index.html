@@ -1,24 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Taboche POS</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taboche POS</title>
+    <link rel="stylesheet" href="styles.css">
+   
+    <script type="module" src="pos-core.js"></script><!-- Ensure your script.js is loaded here -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </head>
+  <body>
   
   <header>
-    <div class="logo">Taboche Restaurent</div>
+    <div class="logo">Taboche Restaurant</div>
     <div class="datetime" id="datetime">Loading...</div>
     <div class="user-info">
       <span id="user-role">Guest</span>
       <button class="login-btn" onclick="showLoginDialog()">Login</button>
     </div>
-
 
     <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
   </header>
@@ -32,12 +31,13 @@
         <li><button id="settingsBtn" onclick="showSettingsContent()">Settings</button></li>
         <li><button id="adminPanelBtn" onclick="showAdminPanelContent()">Admin Panel</button></li>
       </ul>
-    
+    </nav>
   </div>
-  
-  <div id="content"></div>
-  
 
+  <div id="content"></div>
+
+  <!-- Add your script.js file -->
+  <script type="module" src="main.js"></script>
 
 
 
@@ -505,7 +505,7 @@
     <div class="price">Rs 300</div>
 </div>
 
-  <div class="menu-item" data-name="Buff Chilly Momo" data-price="250" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Buff Chilly Momo" data-price="300" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_chilly_momo.jpg" alt="Buff Chilly Momo">
     <p>Buff Chilly Momo</p>
     <div class="price">Rs 300</div>
@@ -585,7 +585,7 @@
     <p>Veg Burger</p>
     <div class="price">Rs 280</div>
   </div>
-  <div class="menu-item" data-name="Veg Chilly" data-price="250" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Veg Chilly" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/veg_chilly.jpg" alt="Veg Chilly">
     <p>Veg Chilly momo</p>
     <div class="price">Rs 280</div>
@@ -1104,7 +1104,26 @@
     <img src="images/himalayan_green_tea.jpg" alt="Himalayan Green Tea">
     <p>Himalayan Green Tea</p>
     <div class="price">Rs 150</div>
-  </div>
+</div>
+
+<div class="menu-item" data-name="Hot Lemon" data-price="75" data-category="Tea" data-section="Bar">
+    <img src="images/hot_lemon.jpg" alt="Hot Lemon">
+    <p>Hot Lemon</p>
+    <div class="price">Rs 75</div>
+</div>
+
+<div class="menu-item" data-name="Honey Hot Lemon" data-price="125" data-category="Tea" data-section="Bar">
+    <img src="images/honey_hot_lemon.jpg" alt="Honey Hot Lemon">
+    <p>Honey Hot Lemon</p>
+    <div class="price">Rs 125</div>
+</div>
+
+<div class="menu-item" data-name="Ginger Honey Hot Lemon" data-price="130" data-category="Tea" data-section="Bar">
+    <img src="images/ginger_honey_hot_lemon.jpg" alt="Ginger Honey Hot Lemon">
+    <p>Ginger Honey Hot Lemon</p>
+    <div class="price">Rs 130</div>
+</div>
+
 
 </div>         
                 
@@ -1125,6 +1144,7 @@
             <button class="btn change-table-btn" onclick="changeTable()">Change Table</button>
             <button class="btn void-btn" onclick="voidSelectedItem()">Void</button> 
             <button class="print-receipt-btn" onclick="printReceipt()">Print Receipt</button>
+            <button class="btn primary-btn" onclick="openAddItemModal()">EXTRA ITEMS</button>
           </div>
         </div>
       </div>
@@ -1133,64 +1153,69 @@
 
       
       
-    </main>
+  
     
 
    
-    <!-- Payment Dialog -->
+<!-- Payment Dialog -->
 <div id="payment-dialog" class="dialog" style="display: none;">
   <div class="dialog-content">
-      <span class="close" onclick="closePaymentDialog()">&times;</span>
-      <div class="payment-section">
-          <div class="total-amount">
-              <strong>Total Amount to be Paid: Rs </strong><span id="total-amount">350</span>
-          </div>
-          <div class="content-section">
-              <div class="numeric-section">
-                  <input type="text" id="numeric-input" class="numeric-input" readonly placeholder="Enter amount">
-                  <div class="keypad">
-                      <button onclick="addNumber(1)">1</button>
-                      <button onclick="addNumber(2)">2</button>
-                      <button onclick="addNumber(3)">3</button>
-                      <button onclick="addNumber(4)">4</button>
-                      <button onclick="addNumber(5)">5</button>
-                      <button onclick="addNumber(6)">6</button>
-                      <button onclick="addNumber(7)">7</button>
-                      <button onclick="addNumber(8)">8</button>
-                      <button onclick="addNumber(9)">9</button>
-                      <button onclick="clearInput()">C</button>
-                      <button onclick="addNumber(0)">0</button>
-                      <button onclick="backspaceInput()">⌫</button>
-                  </div>
-                  <div class="quick-amounts">
-                      <button class="quick-amount-btn" onclick="addQuickAmount(50)">50</button>
-                      <button class="quick-amount-btn" onclick="addQuickAmount(100)">100</button>
-                      <button class="quick-amount-btn" onclick="addQuickAmount(500)">500</button>
-                      <button class="quick-amount-btn" onclick="addQuickAmount(1000)">1000</button>
-                  </div>
-              </div>
-              <div class="action-buttons">
-                  <div class="discount-section">
-                      <input type="number" id="discount" placeholder="Discount (%)" min="0" max="100">
-                      <button class="apply-btn" onclick="applyDiscountHandler()">Apply Discount</button>
-                  </div>
-                  <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
-                  <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
-                  <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
-                  <button onclick="resetPaymentDialog()">Clear</button>
-              </div>
-          </div>
-          <div class="payment-summary">
-              <strong>Payment Summary:</strong>
-              <ul id="payment-summary"></ul>
-          </div>
-          <div class="change">
-              <strong>Change:</strong> Rs <span id="change-amount">0</span>
-          </div>
-          <div class="insufficient-amount" id="insufficient-amount" style="display: none;">
-              <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
-          </div>
+    <span class="close" onclick="closePaymentDialog()">&times;</span>
+    <div class="payment-section">
+      <div class="total-amount">
+        <strong> </strong>  <span id="total-amount">350</span>
       </div>
+      <div class="content-section">
+        <div class="numeric-section">
+          <input type="text" id="numeric-input" class="numeric-input" readonly placeholder="Enter amount">
+          <div class="keypad">
+            <button onclick="addNumber(1)">1</button>
+            <button onclick="addNumber(2)">2</button>
+            <button onclick="addNumber(3)">3</button>
+            <button onclick="addNumber(4)">4</button>
+            <button onclick="addNumber(5)">5</button>
+            <button onclick="addNumber(6)">6</button>
+            <button onclick="addNumber(7)">7</button>
+            <button onclick="addNumber(8)">8</button>
+            <button onclick="addNumber(9)">9</button>
+            <button onclick="clearInput()">C</button>
+            <button onclick="addNumber(0)">0</button>
+            <button onclick="backspaceInput()">⌫</button>
+          </div>
+          <div class="quick-amounts">
+            <button class="quick-amount-btn" onclick="addQuickAmount(50)">50</button>
+            <button class="quick-amount-btn" onclick="addQuickAmount(100)">100</button>
+            <button class="quick-amount-btn" onclick="addQuickAmount(500)">500</button>
+            <button class="quick-amount-btn" onclick="addQuickAmount(1000)">1000</button>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <div class="discount-section">
+            <div class="discount-section">
+              <button class="discount-btn" onclick="applyDiscount(5)">5%</button>
+              <button class="discount-btn" onclick="applyDiscount(10)">10%</button>
+              <button class="discount-btn" onclick="applyDiscount(25)">25%</button>
+              <button class="discount-btn" onclick="applyDiscount(50)">50%</button>
+              <button class="discount-btn" onclick="applyDiscount(100)">100%</button>
+            </div>
+          </div>
+          <button class="cash-btn" onclick="addPayment('Cash')">Cash</button>
+          <button class="mobile-btn" onclick="addPayment('Mobile Payment')">Mobile Payment</button>
+          <button class="complete-btn" onclick="completeOrder()">Complete Order</button>
+          <button onclick="resetPaymentDialog()">Clear</button>
+        </div>
+      </div>
+      <div class="payment-summary">
+        <strong>Payment Summary:</strong>
+        <ul id="payment-summary"></ul>
+      </div>
+      <div class="change">
+        <strong>Change:</strong> Rs <span id="change-amount">0</span>
+      </div>
+      <div class="insufficient-amount" id="insufficient-amount" style="display: none;">
+        <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1211,35 +1236,54 @@
     <div id="content"></div>
   
 
-    <div id="sales-report" class="sales-report"></div>
+<!-- Sales Reports Modal -->
+<div id="salesReportModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Taboche Restaurant</h2>
 
-    <button class="reset-btn" onclick="printAndResetSalesReport()">Reset Sales Report</button>
-    <button class="view-order-history-btn" onclick="openOrderHistoryDialog()">View Order History</button>
-    
-    <!-- Order History Dialog -->
-    <div id="order-history-dialog" class="dialog" style="display: none;">
-      <div class="dialog-content">
-        <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
-        <h2>Order History</h2>
-        <div id="order-history-container"></div>
-      </div>
-    </div>
-    
-    <!-- Void History Dialog -->
-    <div id="void-history-dialog" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); border:1px solid #ccc; background-color:#fff; padding:20px; z-index:1000;">
-      <h3>Void History</h3>
-      <div id="voidHistoryOutput"></div>
-      <button onclick="closeVoidHistoryDialog()">Close</button>
-    </div>
-    
-    <!-- Buttons to Open Dialogs -->
-    <button onclick="openVoidHistoryDialog()">Show Void History</button>
-   
-    
+    <!-- Sales Report Content -->
+    <div id="modalContent"></div>
 
-  
-<!-- Add Item Button -->
-<button class="btn primary-btn" onclick="openAddItemModal()">Add Item</button>
+    <!-- Pagination Section -->
+    <div class="pagination-container">
+      <button class="btn" onclick="prevPage()">Previous</button>
+      <span class="page-info">Page <span id="currentPage">1</span> of <span id="totalPages"></span></span>
+      <button class="btn" onclick="nextPage()">Next</button>
+    </div>
+
+    <!-- Buttons Section -->
+    <div class="button-container">
+      <button class="btn btn-primary" onclick="openOrderHistoryDialog()">📜 View Order History</button>
+      <button class="btn btn-warning" onclick="openVoidHistoryDialog()">❌ Show Void History</button>
+      <button class="btn btn-danger" onclick="resetSalesReport()">🔄 Reset Sales Report</button>
+      <button class="btn btn-success" onclick="printReport()">🖨️ Print Report</button>
+      <button class="btn" onclick="closeModal()">✖️ Close</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Order History Dialog -->
+<div id="order-history-dialog" class="dialog">
+  <div class="dialog-content">
+    <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
+    <h2>Order History</h2>
+    <div id="order-history-container" class="history-container"></div>
+    <button onclick="closeOrderHistoryDialog()" class="btn">Close</button>
+  </div>
+</div>
+
+<!-- Void History Dialog -->
+<div id="void-history-dialog" class="dialog">
+  <div class="dialog-content">
+    <span class="close" onclick="closeVoidHistoryDialog()">&times;</span>
+    <h2>Void History</h2>
+    <div id="voidHistoryOutput" class="history-container"></div>
+    <button onclick="closeVoidHistoryDialog()" class="btn">Close</button>
+  </div>
+</div>
+
 
 <!-- Add Item Modal -->
 <div id="addItemModal" class="modal">
@@ -1257,9 +1301,42 @@
   </div>
 </div>
 
+<div id="salesReportModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="modalContent"></div>
+  </div>
+</div>
    
+<!-- Add this within your HTML body -->
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSettingsModal()">&times;</span>
+    <div id="manage-tables">
+      <input type="text" id="add-table-input" placeholder="Enter new table number">
+      <button onclick="addTable()">Add Table</button>
+      <input type="text" id="remove-table-input" placeholder="Enter table number to remove">
+      <button onclick="removeTable()">Remove Table</button>
+    </div>
+  </div>
+</div>
+  <!-- Menu Management Section -->
+  <div id="menuManagementContent" style="display:none;">
+    <h2>Menu Management</h2>
+    <form id="menuForm">
+      <input type="text" id="itemName" placeholder="Item Name">
+      <input type="text" id="itemPrice" placeholder="Item Price">
+      <input type="text" id="itemCategory" placeholder="Item Category">
+      <input type="file" id="itemImage">
+      <button type="button" onclick="addItem()">Add Item</button>
+      <button type="button" onclick="updateItem()">Update Item</button>
+      <button type="button" onclick="deleteItem()">Delete Item</button>
+    </form>
+  
 
-
+ 
+    <script src="path/to/script.js"></script>
+    
   <script src="script.js"></script>
 </body>
 </html>
