@@ -1,36 +1,23 @@
+:root {
+  --primary: #2a2a31; /* Professional navy */
+  --secondary: #4A90E2; /* Trustworthy blue */
+  --accent: #00C853; /* Positive green */
+  --text: #2D3748;
+  --background: #F7FAFC;
+  --surface: #FFFFFF;
+  --error: #D32F2F;
+  --warning: #F6A623;
+}
 
-/* Base styles (applied to all devices) */
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
-  color: #333;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--background);
 }
 
-/* Keyframes for animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { transform: translateY(-10%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes fadeInDialog {
-  to { transform: translateY(0); opacity: 1; }
+h1, h2, h3 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 /* Header */
@@ -39,151 +26,137 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
-  background-color: #292b2c;
-  color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 1s ease-in-out;
+  background-color: var(--primary);
+  color: white;
+  box-shadow: var(--shadow);
 }
 
 .logo {
-  font-size: 1.5em;
+  font-size: 1.8rem;
   font-weight: bold;
   letter-spacing: 1px;
-  animation: slideInLeft 1s ease-in-out;
+}
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 30px; /* Adjust spacing between logo and name */
+}
+
+.logo-image {
+  width: 80px; /* Set logo size */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.restaurant-name {
+  font-size: 24px; /* Adjust font size for the name */
+  font-weight: bold; /* Make the name stand out */
 }
 
 .datetime {
-  font-size: 0.9em;
+  font-size: 0.9rem;
   font-weight: 300;
-  animation: slideInRight 1s ease-in-out;
 }
 
-/* Sidebar Navigation */
+/* Sidebar */
 .sidebar {
   width: 250px;
   height: 100%;
   position: fixed;
   left: -250px;
   top: 0;
-  background-color: #111;
+  background: #111;
   padding-top: 20px;
-  transition: left 0.3s ease-in-out, background-color 0.3s;
+  transition: left 0.3s ease-in-out;
 }
 
 .sidebar.active {
   left: 0;
 }
 
-.sidebar a, .dropdown-btn {
+.sidebar a {
+  display: block;
   padding: 12px 20px;
   text-decoration: none;
   color: white;
-  display: block;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  outline: none;
-  animation: fadeIn 0.5s ease-in-out;
-  font-size: 1em;
   transition: background-color 0.2s ease-in-out;
 }
 
-.sidebar a:hover, .dropdown-btn:hover {
+.sidebar a:hover {
   background-color: #575757;
 }
 
-.dropdown-container {
-  display: none;
-  background-color: #262626;
-  padding-left: 16px;
-  animation: fadeIn 0.5s ease-in-out;
+/* Tables Dashboard */
+.tables-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  padding: rem;
 }
 
-.dropdown-btn.active + .dropdown-container {
-  display: block;
-  animation: slideDown 0.5s ease-in-out;
+
+/* Order Section */
+.order-section {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
-.content-container {
-  display: none;
-  padding: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Enhanced Buttons */
+.btn {
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
 }
 
-#mainContent {
-  margin-left: 260px;
-  padding: 20px;
+.btn-primary {
+  background: var(--secondary);
+  color: white;
 }
 
-/* Login Dialog */
-.login-dialog {
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+
+/* Modals */
+.modal {
   display: none;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  border-radius: 8px;
-  animation: fadeIn 0.5s ease-in-out;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
 }
 
-.login-dialog-content {
-  position: relative;
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 600px;
+  overflow-y: auto;
 }
 
-.close-login {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  font-size: 1.2em;
-  color: #888;
-  transition: color 0.2s ease-in-out;
-}
 
-.close-login:hover {
-  color: #333;
-}
 
-.login-dialog h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.login-dialog input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.2s ease-in-out;
-}
-
-.login-dialog input:focus {
-  border-color: #007bff;
-}
-
-.login-dialog button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.login-dialog button:hover {
-  background: #0056b3;
-}
 
 /* Main Layout */
 main {
@@ -200,38 +173,47 @@ main {
   flex-wrap: wrap;
 }
 
-.table-management, .order-section, .payment-section {
-  flex: 1;
-  padding: 15px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  margin: 0;
-  min-width: 280px;
+.order-section {
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.tables-dashboard {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.menu-item {
+  background: var(--surface);
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.table-btn {
-  padding: 8px;
-  border: 1px solid #ccc;
-  background-color: #f4f4f4;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+.menu-item:hover {
+  border-color: var(--secondary);
+  box-shadow: 0 4px 6px -1px rgba(74, 144, 226, 0.1);
 }
 
+.menu-item img {
+  border-radius: 6px;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+
+
+
+/* Responsive adjustment for smaller screens */
+@media screen and (max-width: 768px) {
+  .table-btn {
+    width: 35%; /* Slightly increased width */
+    padding: 8px; /* Slightly increased padding for touch targets */
+    font-size: 12px; /* Reduced font size for responsiveness */
+  }
+}
+
+/* Keep the hover effect consistent */
 .table-btn:hover {
   background-color: #ddd;
-  transform: translateY(-3px);
+  transform: translateY(-2px); /* Slightly reduced lift effect */
 }
-
-
-
 
 
 .order-section {
@@ -322,47 +304,64 @@ main {
   margin-top: 5px;
 }
 .order-summary {
-  width: 400px; /* Make the order summary box wider */
-  max-height: 600px; /* Set a maximum height */
-  overflow-y: auto; /* Enable scrolling if content exceeds the box height */
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #f9f9f9;
+  width: 100%; /* Ensure it adapts to screen width */
+  max-width: 450px; /* Set a maximum width for responsiveness */
+  max-height: 600px; /* Maintain maximum height for readability */
+  overflow-y: auto; /* Enable scrolling for large content */
+  padding: 15px; /* Balanced padding */
+  border: 1px solid #ddd; /* Softer border color */
+  border-radius: 10px; /* Rounded corners for modern design */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
+  background-color: #ffffff; /* Clean and professional background */
 }
 
 .order-item {
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
+  padding: 10px; /* Improved padding for readability */
+  border-bottom: 1px solid #df0a0a; /* Bold separator for clarity */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.order-item:hover {
+  background-color: #ffefef; /* Subtle hover effect for user focus */
 }
 
 .item-container {
   display: flex;
-  flex-direction: column; /* Stack item details and comments vertically */
+  flex-direction: column; /* Stack item details and comments */
+  gap: 5px; /* Add spacing between elements */
 }
 
 .item-header {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* Ensure consistent alignment */
+  font-weight: bold;
 }
-
-
 
 .item-comments {
   margin-top: 5px;
   font-style: italic;
+  color: #777; /* Softer text color */
 }
 
 .item-details {
   display: flex;
   align-items: center;
+  gap: 10px; /* Add spacing between elements */
 }
 
 .remove-item {
-  margin-left: 10px;
-  padding: 5px;
+  margin-left: auto; /* Push remove button to the right */
+  padding: 5px 10px; /* Larger clickable area */
   cursor: pointer;
+  font-size: 14px;
+  color: #f44336; /* Red to match the action */
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.remove-item:hover {
+  color: #df0a0a;
+  transform: scale(1.1); /* Subtle hover effect */
 }
 
 h3 {
@@ -375,6 +374,7 @@ h3 {
 
 #selected-table {
   color: #007bff;
+  font-weight: bold;
 }
 
 #order-summary {
@@ -400,6 +400,11 @@ h3 {
   align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.3s ease-in-out;
+}
+
+#order-items li:hover {
+  background-color: #f1f1f1; /* Highlight hovered items */
 }
 
 .item-info {
@@ -425,19 +430,20 @@ h3 {
 }
 
 #order-items li button {
-  padding: 6px 12px;
+  padding: 8px 14px; /* Improved padding for usability */
   background: #dc3545;
   color: white;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+  border-radius: 8px; /* Softer corners for modern aesthetics */
   font-size: 14px;
-  font-weight: 500;
+  font-weight: bold;
 }
 
 #order-items li button:hover {
   background-color: #c82333;
+  transform: translateY(-2px); /* Slight hover lift */
 }
 
 .total {
@@ -846,56 +852,88 @@ button:active {
   font-weight: bold;
 }
 
-/* QR Code Dialog */
+
+
+
 #qr-code-dialog {
   display: none;
   position: fixed;
-  z-index: 1000;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
+  background: rgba(0, 0, 0, 0.8);
   justify-content: center;
   align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in-out; /* Smooth entry animation */
 }
 
-#qr-code-dialog .dialog-content {
-  padding: 10px; /* Increased padding for better fit */
-  border-radius: 9px;
-  box-shadow: 0 3px 7.5px rgba(0, 0, 0, 0.225);
-  background-color: #fff;
-  width: 90%; /* Adjusted width for mobile fit */
-  max-width: 350px; /* Adjusted max-width */
+.qr-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
   text-align: center;
-  overflow: hidden; /* Ensure no scrolling */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 90%; /* Improved responsiveness */
+  max-width: 350px; /* Limit max size */
+  animation: slideUp 0.3s ease-in-out; /* Add subtle slide effect */
 }
 
-#qr-code-dialog .close {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 1.125em;
+#qr-code-image {
+  margin: 1.5rem 0; /* Increased spacing */
+  border: 4px solid #eee;
+  border-radius: 10px;
+  max-width: 100%; /* Makes it responsive */
+}
+
+.close-qr {
+  color: #aaa;
+  float: right;
+  font-size: 1.5rem;
   cursor: pointer;
-  color: #333;
+  transition: color 0.2s ease-in-out;
 }
 
-#qr-code-dialog .close:hover {
-  color: #ff0000;
+.close-qr:hover {
+  color: #fff; /* Visually engaging hover effect */
 }
 
+button.done-btn {
+  padding: 10px 15px; /* More balanced padding */
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
 
+button.done-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.05); /* Subtle hover scaling */
+}
 
 /* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -911,69 +949,76 @@ button:active {
 }
 
 
-
 /* Order History Styling */
 .order-history-item {
   border: 1px solid #ddd;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .order-header h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.5em;
+  margin: 0 0 10px;
+  font-size: 1.4em;
+  color: #333;
 }
 
 .order-header p {
   margin: 0;
-  color: #555;
+  color: #666;
+  font-size: 0.9em;
 }
 
 .order-details {
-  margin-top: 15px;
-  line-height: 1.6;
+  margin-top: 10px;
+  line-height: 1.5;
 }
 
 .order-details p {
-  margin: 5px 0;
+  margin: 8px 0;
+  font-size: 0.95em;
 }
 
 .order-items {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .order-items table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.95em;
 }
 
-.order-items th, .order-items td {
+.order-items th,
+.order-items td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
 }
 
 .order-items th {
-  background-color: #f4f4f4;
+  background-color: #f8f8f8;
   font-weight: bold;
+  text-align: center;
 }
 
 .order-payments {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 /* Button styles */
 button {
-  padding: 10px 20px;
+  display: inline-block;
+  padding: 10px 18px;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
@@ -985,36 +1030,61 @@ button:hover {
   display: none;
   position: fixed;
   z-index: 1000;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   overflow: auto;
-  background-color: rgba(0,0,0,0.5);
 }
 
 .dialog-content {
-  background-color: white;
-  margin: 15% auto;
+  background-color: #ffffff;
+  margin: 10% auto;
   padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 600px;
-  border-radius: 10px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
 }
 
 .close-button {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  color: #888;
+  font-size: 22px;
+  cursor: pointer;
   font-weight: bold;
 }
 
 .close-button:hover,
 .close-button:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+  color: #000;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 600px) {
+  .order-header h3 {
+    font-size: 1.2em;
+  }
+
+  .order-header p,
+  .order-details p {
+    font-size: 0.85em;
+  }
+
+  button {
+    font-size: 0.9em;
+    padding: 8px 15px;
+  }
+
+  .dialog-content {
+    margin: 20% auto;
+    width: 95%;
+    padding: 15px;
+  }
 }
 
 /* Responsive styles */
@@ -1365,122 +1435,6 @@ button:hover {
   100% { transform: rotate(360deg); }
 }
 
-/* Advanced Table Status Indicators */
-.table-status {
-  position: relative;
-  padding: 15px;
-  border-radius: 10px;
-  transition: transform 0.2s;
-}
-
-.table-status::after {
-  content: "";
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  width: 90%;
-  height: 5px;
-  background: rgba(0,0,0,0.1);
-  filter: blur(2px);
-  transform: translateX(-50%);
-}
-
-.table-status.occupied {
-  background: linear-gradient(145deg, #ff4444, #cc0000);
-  color: white;
-}
-
-.table-status.available {
-  background: linear-gradient(145deg, #00C851, #007E33);
-  color: white;
-}
-/* Add these media queries */
-@media (max-width: 768px) {
-  .pos-container {
-    flex-direction: column;
-  }
-
-  .table-management, .order-section, .order-summary {
-    width: 100%;
-    max-width: none;
-  }
-
-  .menu-item {
-    width: 45%;
-    padding: 8px;
-  }
-
-  .table-btn {
-    width: 30%;
-    padding: 12px;
-    font-size: 14px;
-  }
-
-
-  .dialog-content {
-    width: 90%;
-    padding: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu-item {
-    width: 100%;
-  }
-
-  .categories {
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  .categories button {
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-
-  .table-btn {
-    width: 45%;
-  }
-}
-
-.alert {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  border-radius: 8px;
-  color: white;
-  z-index: 10000;
-  animation: slideInRight 0.3s ease-out;
-}
-
-.alert-info { background-color: #17a2b8; }
-.alert-warning { background-color: #ffc107; }
-.alert-error { background-color: #dc3545; }
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-.table-btn {
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.available {
-  background-color: green;
-  color: white;
-}
-
-.occupied {
-  background-color: red;
-  color: white;
-}
 
 /* Add more status classes as needed */
 /* Media Queries for Responsive Design */
@@ -1499,44 +1453,71 @@ button:hover {
     padding: 8px;
   }
 
-  .table-btn {
-    width: 30%;
-    padding: 12px;
-    font-size: 14px;
-  }
 
-  .btn {
-    padding: 12px;
-    font-size: 14px;
-  }
 
   .dialog-content {
     width: 90%;
     padding: 15px;
   }
 }
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px; /* Smooth, modern corners */
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
+  background: linear-gradient(to right, #6a11cb, #2575fc); /* Eye-catching gradient */
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); /* Subtle depth effect */
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.05); /* Smooth hover scaling */
+  background: linear-gradient(to right, #2575fc, #6a11cb); /* Reverse gradient on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Elevated shadow for interaction feedback */
+}
+
+button:active {
+  transform: scale(0.95); /* Subtle press effect */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); /* Slightly reduced shadow on press */
+}
+
 
 .table-card {
-  padding: 15px;
-  margin: 10px;
-  border-radius: 8px;
+  padding: 10px; /* Slightly larger padding for better clickability */
+  margin: 5px; /* Improved spacing */
+  border-radius: 5px; /* Softer edges for a cleaner look */
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Subtle shadow for depth */
+}
+
+.table-card:hover {
+  transform: translateY(-3px); /* Smooth hover effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Elevated shadow on hover */
 }
 
 .table-card.available {
   background-color: #4CAF50;
   color: white;
+  font-weight: bold; /* Enhanced visibility */
 }
 
 .table-card.occupied {
   background-color: #f44336;
   color: white;
+  opacity: 0.85; /* Slight fade for visual cue */
 }
 
 .table-card.selected {
-  border: 3px solid #ffeb3b;
+  border: 4px solid #ffeb3b; /* Enhanced border width for selection */
+  background-color: #fffbe6; /* Soft yellow background for better focus */
+  color: #000; /* Black text for contrast */
+  box-shadow: 0 4px 10px rgba(255, 235, 59, 0.4); /* Glow effect */
 }
+
 
 .dialog {
   display: none; /* Hidden by default */
@@ -1667,53 +1648,6 @@ button:hover {
   background: #f8f9fa;
 }
 
-/* Enhanced Sales Report */
-.sales-report {
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-}
-
-.report-header {
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 1rem;
-  margin-bottom: 2rem;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.metric-card {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.metric-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-.items-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1.5rem;
-}
-
-.items-table th,
-.items-table td {
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
 
 
 /* Modern Buttons */
@@ -1746,65 +1680,113 @@ button:hover {
   margin-top: 5px;
 }
 
-.sales-report {
-  font-family: Arial, sans-serif;
-  padding: 2rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+.sales-metric {
+  background: linear-gradient(135deg, var(--primary), #1A365D);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
 }
-.report-summary {
-  margin-bottom: 2rem;
+
+.metric-trend {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.875rem;
 }
-.metric {
-  margin: 1rem 0;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 5px;
-  text-align: center;
+
+.positive {
+  background: rgba(0, 200, 83, 0.15);
+  color: var(--accent);
 }
+
+.negative {
+  background: rgba(211, 47, 47, 0.15);
+  color: var(--error);
+}
+
+button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-3px);
+  background-color: #0056b3;
+}
+
 .category-section {
   margin-bottom: 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid #ddd; /* Section separator */
 }
+
 .category-metrics {
   display: flex;
+  flex-wrap: wrap; /* Allows wrapping for responsive layout */
   gap: 1rem;
+  justify-content: center; /* Center category metrics */
 }
+
 .report-actions {
   margin-top: 2rem;
   display: flex;
   gap: 1rem;
   justify-content: center;
 }
+
 button {
   padding: 0.8rem 1.5rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px; /* Softer corners */
   cursor: pointer;
   font-weight: bold;
+  font-size: 1rem; /* Slightly larger font for better visibility */
+  transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
+
 .print-button {
   background: #4CAF50;
   color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
 }
+
+.print-button:hover {
+  background: #3e8e41; /* Darker green on hover */
+  transform: scale(1.05); /* Hover effect */
+}
+
 .reset-button {
   background: #f44336;
   color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+.reset-button:hover {
+  background: #d32f2f; /* Darker red on hover */
+  transform: scale(1.05);
+}
 
 .history-container {
   margin: 20px 0;
-  padding: 10px;
+  padding: 15px; /* Improved padding for usability */
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 10px; /* Rounded corners for clean design */
+  background: #f8f9fa; /* Light background for readability */
 }
 
 .history-container p {
-  padding: 8px;
-  margin: 5px 0;
-  background-color: #f8f9fa;
-  border-radius: 4px;
+  padding: 10px; /* Larger padding for better spacing */
+  margin: 8px 0; /* Increased spacing between entries */
+  background-color: #ffffff; /* Clean white background */
+  border-radius: 8px; /* Rounded corners for modern design */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 .discount-controls {
   margin: 10px 0;
@@ -1841,3 +1823,130 @@ button {
   font-size: 0.9em;
   margin-left: 10px;
 }
+.scrollable-table {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+}
+
+.scrollable-table thead {
+  position: sticky;
+  top: 0;
+  background: white;
+}
+
+.payment-dialog {
+  background: rgba(255, 255, 255, 0.95);
+
+  border-radius: 16px;
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.2);
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  max-width: 400px;
+}
+
+.payment-key {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  background: var(--surface);
+  border-radius: 8px;
+  transition: all 0.1s ease;
+}
+
+.payment-key:active {
+  transform: scale(0.95);
+}
+
+/* Table Card/Button Styling */
+.table-card, .table-btn {
+  padding: 12px; /* Slightly increased padding for better clickability */
+  margin: 6px; /* Consistent spacing */
+  border-radius: 6px; /* Smooth corners */
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600; /* Bolder text for readability */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow for depth */
+  border: none; /* Remove border for cleaner look */
+  color: white; /* Ensure text is always white for contrast */
+  opacity: 1; /* Remove any fade effect */
+}
+
+/* Available Table */
+.table-card.available, .table-btn.available {
+  background-color: #28a745; /* Vibrant green for available tables */
+}
+
+/* Occupied Table */
+.table-card.occupied, .table-btn.occupied {
+  background-color: #dc3545; /* Vibrant red for occupied tables */
+}
+
+/* Selected Table */
+.table-card.selected, .table-btn.selected {
+  background-color: #007bff; /* Vibrant blue for selected tables */
+  border: 3px solid #ffeb3b; /* Bright yellow border for emphasis */
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); /* Blue glow effect */
+  color: white; /* Ensure text remains white */
+}
+
+/* Hover Effect */
+.table-card:hover, .table-btn:hover {
+  transform: translateY(-2px); /* Subtle lift */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+  filter: brightness(1.1); /* Slightly brighten on hover */
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  .table-card, .table-btn {
+    padding: 10px;
+    margin: 4px;
+    font-size: 11px; /* Slightly smaller font for mobile */
+  }
+}.menu-item img { width: 100px; height: 100px; }
+.dialog, .modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+.dialog-content, .modal-content {
+  background: white;
+  margin: 10% auto;
+  padding: 20px;
+  width: 80%;
+  max-width: 600px;
+}
+.order-item { margin: 5px 0; }
+.remove-item { margin-left: 10px; }
+.btn { padding: 5px 10px; margin: 5px; }
+.sidebar {
+  width: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #f8f8f8;
+  overflow-x: hidden;
+  transition: 0.3s;
+}
+.sidebar.active { width: 250px; }
+
+
+#payment-dialog {
+  display: none;
+}
+#payment-dialog.visible {
+  display: flex;
+}
+
