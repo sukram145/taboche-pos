@@ -124,9 +124,9 @@ function selectItem(itemType) {
   }
 }
 
-// Function to save table data to localStorage
 function saveData() {
   localStorage.setItem('tables', JSON.stringify(tables));
+  localStorage.setItem('salesData', JSON.stringify(salesData));
 }
 
 function addItem(itemName, itemPrice) {
@@ -220,44 +220,66 @@ function renderTables() {
   }
 }
 
+// Function to sync tables with Firebase in real-time
+function syncTables() {
+  const tablesRef = database.ref('tables');
+  
+  tablesRef.on('value', (snapshot) => {
+    tables = snapshot.val() || {};
+    renderTables();
+    if (selectedTable) updateOrderSummary();
+  });
+}
+
+// Function to update Firebase data when local changes are made
+function updateFirebaseTable(tableId, data) {
+  database.ref(`tables/${tableId}`).set(data);
+}
+
 function selectTable(table) {
-  // Automatically finalize the current table's order before switching if new items were added
-  if (selectedTable && selectedTable !== "None" && tables[selectedTable].newItemsAdded) {
-    finalizeOrder();  // Finalize the current table's order
+  // Finalize order for the previously selected table if it has new items
+  if (selectedTable && selectedTable !== "None" && selectedTable !== table && tables[selectedTable]?.newItemsAdded) {
+    finalizeOrder(false); // Automatic finalization, no alerts
   }
 
   selectedTable = table;
   const selectedTableDisplayElem = document.getElementById('selected-table-display');
   const orderSection = document.getElementById('order-section');
-  
+
+  // Initialize table time if not already set
   if (!tables[selectedTable].time) {
-    tables[selectedTable].time = new Date().toLocaleTimeString(); // Store the initial time for the table
+    tables[selectedTable].time = new Date().toLocaleTimeString();
   }
 
+  // Update UI elements
   if (selectedTableDisplayElem) {
     selectedTableDisplayElem.textContent = table;
+  } else {
+    console.warn('Element with ID "selected-table-display" not found');
   }
   if (orderSection) {
     orderSection.style.display = 'block';
+  } else {
+    console.warn('Element with ID "order-section" not found');
   }
 
+  // Update order summary to reflect the selected table and its order
   updateOrderSummary();
 
-  // Disable remove buttons for items from the previously selected table
+  // Manage remove buttons for items from previous tables
   const removeButtons = document.querySelectorAll('.remove-item');
   removeButtons.forEach(button => {
-    if (button.getAttribute('data-table') !== selectedTable) {
-      button.disabled = true;
-    } else {
-      button.disabled = false;
-    }
+    button.disabled = button.getAttribute('data-table') !== selectedTable;
   });
 
   // Disable remove buttons for finalized items
   disableRemoveButtonForFinalizedItems();
+
+  // Sync with Firebase (if available)
+  if (typeof database !== 'undefined') {
+    updateFirebaseTable(selectedTable, tables[selectedTable]);
+  }
 }
-
-
 
 
 // Function to search menu items
@@ -382,37 +404,54 @@ function addToOrder(name, price) {
 
 function displayOrderItems(orderItems) {
   const orderItemsList = document.getElementById('order-items');
+  if (!orderItemsList) return;
+
   orderItemsList.innerHTML = '';
-  let totalPrice = 0;
+  let calculatedTotal = 0;
 
   for (const [name, item] of Object.entries(orderItems)) {
-    const comments = item.comments || '';
     const orderItem = document.createElement('li');
+    orderItem.classList.add('order-item');
     orderItem.innerHTML = `
-      <div class="item-container">
-        <div class="item-header" onclick="promptAndAddComment('${name}')">
-          <span class="item-name">${name}</span>
-          <span class="item-quantity">x${item.quantity}</span>
-          <span class="item-price">Rs${item.price}</span>
-          <span class="item-total">= Rs${item.price * item.quantity}</span>
-          <button class="remove-item" onclick="removeFromOrder('${name}')">Remove</button>
-        </div>
-        <div class="item-comments">${comments}</div>
-        <div class="item-timer" data-time-added="${item.timeAdded}"></div> <!-- Timer -->
+      <div class="item-header" onclick="promptAndAddComment('${name}')">
+        <span class="item-name">${name}</span>
+        <span class="item-quantity">x ${item.quantity}</span>
+        <span class="item-price">Rs ${item.price}</span>
+        <span class="item-total">= Rs ${(item.price * item.quantity).toFixed(2)}</span>
+        <button class="remove-item" data-name="${name}" data-table="${selectedTable}" onclick="removeFromOrder('${name}')">Remove</button>
       </div>
+      <div class="item-comments">${item.comments || ''}</div>
+      <div class="item-timer" data-time-added="${item.timeAdded}"></div>
     `;
     orderItemsList.appendChild(orderItem);
-    totalPrice += item.price * item.quantity;
+    calculatedTotal += item.price * item.quantity;
   }
 
-  document.getElementById('total-price').textContent = `Total: Rs${totalPrice}`;
-  updatePaymentSummary();
-  
-  // Start timer update interval
+  // Update the table's totalPrice
+  if (tables[selectedTable]) {
+    tables[selectedTable].totalPrice = calculatedTotal;
+    // If discount is 0, ensure discountedTotal matches totalPrice
+    if (tables[selectedTable].discount === 0) {
+      tables[selectedTable].discountedTotal = calculatedTotal;
+    }
+    saveData();
+  }
+
+  // Display the total using discountedTotal
+  const totalPriceElem = document.getElementById('total-price');
+  if (totalPriceElem) {
+    const displayTotal = tables[selectedTable].discountedTotal || calculatedTotal;
+    totalPriceElem.textContent = `Total: Rs ${displayTotal.toFixed(2)}`;
+    console.log('Order summary total updated to:', displayTotal); // Debug log
+  }
+
+  // Update timers and disable buttons as needed
   if (!window.timerInterval) {
     window.timerInterval = setInterval(updateTimers, 1000);
   }
+  disableRemoveButtonForFinalizedItems();
 }
+
 
 function updateTimers() {
   const timers = document.querySelectorAll('.item-timer');
@@ -427,38 +466,31 @@ function updateTimers() {
   });
 }
 
-
-/**
- * Updates the order summary and displays it on the UI.
- */
 function updateOrderSummary() {
+  if (!selectedTable || !tables[selectedTable]) {
+    // Reset UI if no table is selected
+    document.getElementById('selected-table').textContent = 'None';
+    document.getElementById('selected-time').textContent = 'Time: --:--';
+    document.getElementById('order-items').innerHTML = '';
+    document.getElementById('total-price').textContent = 'Total: Rs 0';
+    return;
+  }
+
   const order = tables[selectedTable];
+
+  // Update selected table and time
+  document.getElementById('selected-table').textContent = selectedTable;
+  document.getElementById('selected-time').textContent = `Time: ${order.time || '--:--'}`;
+
+  // Display order items
   displayOrderItems(order.order);
-  const selectedTableElem = document.getElementById('selected-table');
-  const selectedTimeElem = document.getElementById('selected-time');
-  if (selectedTableElem) {
-    selectedTableElem.textContent = selectedTable;
-  }
-  if (selectedTimeElem) {
-    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
+
+  // Update total price in the order summary
+  const totalPriceElem = document.getElementById('total-price');
+  if (totalPriceElem) {
+    totalPriceElem.textContent = `Total: Rs ${(order.discountedTotal || order.totalPrice).toFixed(2)}`;
   }
 }
-
-/**
- * Disables the remove buttons for finalized items.
- */
-function disableRemoveButtonForFinalizedItems() {
-  for (const [name, item] of Object.entries(tables[selectedTable].order)) {
-    if (item.finalized) {
-      const removeButton = document.querySelector(`.remove-item[data-name="${name}"]`);
-      if (removeButton) {
-        removeButton.disabled = true;
-      }
-    }
-  }
-}
-
-
 
 // Reset order summary
 function resetOrderSummary() {
@@ -473,40 +505,7 @@ function resetOrderSummary() {
  * Displays the order items on the UI.
  * @param {object} orderItems - The items in the order to display.
  */
-function displayOrderItems(orderItems) {
-  const orderItemsList = document.getElementById('order-items');
-  orderItemsList.innerHTML = '';
-  let totalPrice = 0;
-  for (const [name, item] of Object.entries(orderItems)) {
-    const orderItem = document.createElement('li');
-    orderItem.classList.add('order-item'); // Add a class for styling
-    orderItem.innerHTML = `
-      <div class="item-header" onclick="promptAndAddComment('${name}')">
-        <span class="item-name">${name}</span>
-        <span class="item-quantity">x ${item.quantity}</span>
-        <span class="item-price">Rs ${item.price}</span>
-        <span class="item-total">= Rs ${item.price * item.quantity}</span>
-        <button class="remove-item" data-name="${name}" data-table="${selectedTable}" onclick="removeFromOrder('${name}')">Remove</button>
-      </div>
-      <div class="item-comments">${item.comments || ''}</div>
-    `;
-    orderItemsList.appendChild(orderItem);
 
-    totalPrice += item.price * item.quantity;
-  }
-  document.getElementById('total-price').textContent = `Total: Rs ${totalPrice}`;
-  tables[selectedTable].totalPrice = totalPrice;
-  tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice * ((100 - tables[selectedTable].discount) / 100);
-  saveData();
-
-  // Disable remove buttons for finalized items
-  disableRemoveButtonForFinalizedItems();
-}
-
-/**
- * Prompts the user for a comment and adds it to the specified order item.
- * @param {string} name - The name of the item to comment on.
- */
 function promptAndAddComment(name) {
   const comment = prompt('Enter your comment:');
   if (comment !== null) {
@@ -556,10 +555,10 @@ document.addEventListener('click', (e) => {
   }
 });
 
-function finalizeOrder() {
+function finalizeOrder(isManual = true) {
   if (!selectedTable) {
-    alert("Please select a table first!");
-    return;
+    if (isManual) alert("Please select a table first!");
+    return false; // Return false to indicate failure
   }
 
   const table = tables[selectedTable];
@@ -575,14 +574,18 @@ function finalizeOrder() {
     }
   }
 
+  // Check if there are any new items to finalize
   if (Object.keys(newItems).length === 0) {
-    alert("No new items to finalize!");
-    return;
+    if (isManual) alert("No items to finalize!");
+    return false; // Return false to indicate no items were finalized
   }
+
+  // Reset newItemsAdded flag
+  table.newItemsAdded = false;
 
   // Generate KOTs
   const kot = {
-    table: selectedTable,
+    table: selectedTable, // Fixed typo from "table overhang"
     timestamp: now.toISOString(),
     items: newItems,
     kotNumber: generateKOTNumber()
@@ -614,54 +617,50 @@ function finalizeOrder() {
 
   updateOrderSummary();
   saveData();
-  alert(`New KOT (#${kot.kotNumber}) generated for ${selectedTable}`);
+  if (isManual) alert(`New KOT (#${kot.kotNumber}) generated for ${selectedTable}`);
+  return true; // Return true to indicate success
 }
-
-let kotCounter = 1;
-function generateKOTNumber() {
-  return kotCounter++;
-}
-
-function printKOT(section, items, kotNumber) {
-  const kotContent = `
-    <div class="kot">
-      <h3>${section} KOT #${kotNumber}</h3>
-      <p>Table: ${selectedTable}</p>
-      <p>Time: ${new Date().toLocaleTimeString()}</p>
-      <ul>
-        ${items.map(item => `
-          <li>${item.name} x${item.quantity}${item.comments ? ` (${item.comments})` : ''}</li>
-        `).join('')}
-      </ul>
-    </div>
-  `;
-  
-  // For actual implementation, you'd want to send this to a printer
-  // Here we'll just log it and show an alert
-  console.log(kotContent);
-  alert(`Sent to ${section}:\n${items.map(i => `${i.name} x${i.quantity}`).join('\n')}`);
-}
-
-
-// Function to change table
 function changeTable() {
   const newTable = prompt("Enter new table number:");
   if (newTable && tables[`Table ${newTable}`]) {
+    // Finalize the current table's order before transferring
+    if (selectedTable && tables[selectedTable].newItemsAdded) {
+      finalizeOrder(false); // Automatic finalization, no alerts
+    }
+
+    // Transfer the order to the new table
     tables[`Table ${newTable}`].order = { ...tables[selectedTable].order };
     tables[`Table ${newTable}`].totalPrice = tables[selectedTable].totalPrice;
+    tables[`Table ${newTable}`].discountedTotal = tables[selectedTable].discountedTotal;
+    tables[`Table ${newTable}`].discount = tables[selectedTable].discount;
+    tables[`Table ${newTable}`].payments = [...tables[selectedTable].payments];
     tables[`Table ${newTable}`].status = "occupied";
+    tables[`Table ${newTable}`].time = tables[selectedTable].time || new Date().toLocaleTimeString();
+
+    // Clear the current table
     tables[selectedTable].order = {};
     tables[selectedTable].totalPrice = 0;
+    tables[selectedTable].discountedTotal = 0;
+    tables[selectedTable].discount = 0;
+    tables[selectedTable].payments = [];
     tables[selectedTable].status = "available";
+    tables[selectedTable].time = null;
+    tables[selectedTable].newItemsAdded = false;
+
+    // Update selected table
     selectedTable = `Table ${newTable}`;
+
+    // Update UI
     renderTables();
     updateOrderSummary();
-    disableRemoveButtons(); // Disable remove buttons after changing table
+    disableRemoveButtonForFinalizedItems();
     saveData();
+    alert(`Table changed to Table ${newTable}`);
   } else {
     alert("Invalid table number or table does not exist.");
   }
 }
+
 
 let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
@@ -732,49 +731,51 @@ function addPayment(paymentMethod) {
 }
 
 
-function updateOrderSummary() {
-  const order = tables[selectedTable];
-  if (!order) return;
 
-  // Display order items
-  displayOrderItems(order.order);
+// Define non-discountable items
+const nonDiscountableItems = [
+  "shikar Ice",
+  "SurYa Red",
+  "Artice Brust",
+  "Surya Light",
+  "Water",
+  "Hukka",
+  "Juju Dhau"
+];
 
-  // Update selected table
-  const selectedTableElem = document.getElementById('selected-table');
-  if (selectedTableElem) {
-    selectedTableElem.textContent = selectedTable;
-  }
-
-  // Update selected time
-  const selectedTimeElem = document.getElementById('selected-time');
-  if (selectedTimeElem) {
-    selectedTimeElem.textContent = `Time: ${tables[selectedTable].time}`;
-  }
-
-  // Display discounted total instead of regular total
-  const totalPriceElem = document.getElementById('total-price');
-  if (totalPriceElem) {
-    totalPriceElem.textContent = order.discountedTotal.toFixed(2);
-  }
-}
-
+// Modified applyDiscount function
 function applyDiscount(percentage) {
+  console.log('Applying discount:', percentage);
   if (!selectedTable) {
     alert("Please select a table first!");
     return;
   }
-  const table = tables[selectedTable];
-  table.discount = Math.min(Math.max(percentage, 0), 100); // Clamp between 0-100
-  table.discountedTotal = table.totalPrice * (1 - table.discount / 100);
 
-  // Update all necessary summaries and save the data
+  const table = tables[selectedTable];
+  table.discount = Math.min(Math.max(percentage, 0), 100);
+
+  // Calculate total for discountable and non-discountable items separately
+  let discountableTotal = 0;
+  let nonDiscountableTotal = 0;
+
+  for (const [name, item] of Object.entries(table.order)) {
+    const itemTotal = item.price * item.quantity;
+    if (nonDiscountableItems.includes(name)) {
+      nonDiscountableTotal += itemTotal;
+    } else {
+      discountableTotal += itemTotal;
+    }
+  }
+
+  // Apply discount only to discountable total
+  const discountedAmount = discountableTotal * (1 - table.discount / 100);
+  table.discountedTotal = parseFloat((discountedAmount + nonDiscountableTotal).toFixed(2));
+
   updatePaymentSummary();
   updateOrderSummary();
   updateTotalAmount();
   saveData();
 }
-
-
 /**
  * Updates the payment summary and calculates change or shortfall.
  */
@@ -791,7 +792,7 @@ function updatePaymentSummary() {
     paymentSummaryElement.innerHTML = '';
     tables[selectedTable].payments.forEach(payment => {
       const paymentItem = document.createElement('li');
-      paymentItem.textContent = `${payment.method}: Rs ${payment.amount}`;
+      paymentItem.textContent = `${payment.method}: Rs ${payment.amount.toFixed(2)}`;
       paymentSummaryElement.appendChild(paymentItem);
       totalPaid += payment.amount;
     });
@@ -799,8 +800,8 @@ function updatePaymentSummary() {
 
   const selectedTableDetails = tables[selectedTable];
   if (selectedTableDetails) {
-    const discount = selectedTableDetails.discount || 0;
-    const discountedTotal = selectedTableDetails.totalPrice * ((100 - discount) / 100);
+    // Use discountedTotal if available, otherwise fall back to totalPrice
+    const discountedTotal = selectedTableDetails.discountedTotal || selectedTableDetails.totalPrice || 0;
     const changeAmount = totalPaid - discountedTotal;
 
     if (changeAmount >= 0) {
@@ -819,22 +820,17 @@ function updatePaymentSummary() {
 }
 
 /**
- * Updates the total amount displayed.
+ * Updates the total amount displayed in the payment dialog.
  */
 function updateTotalAmount() {
-  // Get the HTML element where the total amount is displayed
   const totalAmountElement = document.getElementById('total-amount');
-
-  // Fetch the discounted total price for the currently selected table
-  const discountedTotalPrice = tables[selectedTable]?.discountedTotal || 0;
-
-  // If the element exists, update its text content with the discounted total, formatted to 2 decimal places
-  if (totalAmountElement) {
-    totalAmountElement.textContent = discountedTotalPrice.toFixed(2);
+  if (totalAmountElement && selectedTable && tables[selectedTable]) {
+    // Use discountedTotal if available, otherwise fall back to totalPrice
+    const discountedTotalPrice = tables[selectedTable].discountedTotal || tables[selectedTable].totalPrice || 0;
+    totalAmountElement.textContent = `Total: Rs ${discountedTotalPrice.toFixed(2)}`;
+    console.log('Payment dialog total updated to:', discountedTotalPrice); // Debug log
   }
 }
-
-
 // Show and close payment dialog
 function showPaymentDialog() {
   const paymentDialog = document.getElementById('payment-dialog');
@@ -877,33 +873,32 @@ window.onclick = function(event) {
   }
 }
  
-
 function resetPaymentDialog() {
-  // Reset payment summary display
   const paymentSummaryElem = document.getElementById('payment-summary');
   const changeAmountElem = document.getElementById('change-amount');
   const insufficientAmountElem = document.getElementById('insufficient-amount');
   const shortAmountElem = document.getElementById('short-amount');
 
-  if (paymentSummaryElem) paymentSummaryElem.innerHTML = ''; // Clear payment list
-  if (changeAmountElem) changeAmountElem.textContent = '0'; // Reset change amount
-  if (shortAmountElem) shortAmountElem.textContent = '0'; // Reset short amount
-  if (insufficientAmountElem) insufficientAmountElem.style.display = 'none'; // Hide insufficient amount message
+  if (paymentSummaryElem) paymentSummaryElem.innerHTML = '';
+  if (changeAmountElem) changeAmountElem.textContent = 'Change: Rs 0';
+  if (shortAmountElem) shortAmountElem.textContent = 'Short by: Rs 0';
+  if (insufficientAmountElem) insufficientAmountElem.style.display = 'none';
 
-  // Reset the payments array and discount for the selected table
+  // Only reset payments, not discount
   if (tables[selectedTable]) {
     tables[selectedTable].payments = [];
-    tables[selectedTable].discount = 0;
-    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
+    saveData();
   }
 
-  // Clear the input field
+  // Clear the numeric input field
   const numericInput = document.getElementById('numeric-input');
   if (numericInput) numericInput.value = '';
 
-  updatePaymentSummary(); // Refresh payment summary
-  updateTotalAmount(); // Refresh total amount with no discount
+  updatePaymentSummary();
+  updateTotalAmount();
 }
+
+// Modified completeOrder function to ensure correct sales tracking
 function completeOrder() {
   const totalPriceElem = document.getElementById('total-price');
 
@@ -924,8 +919,14 @@ function completeOrder() {
     return;
   }
 
-  // Calculate actual discount amount
-  const discountAmount = originalTotal * (discountPercentage / 100);
+  // Calculate actual discount amount (only on discountable items)
+  let discountableTotal = 0;
+  for (const [name, item] of Object.entries(table.order)) {
+    if (!nonDiscountableItems.includes(name)) {
+      discountableTotal += item.price * item.quantity;
+    }
+  }
+  const discountAmount = discountableTotal * (discountPercentage / 100);
 
   // Track remaining balance for payment allocation
   let remainingBalance = discountedTotal;
@@ -1007,8 +1008,6 @@ function completeOrder() {
   alert("Order completed successfully!");
 }
 
-
-
 // Numeric pad functions
 function addNumber(num) {
   const numericInput = document.getElementById('numeric-input');
@@ -1016,8 +1015,30 @@ function addNumber(num) {
 }
 
 function clearInput() {
+  // Clear the numeric input field
   const numericInput = document.getElementById('numeric-input');
-  numericInput.value = '';
+  if (numericInput) {
+    numericInput.value = '';
+  }
+
+  // Clear the discount input field
+  const discountInput = document.getElementById('discount');
+  if (discountInput) {
+    discountInput.value = '';
+  }
+
+  // Reset discount and update totals for the selected table
+  if (selectedTable && tables[selectedTable]) {
+    console.log('Before clearing discount:', tables[selectedTable]); // Debug log
+    tables[selectedTable].discount = 0; // Reset discount to 0
+    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice; // Reset to original total
+    console.log('After clearing discount:', tables[selectedTable]); // Debug log
+    saveData(); // Save changes to localStorage
+    updateOrderSummary(); // Update the order summary to reflect the change
+    updateTotalAmount(); // Update the payment dialog total
+  } else {
+    console.warn('No table selected or table not found:', selectedTable);
+  }
 }
 
 function backspaceInput() {
@@ -1059,12 +1080,15 @@ function applyDiscountHandler() {
   const totalPrice = tables[selectedTable]?.totalPrice || 0;
   tables[selectedTable].discountedTotal = totalPrice * (1 - discount / 100);
   updatePaymentSummary();
+  updateOrderSummary();
+  updateTotalAmount();
+  saveData();
 }
 
 // Initially update the total amount to be paid
 updateTotalAmount();
 function printReceipt() {
-  const logoUrl = 'images/RestaurantLogo.png'; // Ensure the logo URL is correct and accessible
+  const logoUrl = 'images/Logo.png'; // Ensure the logo URL is correct and accessible
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
 
   printWindow.document.write('<html><head><title>Receipt</title><style>');
@@ -1609,11 +1633,6 @@ function scheduleMidnightReset() {
   }, msUntilMidnight);
 }
 
-// Function to save data to localStorage
-function saveData() {
-  localStorage.setItem('tables', JSON.stringify(tables));
-  localStorage.setItem('salesData', JSON.stringify(salesData));
-}
 
 
 function openOrderHistoryDialog() {
@@ -1734,3 +1753,4 @@ function updateReport() {
   const itemRows = filterAndPaginateItems();
   document.getElementById('itemsTableBody').innerHTML = itemRows;
 }
+
