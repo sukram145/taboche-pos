@@ -11,16 +11,19 @@
   </head>
   <body>
   
-  <header>
-    <div class="logo">Taboche Restaurant</div>
-    <div class="datetime" id="datetime">Loading...</div>
-    <div class="user-info">
-      <span id="user-role">Guest</span>
-      <button class="login-btn" onclick="showLoginDialog()">Login</button>
-    </div>
-
-    <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
-  </header>
+    <header>
+      <div class="logo-wrapper">
+        <img src="images/logo.png" alt="Logo" class="logo-image">
+        <span class="restaurant-name">Taboche Restaurant</span>
+      </div>
+      <div class="datetime" id="datetime">Loading...</div>
+      <div class="user-info">
+        <span id="user-role">Guest</span>
+        <button class="login-btn" onclick="showLoginDialog()">Login</button>
+      </div>
+      <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
+    </header>
+    
   <div class="sidebar" id="sidebar">
     <button class="close-btn" onclick="toggleSidebar()">&times;</button>
     <nav class="sidebar-nav">
@@ -72,7 +75,7 @@
     </div>
     <main class="order-container flex-container">
       <div class="order-section" id="order-section">
-        <h2>  <span id="selected-table-display">None</span></h2>
+       
         <div class="search-bar">
           <input type="text" id="search" placeholder="Search menu items..." onkeyup="searchMenu()">
         </div>
@@ -505,10 +508,10 @@
     <div class="price">Rs 300</div>
 </div>
 
-  <div class="menu-item" data-name="Buff Chilly Momo" data-price="300" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Buff Chilly Momo" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_chilly_momo.jpg" alt="Buff Chilly Momo">
     <p>Buff Chilly Momo</p>
-    <div class="price">Rs 300</div>
+    <div class="price">Rs 280</div>
   </div>
   <div class="menu-item" data-name="Buff Fried Rice" data-price="320" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_fried_rice.jpg" alt="Buff Fried Rice">
@@ -535,10 +538,10 @@
     <p>Chicken Burger</p>
     <div class="price">Rs 370</div>
   </div>
-  <div class="menu-item" data-name="Chicken Chilly Momo" data-price="280" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Chicken Chilly Momo" data-price="300" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_chilly_momo.jpg" alt="Chicken Chilly Momo">
     <p>Chicken Chilly Momo</p>
-    <div class="price">Rs 320</div>
+    <div class="price">Rs 300</div>
   </div>
   <div class="menu-item" data-name="Chicken Fried Rice" data-price="340" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_fried_rice.jpg" alt="Chicken Fried Rice">
@@ -1131,7 +1134,7 @@
            </div>
       </div>
       <div class="order-summary">
-        <h3>Order Summary for <span id="selected-table">None</span></h3>
+        <h3>Order for <span id="selected-table">None</span></h3>
         <div id="order-summary">
           <div id="selected-time">Time: --:--</div>
           <ul id="order-items"></ul>
@@ -1285,7 +1288,6 @@
   </div>
 </div>
 
-
 <!-- Add Item Modal -->
 <div id="addItemModal" class="modal">
   <div class="modal-content">
@@ -1334,10 +1336,21 @@
       <button type="button" onclick="deleteItem()">Delete Item</button>
     </form>
   
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
 
- 
+      
+    </script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-storage.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js"></script>
     <script src="path/to/script.js"></script>
-    
+    <div id="offline-indicator" style="display: none; color: red; position: fixed; top: 10px; right: 10px;">
+      Offline: Changes will sync when online.
+    </div>
   <script src="script.js"></script>
 </body>
 </html>
