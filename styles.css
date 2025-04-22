@@ -1950,3 +1950,82 @@ button {
   display: flex;
 }
 
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  height: 100%;
+  position: fixed;
+  left: -250px; /* Hidden by default */
+  top: 0;
+  background: #111;
+  padding-top: 20px;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000; /* Ensure sidebar is above other content */
+}
+
+.sidebar.active {
+  left: 0; /* Visible when active */
+}
+
+/* Main Content */
+main {
+  padding: 15px;
+  transition: margin-left 0.3s ease-in-out; /* Smooth transition for margin */
+}
+
+/* Shift main content when sidebar is active */
+.sidebar.active + main {
+  margin-left: 250px; /* Match sidebar width */
+}
+
+/* Tables Dashboard */
+.tables-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+  /* Ensure it doesn't overlap with sidebar */
+  margin-left: 0;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Table Card/Button Styling */
+.table-card, .table-btn {
+  padding: 12px;
+  margin: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  border: none;
+  color: white;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 100%; /* Full-screen sidebar on mobile */
+    left: -100%;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .sidebar.active + main {
+    margin-left: 0; /* No margin on mobile, as sidebar covers content */
+  }
+
+  .tables-dashboard {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Smaller cards on mobile */
+  }
+
+  .table-card, .table-btn {
+    padding: 10px;
+    margin: 4px;
+    font-size: 11px;
+  }
+}
+

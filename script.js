@@ -1008,6 +1008,30 @@ function completeOrder() {
   alert("Order completed successfully!");
 }
 
+
+function closePaymentDialog() {
+  const paymentDialog = document.getElementById('payment-dialog');
+  if (paymentDialog) {
+    paymentDialog.style.display = 'none';
+    // Reset payment summary
+    const paymentSummaryElem = document.getElementById('payment-summary');
+    const changeAmountElem = document.getElementById('change-amount');
+    const insufficientAmountElem = document.getElementById('insufficient-amount');
+    const shortAmountElem = document.getElementById('short-amount');
+    if (paymentSummaryElem) paymentSummaryElem.innerHTML = '';
+    if (changeAmountElem) changeAmountElem.textContent = '0';
+    if (shortAmountElem) shortAmountElem.textContent = '0';
+    if (insufficientAmountElem) insufficientAmountElem.style.display = 'none';
+    // Reset payments array and discount
+    if (tables[selectedTable]) {
+      tables[selectedTable].payments = [];
+      tables[selectedTable].discount = 0;
+      tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
+    }
+  }
+}
+
+
 // Numeric pad functions
 function addNumber(num) {
   const numericInput = document.getElementById('numeric-input');
@@ -1087,6 +1111,7 @@ function applyDiscountHandler() {
 
 // Initially update the total amount to be paid
 updateTotalAmount();
+
 function printReceipt() {
   const logoUrl = 'images/Logo.png'; // Ensure the logo URL is correct and accessible
   const printWindow = window.open('', 'PRINT', 'height=600,width=800');
@@ -1572,12 +1597,81 @@ function showAdminPanelContent() {
 // Function to toggle the sidebar
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
+  const mainContent = document.querySelector('main');
+  const toggleButton = document.querySelector('#sidebar-toggle'); // Button that triggers the toggle
+
+  // Error handling for missing elements
   if (!sidebar) {
     console.error('Sidebar element not found');
     return;
   }
+  if (!mainContent) {
+    console.error('Main content element not found');
+    return;
+  }
+  if (!toggleButton) {
+    console.warn('Sidebar toggle button not found; ensure #sidebar-toggle exists');
+  }
+
+  // Toggle the active class on the sidebar
   sidebar.classList.toggle('active');
+
+  // Handle main content visibility for very small screens (≤480px)
+  if (window.innerWidth <= 480) {
+    if (sidebar.classList.contains('active')) {
+      // Hide main content when sidebar is active on small screens
+      mainContent.style.display = 'none';
+      mainContent.classList.remove('visible');
+    } else {
+      // Show main content when sidebar is closed
+      mainContent.style.display = 'flex';
+      mainContent.classList.add('visible');
+    }
+  } else {
+    // Ensure main content is visible on larger screens
+    mainContent.style.display = 'flex';
+    mainContent.classList.add('visible');
+  }
 }
+
+// Optional: Close sidebar when clicking outside
+document.addEventListener('click', (e) => {
+  const sidebar = document.getElementById('sidebar');
+  const toggleButton = document.querySelector('#sidebar-toggle');
+  const mainContent = document.querySelector('main');
+
+  if (
+    sidebar &&
+    toggleButton &&
+    mainContent &&
+    sidebar.classList.contains('active') &&
+    !sidebar.contains(e.target) &&
+    !toggleButton.contains(e.target)
+  ) {
+    sidebar.classList.remove('active');
+    // Restore main content visibility
+    mainContent.style.display = 'flex';
+    mainContent.classList.add('visible');
+  }
+});
+
+// Optional: Handle window resize to ensure proper layout
+window.addEventListener('resize', () => {
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.querySelector('main');
+
+  if (sidebar && mainContent) {
+    if (window.innerWidth > 480 && !sidebar.classList.contains('active')) {
+      // Ensure main content is visible on larger screens
+      mainContent.style.display = 'flex';
+      mainContent.classList.add('visible');
+    } else if (window.innerWidth <= 480 && sidebar.classList.contains('active')) {
+      // Hide main content if sidebar is active on small screens
+      mainContent.style.display = 'none';
+      mainContent.classList.remove('visible');
+    }
+  }
+});
 
 // Customize layout settings
 function saveSettings() {
