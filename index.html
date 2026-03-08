@@ -20,6 +20,9 @@
       <div class="user-info">
         <span id="user-role">Guest</span>
         <button class="login-btn" onclick="showLoginDialog()">Login</button>
+        <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Full Screen">
+          <i class="fas fa-expand"></i>
+        </button>
       </div>
       <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
     </header>
@@ -1190,6 +1193,7 @@
             <button class="quick-amount-btn" onclick="addQuickAmount(100)">100</button>
             <button class="quick-amount-btn" onclick="addQuickAmount(500)">500</button>
             <button class="quick-amount-btn" onclick="addQuickAmount(1000)">1000</button>
+            <button class="quick-amount-btn" onclick="addExactAmount()">Exact</button>
           </div>
         </div>
         <div class="action-buttons">
@@ -1304,13 +1308,6 @@
   </div>
 </div>
 
-<div id="salesReportModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <div id="modalContent"></div>
-  </div>
-</div>
-   
 <!-- Add this within your HTML body -->
 <div id="settingsModal" class="modal">
   <div class="modal-content">

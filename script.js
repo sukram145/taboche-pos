@@ -118,6 +118,16 @@ function selectItem(itemType) {
           <span>Extra Flavour</span>
           <span>Rs 250</span>
         </div>
+        <div class="extra-item" onclick="addItem('Extra Ice', 10)">
+          <img src="images/extra_ice.jpg" alt="Extra Ice">
+          <span>Extra Ice</span>
+          <span>Rs 10</span>
+        </div>
+        <div class="extra-item" onclick="addItem('Extra Coffee', 50)">
+          <img src="images/extra_coffee.jpg" alt="Extra Coffee">
+          <span>Extra Coffee</span>
+          <span>Rs 50</span>
+        </div>
       `;
     }
     extraOptions.innerHTML = optionsHTML;
@@ -403,27 +413,40 @@ function addToOrder(name, price) {
 }
 
 function displayOrderItems(orderItems) {
-  const orderItemsList = document.getElementById('order-items');
-  if (!orderItemsList) return;
+  const orderItemsContainer = document.getElementById('order-items');
+  if (!orderItemsContainer) return;
 
-  orderItemsList.innerHTML = '';
+  orderItemsContainer.innerHTML = `
+    <table class="order-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  `;
+  const tbody = orderItemsContainer.querySelector('tbody');
+
   let calculatedTotal = 0;
 
   for (const [name, item] of Object.entries(orderItems)) {
-    const orderItem = document.createElement('li');
-    orderItem.classList.add('order-item');
-    orderItem.innerHTML = `
-      <div class="item-header" onclick="promptAndAddComment('${name}')">
-        <span class="item-name">${name}</span>
-        <span class="item-quantity">x ${item.quantity}</span>
-        <span class="item-price">Rs ${item.price}</span>
-        <span class="item-total">= Rs ${(item.price * item.quantity).toFixed(2)}</span>
-        <button class="remove-item" data-name="${name}" data-table="${selectedTable}" onclick="removeFromOrder('${name}')">Remove</button>
-      </div>
-      <div class="item-comments">${item.comments || ''}</div>
-      <div class="item-timer" data-time-added="${item.timeAdded}"></div>
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="item-name" onclick="promptAndAddComment('${name}')">${name}</td>
+      <td class="item-quantity">
+        <button onclick="adjustQuantity('${name}', -1)" ${item.finalized ? 'disabled' : ''}>-</button>
+        ${item.quantity}
+        <button onclick="adjustQuantity('${name}', 1)" ${item.finalized ? 'disabled' : ''}>+</button>
+      </td>
+      <td class="item-price">Rs ${item.price}</td>
+      <td class="item-total">Rs ${(item.price * item.quantity).toFixed(2)}</td>
     `;
-    orderItemsList.appendChild(orderItem);
+    tbody.appendChild(tr);
     calculatedTotal += item.price * item.quantity;
   }
 
@@ -464,6 +487,33 @@ function updateTimers() {
     const seconds = Math.floor((elapsedTime % 60000) / 1000);
     timer.textContent = `Added ${minutes}m ${seconds}s ago`;
   });
+}
+
+function adjustQuantity(name, delta) {
+  if (!selectedTable || !tables[selectedTable]) return;
+  const item = tables[selectedTable].order[name];
+  if (!item || item.finalized) return;
+  item.quantity += delta;
+  if (item.quantity <= 0) {
+    delete tables[selectedTable].order[name];
+  }
+  // Recalculate total
+  let total = 0;
+  for (const [n, i] of Object.entries(tables[selectedTable].order)) {
+    total += i.price * i.quantity;
+  }
+  tables[selectedTable].totalPrice = total;
+  tables[selectedTable].discountedTotal = total * (1 - tables[selectedTable].discount / 100);
+  
+  // If order is empty, mark table as available
+  if (Object.keys(tables[selectedTable].order).length === 0) {
+    tables[selectedTable].status = "available";
+    tables[selectedTable].time = null;
+  }
+  
+  renderTables();
+  updateOrderSummary();
+  saveData();
 }
 
 function updateOrderSummary() {
@@ -956,7 +1006,7 @@ function completeOrder() {
   salesData.totalOrders = (salesData.totalOrders || 0) + 1;
 
   // Handle order completion
-  printReceipt();
+  // printReceipt(); // Removed to prevent opening new window
   const change = totalPaid - discountedTotal;
   if (change > 0) alert(`Customer change: Rs ${change.toFixed(2)}`);
 
@@ -1009,28 +1059,6 @@ function completeOrder() {
 }
 
 
-function closePaymentDialog() {
-  const paymentDialog = document.getElementById('payment-dialog');
-  if (paymentDialog) {
-    paymentDialog.style.display = 'none';
-    // Reset payment summary
-    const paymentSummaryElem = document.getElementById('payment-summary');
-    const changeAmountElem = document.getElementById('change-amount');
-    const insufficientAmountElem = document.getElementById('insufficient-amount');
-    const shortAmountElem = document.getElementById('short-amount');
-    if (paymentSummaryElem) paymentSummaryElem.innerHTML = '';
-    if (changeAmountElem) changeAmountElem.textContent = '0';
-    if (shortAmountElem) shortAmountElem.textContent = '0';
-    if (insufficientAmountElem) insufficientAmountElem.style.display = 'none';
-    // Reset payments array and discount
-    if (tables[selectedTable]) {
-      tables[selectedTable].payments = [];
-      tables[selectedTable].discount = 0;
-      tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
-    }
-  }
-}
-
 
 // Numeric pad functions
 function addNumber(num) {
@@ -1073,6 +1101,14 @@ function backspaceInput() {
 function addQuickAmount(amount) {
   const numericInput = document.getElementById('numeric-input');
   numericInput.value = amount;
+}
+
+function addExactAmount() {
+  const numericInput = document.getElementById('numeric-input');
+  if (selectedTable && tables[selectedTable]) {
+    const total = tables[selectedTable].discountedTotal || tables[selectedTable].totalPrice || 0;
+    numericInput.value = total.toFixed(2);
+  }
 }
 
 // Event listener for keyboard input
@@ -1234,9 +1270,12 @@ function closeVoidHistoryDialog() {
 }
 
 function openOrderHistoryDialog() {
-  const orderHistoryDialog = document.getElementById('order-history-dialog');
-  if (orderHistoryDialog) {
-    orderHistoryDialog.style.display = 'block';
+  const dialog = document.getElementById('order-history-dialog');
+  if (dialog) {
+      dialog.style.display = 'block';
+      renderOrderHistory(); // Render the order history inside the dialog
+  } else {
+      console.error('Element with ID "order-history-dialog" not found.');
   }
 }
 
@@ -1407,16 +1446,29 @@ function resetSalesReport() {
   generateSalesReport();
 }
 
-// Function to show home content
-function showHomeContent() {
-  const content = document.getElementById('content');
-  if (!content) {
-    console.error('Content element not found');
-    return;
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      alert(`Error attempting to enable full-screen mode: ${err.message}`);
+    });
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
   }
-  content.innerHTML = '<h1>Welcome to Taboche POS</h1><p>Your one-stop solution for managing sales and inventory.</p>';
-  toggleSidebar();
 }
+
+// Update fullscreen button icon based on state
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.querySelector('.fullscreen-btn i');
+  if (btn) {
+    if (document.fullscreenElement) {
+      btn.className = 'fas fa-compress';
+    } else {
+      btn.className = 'fas fa-expand';
+    }
+  }
+});
 
 // Function to show menu management content
 function showMenuManagementContent() {
@@ -1696,6 +1748,12 @@ function manageUsers() {
 document.addEventListener('DOMContentLoaded', () => {
   renderTables();
 
+  // Enable Firebase sync if available
+  if (typeof database !== 'undefined') {
+    syncTables();
+    syncSalesData();
+  }
+
   const homeBtn = document.getElementById('homeBtn');
   if (homeBtn) homeBtn.addEventListener('click', showHomeContent);
 
@@ -1714,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
   if (toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', toggleSidebar);
 
-  scheduleMidnightReset(); // Schedule the daily reset
+  // scheduleMidnightReset(); // Removed automatic daily reset
 });
 
 // Function to schedule a reset at midnight
@@ -1728,25 +1786,6 @@ function scheduleMidnightReset() {
 }
 
 
-
-function openOrderHistoryDialog() {
-  const dialog = document.getElementById('order-history-dialog');
-  if (dialog) {
-      dialog.style.display = 'block';
-      renderOrderHistory(); // Render the order history inside the dialog
-  } else {
-      console.error('Element with ID "order-history-dialog" not found.');
-  }
-}
-
-function closeOrderHistoryDialog() {
-  const dialog = document.getElementById('order-history-dialog');
-  if (dialog) {
-      dialog.style.display = 'none';
-  } else {
-      console.error('Element with ID "order-history-dialog" not found.');
-  }
-}
 
 function renderOrderHistory() {
   const orderHistoryContainer = document.getElementById('order-history-container');
@@ -1847,4 +1886,3 @@ function updateReport() {
   const itemRows = filterAndPaginateItems();
   document.getElementById('itemsTableBody').innerHTML = itemRows;
 }
-
