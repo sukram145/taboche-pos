@@ -20,6 +20,9 @@
       <div class="user-info">
         <span id="user-role">Guest</span>
         <button class="login-btn" onclick="showLoginDialog()">Login</button>
+        <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Full Screen">
+          <i class="fas fa-expand"></i>
+        </button>
       </div>
       <div class="hamburger-menu" onclick="toggleSidebar()">&#9776;</div>
     </header>
@@ -116,7 +119,7 @@
       <div class="menu-item" data-name="coffee-bag" data-price="1350" data-category="Retail">
         <img src="images/coffee_bagPKT.jpg" alt="Coffee Bag Packet">
         <p>Coffee Bag Packet</p>
-        <div class="price">Rs 950</div>
+        <div class="price">Rs 1350</div>
       </div>
       <div class="menu-item" data-name="herbal-tea" data-price="300" data-category="Retail">
         <img src="images/herbal_teaPKT.jpg" alt="Herbal Tea Packet">
@@ -508,10 +511,10 @@
     <div class="price">Rs 300</div>
 </div>
 
-  <div class="menu-item" data-name="Buff Chilly Momo" data-price="300" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Buff Chilly Momo" data-price="280" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_chilly_momo.jpg" alt="Buff Chilly Momo">
     <p>Buff Chilly Momo</p>
-    <div class="price">Rs 300</div>
+    <div class="price">Rs 280</div>
   </div>
   <div class="menu-item" data-name="Buff Fried Rice" data-price="320" data-category="Fast Food" data-section="Kitchen">
     <img src="images/buff_fried_rice.jpg" alt="Buff Fried Rice">
@@ -538,10 +541,10 @@
     <p>Chicken Burger</p>
     <div class="price">Rs 370</div>
   </div>
-  <div class="menu-item" data-name="Chicken Chilly Momo" data-price="280" data-category="Fast Food" data-section="Kitchen">
+  <div class="menu-item" data-name="Chicken Chilly Momo" data-price="300" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_chilly_momo.jpg" alt="Chicken Chilly Momo">
     <p>Chicken Chilly Momo</p>
-    <div class="price">Rs 320</div>
+    <div class="price">Rs 300</div>
   </div>
   <div class="menu-item" data-name="Chicken Fried Rice" data-price="340" data-category="Fast Food" data-section="Kitchen">
     <img src="images/chicken_fried_rice.jpg" alt="Chicken Fried Rice">
@@ -991,11 +994,6 @@
     <div class="price">Rs 300</div>
 </div>
 
-<div class="menu-item" data-name="T/A Bubble Tea" data-price="300" data-category="Soft Drink" data-section="Bar">
-    <img src="images/smoothie.jpg" alt="smoothie">
-    <p>smoothie</p>
-    <div class="price">Rs 250</div>
-</div>
 </div>
 
 
@@ -1195,6 +1193,7 @@
             <button class="quick-amount-btn" onclick="addQuickAmount(100)">100</button>
             <button class="quick-amount-btn" onclick="addQuickAmount(500)">500</button>
             <button class="quick-amount-btn" onclick="addQuickAmount(1000)">1000</button>
+            <button class="quick-amount-btn" onclick="addExactAmount()">Exact</button>
           </div>
         </div>
         <div class="action-buttons">
@@ -1309,13 +1308,6 @@
   </div>
 </div>
 
-<div id="salesReportModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <div id="modalContent"></div>
-  </div>
-</div>
-   
 <!-- Add this within your HTML body -->
 <div id="settingsModal" class="modal">
   <div class="modal-content">
