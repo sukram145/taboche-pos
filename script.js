@@ -6,6 +6,7 @@ let salesData = JSON.parse(localStorage.getItem('salesData')) || {
     totalOrders: 0,
     cashSales: 0,
     mobileSales: 0,
+    cardSales: 0,
     items: []
 };
 let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
@@ -13,6 +14,7 @@ let voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || [];
 let removalHistory = JSON.parse(localStorage.getItem('removalHistory')) || [];
 let selectedTable = null;
 let isVoidMode = false;
+let pendingRemoval = null;
 
 // ===== SECURE LOGIN CREDENTIALS =====
 const VALID_USERNAME = "taboche";
@@ -72,9 +74,6 @@ const permissions = {
     }
 };
 
-// ===== REMOVE REASON VARIABLES =====
-let pendingRemoval = null;
-
 // ===== MENU ITEMS DATABASE =====
 const menuItems = [
     // Retail Items
@@ -105,18 +104,18 @@ const menuItems = [
     { name: "Hukka", price: 550, category: "misc", image: "hukka.jpg", hasImage: true },
     { name: "Juju Dhau", price: 85, category: "misc", image: "juju_dhau.jpg", hasImage: true },
 
- // Breakfast Items (Alphabetical)
-{ name: "Boiled Egg", price: 120, category: "Breakfast", image: "boiled_egg.jpg", hasImage: true },
-{ name: "Chicken Burger", price: 370, category: "Breakfast", image: "chicken_burger.jpg", hasImage: true },
-{ name: "Chicken Sandwich", price: 350, category: "Breakfast", image: "chicken_sandwich.jpg", hasImage: true },
-{ name: "Masala Omelet", price: 120, category: "Breakfast", image: "masala_omelet.jpg", hasImage: true },
-{ name: "Omelet Plain", price: 120, category: "Breakfast", image: "omelet_plain.jpg", hasImage: true },
-{ name: "Sausage Boiled", price: 120, category: "Breakfast", image: "sausage_boiled.jpg", hasImage: true },
-{ name: "Toast", price: 100, category: "Breakfast", image: "toast.jpg", hasImage: true },
-{ name: "Veg Burger", price: 280, category: "Breakfast", image: "veg_burger.jpg", hasImage: true },
-{ name: "Veg Sandwich", price: 300, category: "Breakfast", image: "veg_sandwich.jpg", hasImage: true },
-    // Fast Food Items
+    // Breakfast Items
+    { name: "Boiled Egg", price: 120, category: "Breakfast", image: "boiled_egg.jpg", hasImage: true },
+    { name: "Chicken Burger", price: 370, category: "Breakfast", image: "chicken_burger.jpg", hasImage: true },
+    { name: "Chicken Sandwich", price: 350, category: "Breakfast", image: "chicken_sandwich.jpg", hasImage: true },
+    { name: "Masala Omelet", price: 120, category: "Breakfast", image: "masala_omelet.jpg", hasImage: true },
+    { name: "Omelet Plain", price: 120, category: "Breakfast", image: "omelet_plain.jpg", hasImage: true },
+    { name: "Sausage Boiled", price: 120, category: "Breakfast", image: "sausage_boiled.jpg", hasImage: true },
+    { name: "Toast", price: 100, category: "Breakfast", image: "toast.jpg", hasImage: true },
+    { name: "Veg Burger", price: 280, category: "Breakfast", image: "veg_burger.jpg", hasImage: true },
+    { name: "Veg Sandwich", price: 300, category: "Breakfast", image: "veg_sandwich.jpg", hasImage: true },
     
+    // Fast Food Items
     { name: "Chips Chilly", price: 360, category: "Fast Food", image: "chips_chilly.jpg", hasImage: true },
     { name: "Chi Sausage", price: 300, category: "Fast Food", image: "chi_sausage.jpg", hasImage: true },
     { name: "Buff Sausage", price: 300, category: "Fast Food", image: "buff_sausage.jpg", hasImage: true },
@@ -157,7 +156,7 @@ const menuItems = [
     { name: "Chicken Chowmein", price: 260, category: "Noodles/Pizza", image: "chicken_chowmein.jpg", hasImage: true },
     { name: "Chicken Keema Noodles", price: 260, category: "Noodles/Pizza", image: "chicken_keema_noodles.jpg", hasImage: true },
     { name: "Chicken Pizza", price: 520, category: "Noodles/Pizza", image: "chicken_pizza.jpg", hasImage: true },
-    { name: "Chicken Thukpa", price: 250, category: "Noodles/Pizza", image: "chicken_thukpa.jpg", hasImage: true },,
+    { name: "Chicken Thukpa", price: 250, category: "Noodles/Pizza", image: "chicken_thukpa.jpg", hasImage: true },
     { name: "Egg Keema Noodles", price: 220, category: "Noodles/Pizza", image: "egg_keema_noodles.jpg", hasImage: true },
     { name: "Egg Thukpa", price: 200, category: "Noodles/Pizza", image: "egg_thukpa.jpg", hasImage: true },
     { name: "Mushroom Keema Noodles", price: 230, category: "Noodles/Pizza", image: "mushroom_keema_noodles.jpg", hasImage: true },
@@ -171,103 +170,101 @@ const menuItems = [
     { name: "Veg Thukpa", price: 180, category: "Noodles/Pizza", image: "veg_thukpa.jpg", hasImage: true },
 
     // Hot Coffee Items
-  // Hot Coffee Items (Alphabetical)
-{ name: "Americano", price: 150, category: "Hot Coffee", image: "americano.jpg", hasImage: true },
-{ name: "Cappuccino", price: 170, category: "Hot Coffee", image: "cappuccino.jpg", hasImage: true },
-{ name: "Caramel Latte", price: 240, category: "Hot Coffee", image: "latte_caramel.jpg", hasImage: true },
-{ name: "Coconut Latte", price: 250, category: "Hot Coffee", image: "coconut_latte.jpg", hasImage: true },
-{ name: "Espresso", price: 130, category: "Hot Coffee", image: "espresso.jpg", hasImage: true },
-{ name: "Espresso Con Pan", price: 150, category: "Hot Coffee", image: "espresso_con_pan.jpg", hasImage: true },
-{ name: "Filter Coffee Hot", price: 280, category: "Hot Coffee", image: "filter_coffee_hot.jpg", hasImage: true },
-{ name: "Flat White", price: 150, category: "Hot Coffee", image: "flat_white.jpg", hasImage: true },
-{ name: "Hazelnut Latte", price: 240, category: "Hot Coffee", image: "flavored_latte_hazelnut.jpg", hasImage: true },
-{ name: "Hot Chocolate", price: 230, category: "Hot Coffee", image: "hot_chocolate.jpg", hasImage: true },
-{ name: "Hot Vanilla", price: 230, category: "Hot Coffee", image: "hot_vanilla.jpg", hasImage: true },
-{ name: "Latte", price: 170, category: "Hot Coffee", image: "latte.jpg", hasImage: true },
-{ name: "lungo", price: 150, category: "Hot Coffee", image: "lungo.jpg", hasImage: true },
-{ name: "Mocha Latte", price: 240, category: "Hot Coffee", image: "mocha_latte.jpg", hasImage: true },
-{ name: "Rose Latte", price: 250, category: "Hot Coffee", image: "roselatte.jpg", hasImage: true },
-{ name: "Spanish Latte", price: 250, category: "Hot Coffee", image: "spanish_latte.jpg", hasImage: true },
-{ name: "Vanilla Latte", price: 240, category: "Hot Coffee", image: "latte_vanilla.jpg", hasImage: true },
+    { name: "Americano", price: 150, category: "Hot Coffee", image: "americano.jpg", hasImage: true },
+    { name: "Cappuccino", price: 170, category: "Hot Coffee", image: "cappuccino.jpg", hasImage: true },
+    { name: "Caramel Latte", price: 240, category: "Hot Coffee", image: "latte_caramel.jpg", hasImage: true },
+    { name: "Coconut Latte", price: 250, category: "Hot Coffee", image: "coconut_latte.jpg", hasImage: true },
+    { name: "Espresso", price: 130, category: "Hot Coffee", image: "espresso.jpg", hasImage: true },
+    { name: "Espresso Con Pan", price: 150, category: "Hot Coffee", image: "espresso_con_pan.jpg", hasImage: true },
+    { name: "Filter Coffee Hot", price: 280, category: "Hot Coffee", image: "filter_coffee_hot.jpg", hasImage: true },
+    { name: "Flat White", price: 150, category: "Hot Coffee", image: "flat_white.jpg", hasImage: true },
+    { name: "Hazelnut Latte", price: 240, category: "Hot Coffee", image: "flavored_latte_hazelnut.jpg", hasImage: true },
+    { name: "Hot Chocolate", price: 230, category: "Hot Coffee", image: "hot_chocolate.jpg", hasImage: true },
+    { name: "Hot Vanilla", price: 230, category: "Hot Coffee", image: "hot_vanilla.jpg", hasImage: true },
+    { name: "Latte", price: 170, category: "Hot Coffee", image: "latte.jpg", hasImage: true },
+    { name: "lungo", price: 150, category: "Hot Coffee", image: "lungo.jpg", hasImage: true },
+    { name: "Mocha Latte", price: 240, category: "Hot Coffee", image: "mocha_latte.jpg", hasImage: true },
+    { name: "Rose Latte", price: 250, category: "Hot Coffee", image: "roselatte.jpg", hasImage: true },
+    { name: "Spanish Latte", price: 250, category: "Hot Coffee", image: "spanish_latte.jpg", hasImage: true },
+    { name: "Vanilla Latte", price: 240, category: "Hot Coffee", image: "latte_vanilla.jpg", hasImage: true },
 
     // Cold Coffee Items
-// Cold Coffee Items (Alphabetical)
-{ name: "Caramel Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_caramel.jpg", hasImage: true },
-{ name: "Chocolate Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_chocolate.jpg", hasImage: true },
-{ name: "Filter Coffee Cold", price: 300, category: "Cold Coffee", image: "filter_coffee_cold.jpg", hasImage: true },
-{ name: "Hazelnut Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_hazelnut.jpg", hasImage: true },
-{ name: "Iced Americano", price: 190, category: "Cold Coffee", image: "iced_americano.jpg", hasImage: true },
-{ name: "Iced Caramel Latte", price: 240, category: "Cold Coffee", image: "iced_caramel_latte.jpg", hasImage: true },
-{ name: "Iced Hazelnut Latte", price: 240, category: "Cold Coffee", image: "iced_hazelnut_latte.jpg", hasImage: true },
-{ name: "Iced Latte", price: 200, category: "Cold Coffee", image: "iced_latte.jpg", hasImage: true },
-{ name: "Iced Vanilla Latte", price: 240, category: "Cold Coffee", image: "iced_vanilla_latte.jpg", hasImage: true },
-{ name: "Vanilla Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_vanilla.jpg", hasImage: true },
+    { name: "Caramel Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_caramel.jpg", hasImage: true },
+    { name: "Chocolate Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_chocolate.jpg", hasImage: true },
+    { name: "Filter Coffee Cold", price: 300, category: "Cold Coffee", image: "filter_coffee_cold.jpg", hasImage: true },
+    { name: "Hazelnut Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_hazelnut.jpg", hasImage: true },
+    { name: "Iced Americano", price: 190, category: "Cold Coffee", image: "iced_americano.jpg", hasImage: true },
+    { name: "Iced Caramel Latte", price: 240, category: "Cold Coffee", image: "iced_caramel_latte.jpg", hasImage: true },
+    { name: "Iced Hazelnut Latte", price: 240, category: "Cold Coffee", image: "iced_hazelnut_latte.jpg", hasImage: true },
+    { name: "Iced Latte", price: 200, category: "Cold Coffee", image: "iced_latte.jpg", hasImage: true },
+    { name: "Iced Vanilla Latte", price: 240, category: "Cold Coffee", image: "iced_vanilla_latte.jpg", hasImage: true },
+    { name: "Vanilla Milkshake", price: 230, category: "Cold Coffee", image: "milk_shake_vanilla.jpg", hasImage: true },
+    
     // Blended Items
-// Blended Items (Alphabetical)
-{ name: "Caramel Frappe", price: 300, category: "Blended", image: "frappe_crushed_caramel.jpg", hasImage: true },
-{ name: "Crunchy Mocha", price: 350, category: "Blended", image: "crunchy_mocha.jpg", hasImage: true },
-{ name: "Hazelnut Frappe", price: 300, category: "Blended", image: "frappe_crushed_hazelnut.jpg", hasImage: true },
-{ name: "KitKat Blended", price: 320, category: "Blended", image: "alternate_kitkat.jpg", hasImage: true },
-{ name: "Mocha Frappe", price: 300, category: "Blended", image: "frappe_crushed_mocha.jpg", hasImage: true },
-{ name: "Oreo Blended", price: 320, category: "Blended", image: "alternate_oreo.jpg", hasImage: true },
-{ name: "Strawberry Blended", price: 320, category: "Blended", image: "alternate_strawberry.jpg", hasImage: true },
-{ name: "Vanilla Frappe", price: 300, category: "Blended", image: "frappe_crushed_vanilla.jpg", hasImage: true },
+    { name: "Caramel Frappe", price: 300, category: "Blended", image: "frappe_crushed_caramel.jpg", hasImage: true },
+    { name: "Crunchy Mocha", price: 350, category: "Blended", image: "crunchy_mocha.jpg", hasImage: true },
+    { name: "Hazelnut Frappe", price: 300, category: "Blended", image: "frappe_crushed_hazelnut.jpg", hasImage: true },
+    { name: "KitKat Blended", price: 320, category: "Blended", image: "alternate_kitkat.jpg", hasImage: true },
+    { name: "Mocha Frappe", price: 300, category: "Blended", image: "frappe_crushed_mocha.jpg", hasImage: true },
+    { name: "Oreo Blended", price: 320, category: "Blended", image: "alternate_oreo.jpg", hasImage: true },
+    { name: "Strawberry Blended", price: 320, category: "Blended", image: "alternate_strawberry.jpg", hasImage: true },
+    { name: "Vanilla Frappe", price: 300, category: "Blended", image: "frappe_crushed_vanilla.jpg", hasImage: true },
 
-   // Mojito/Ice Tea Items 
-{ name: "Apple Iced Tea", price: 300, category: "Mojito/Ice Tea", image: "iced_tea_apple.jpg", hasImage: true },
-{ name: "Banana Lassi", price: 200, category: "Mojito/Ice Tea", image: "lassi_banana.jpg", hasImage: true },
-{ name: "Blueberry Mojito", price: 280, category: "Mojito/Ice Tea", image: "blueberry_mojito.jpg", hasImage: true },
-{ name: "Flavoured Soda", price: 250, category: "Mojito/Ice Tea", image: "flavoured_soda.jpg", hasImage: true },
-{ name: "Hibiscus Iced Tea", price: 250, category: "Mojito/Ice Tea", image: "iced_tea_hibiscus.jpg", hasImage: true },
-{ name: "Lemon Iced Tea", price: 220, category: "Mojito/Ice Tea", image: "iced_tea_lemon.jpg", hasImage: true },
-{ name: "Lemon Lemonade", price: 210, category: "Mojito/Ice Tea", image: "lemonade_lemon.jpg", hasImage: true },
-{ name: "Mango Lassi", price: 200, category: "Mojito/Ice Tea", image: "lassi_mango.jpg", hasImage: true },
-{ name: "Mango Lemonade", price: 260, category: "Mojito/Ice Tea", image: "lemonade_mango.jpg", hasImage: true },
-{ name: "Mango Mojito", price: 280, category: "Mojito/Ice Tea", image: "mango_mojito.jpg", hasImage: true },
-{ name: "Matcha Flavours", price: 350, category: "Mojito/Ice Tea", image: "matcha_flavours.jpg", hasImage: true },
-{ name: "Matcha Iced Tea", price: 300, category: "Mojito/Ice Tea", image: "iced_tea_matcha.jpg", hasImage: true },
-{ name: "Mint Lemonade", price: 220, category: "Mojito/Ice Tea", image: "mint_lemonade.jpg", hasImage: true },
-{ name: "Passion Fruit Mojito", price: 280, category: "Mojito/Ice Tea", image: "passion_fruit_mojito.jpg", hasImage: true },
-{ name: "Peach Iced Tea", price: 220, category: "Mojito/Ice Tea", image: "iced_tea_peach.jpg", hasImage: true },
-{ name: "Peach Lemonade", price: 250, category: "Mojito/Ice Tea", image: "lemonade_peach.jpg", hasImage: true },
-{ name: "Strawberry Lemonade", price: 260, category: "Mojito/Ice Tea", image: "lemonade_strawberry.jpg", hasImage: true },
-{ name: "Strawberry Mojito", price: 270, category: "Mojito/Ice Tea", image: "strawberry_mojito.jpg", hasImage: true },
-{ name: "Sweet Lassi", price: 180, category: "Mojito/Ice Tea", image: "lassi_sweet.jpg", hasImage: true },
-{ name: "Virgin Mojito", price: 210, category: "Mojito/Ice Tea", image: "virgin_mojito.jpg", hasImage: true },
+    // Mojito/Ice Tea Items 
+    { name: "Apple Iced Tea", price: 300, category: "Mojito/Ice Tea", image: "iced_tea_apple.jpg", hasImage: true },
+    { name: "Banana Lassi", price: 200, category: "Mojito/Ice Tea", image: "lassi_banana.jpg", hasImage: true },
+    { name: "Blueberry Mojito", price: 280, category: "Mojito/Ice Tea", image: "blueberry_mojito.jpg", hasImage: true },
+    { name: "Flavoured Soda", price: 250, category: "Mojito/Ice Tea", image: "flavoured_soda.jpg", hasImage: true },
+    { name: "Hibiscus Iced Tea", price: 250, category: "Mojito/Ice Tea", image: "iced_tea_hibiscus.jpg", hasImage: true },
+    { name: "Lemon Iced Tea", price: 220, category: "Mojito/Ice Tea", image: "iced_tea_lemon.jpg", hasImage: true },
+    { name: "Lemon Lemonade", price: 210, category: "Mojito/Ice Tea", image: "lemonade_lemon.jpg", hasImage: true },
+    { name: "Mango Lassi", price: 200, category: "Mojito/Ice Tea", image: "lassi_mango.jpg", hasImage: true },
+    { name: "Mango Lemonade", price: 260, category: "Mojito/Ice Tea", image: "lemonade_mango.jpg", hasImage: true },
+    { name: "Mango Mojito", price: 280, category: "Mojito/Ice Tea", image: "mango_mojito.jpg", hasImage: true },
+    { name: "Matcha Flavours", price: 350, category: "Mojito/Ice Tea", image: "matcha_flavours.jpg", hasImage: true },
+    { name: "Matcha Iced Tea", price: 300, category: "Mojito/Ice Tea", image: "iced_tea_matcha.jpg", hasImage: true },
+    { name: "Mint Lemonade", price: 220, category: "Mojito/Ice Tea", image: "mint_lemonade.jpg", hasImage: true },
+    { name: "Passion Fruit Mojito", price: 280, category: "Mojito/Ice Tea", image: "passion_fruit_mojito.jpg", hasImage: true },
+    { name: "Peach Iced Tea", price: 220, category: "Mojito/Ice Tea", image: "iced_tea_peach.jpg", hasImage: true },
+    { name: "Peach Lemonade", price: 250, category: "Mojito/Ice Tea", image: "lemonade_peach.jpg", hasImage: true },
+    { name: "Strawberry Lemonade", price: 260, category: "Mojito/Ice Tea", image: "lemonade_strawberry.jpg", hasImage: true },
+    { name: "Strawberry Mojito", price: 270, category: "Mojito/Ice Tea", image: "strawberry_mojito.jpg", hasImage: true },
+    { name: "Sweet Lassi", price: 180, category: "Mojito/Ice Tea", image: "lassi_sweet.jpg", hasImage: true },
+    { name: "Virgin Mojito", price: 210, category: "Mojito/Ice Tea", image: "virgin_mojito.jpg", hasImage: true },
+    
     // Soft Drink Items
-  
-{ name: "Apple Juice", price: 300, category: "Soft Drink", image: "apple_juice.jpg", hasImage: true },
-{ name: "Bubble Tea", price: 250, category: "Soft Drink", image: "bubble-tea.jpg", hasImage: true },
-{ name: "Coke", price: 95, category: "Soft Drink", image: "coke.jpg", hasImage: true },
-{ name: "Fanta", price: 95, category: "Soft Drink", image: "fanta.jpg", hasImage: true },
-{ name: "Orange Juice", price: 300, category: "Soft Drink", image: "orange_juice.jpg", hasImage: true },
-{ name: "Sprite", price: 95, category: "Soft Drink", image: "sprite.jpg", hasImage: true },
-{ name: "T/A Bubble Tea", price: 300, category: "Soft Drink", image: "ta-bubble-tea.jpg", hasImage: true },
+    { name: "Apple Juice", price: 300, category: "Soft Drink", image: "apple_juice.jpg", hasImage: true },
+    { name: "Bubble Tea", price: 250, category: "Soft Drink", image: "bubble-tea.jpg", hasImage: true },
+    { name: "Coke", price: 95, category: "Soft Drink", image: "coke.jpg", hasImage: true },
+    { name: "Fanta", price: 95, category: "Soft Drink", image: "fanta.jpg", hasImage: true },
+    { name: "Orange Juice", price: 300, category: "Soft Drink", image: "orange_juice.jpg", hasImage: true },
+    { name: "Sprite", price: 95, category: "Soft Drink", image: "sprite.jpg", hasImage: true },
+    { name: "T/A Bubble Tea", price: 300, category: "Soft Drink", image: "ta-bubble-tea.jpg", hasImage: true },
+    
     // Tea Items
-
-{ name: "Black Rosella", price: 150, category: "Tea", image: "black_rosella.jpg", hasImage: true },
-{ name: "Butterfly Tea", price: 180, category: "Tea", image: "butterfly.jpg", hasImage: true },
-{ name: "Calming Tea", price: 200, category: "Tea", image: "calming_tea.jpg", hasImage: true },
-{ name: "Chamomile Tea", price: 150, category: "Tea", image: "chamomile.jpg", hasImage: true },
-{ name: "Earl Grey", price: 150, category: "Tea", image: "earl_grey.jpg", hasImage: true },
-{ name: "Floral Delight", price: 200, category: "Tea", image: "floral_delight.jpg", hasImage: true },
-{ name: "Ginger Honey Lemon", price: 130, category: "Tea", image: "ginger_honey_hot_lemon.jpg", hasImage: true },
-{ name: "Green Tea", price: 120, category: "Tea", image: "green_tea.jpg", hasImage: true },
-{ name: "Hibiscus Tea", price: 180, category: "Tea", image: "hibiscus.jpg", hasImage: true },
-{ name: "Himalayan Green Tea", price: 150, category: "Tea", image: "himalayan_green_tea.jpg", hasImage: true },
-{ name: "Himalayan Herbal", price: 150, category: "Tea", image: "himalayan_herbal.jpg", hasImage: true },
-{ name: "Himalayan Pearl Tea", price: 120, category: "Tea", image: "himalayan_pearl_black_tea.jpg", hasImage: true },
-{ name: "Honey Hot Lemon", price: 125, category: "Tea", image: "honey_hot_lemon.jpg", hasImage: true },
-{ name: "Hot Lemon", price: 75, category: "Tea", image: "hot_lemon.jpg", hasImage: true },
-{ name: "Illam Lemon Grass", price: 150, category: "Tea", image: "illam_with_lemon_grass.jpg", hasImage: true },
-{ name: "Jasmine Tea", price: 150, category: "Tea", image: "jasmine.jpg", hasImage: true },
-{ name: "Lavender Rose", price: 220, category: "Tea", image: "flower_tea.jpg", hasImage: true },
-{ name: "Lemon Tea", price: 150, category: "Tea", image: "lemon_tea.jpg", hasImage: true },
-{ name: "Midnight Red Rose", price: 200, category: "Tea", image: "midnight_red_rose.jpg", hasImage: true },
-{ name: "Organic Black Tea", price: 100, category: "Tea", image: "organic_black_tea.jpg", hasImage: true },
-{ name: "Pearl Green Tea", price: 150, category: "Tea", image: "pearl_green_tea.jpg", hasImage: true },
-{ name: "Peppermint Tea", price: 150, category: "Tea", image: "peppermint.jpg", hasImage: true },
-{ name: "Spearmint Tea", price: 150, category: "Tea", image: "spearmint.jpg", hasImage: true }
+    { name: "Black Rosella", price: 150, category: "Tea", image: "black_rosella.jpg", hasImage: true },
+    { name: "Butterfly Tea", price: 180, category: "Tea", image: "butterfly.jpg", hasImage: true },
+    { name: "Calming Tea", price: 200, category: "Tea", image: "calming_tea.jpg", hasImage: true },
+    { name: "Chamomile Tea", price: 150, category: "Tea", image: "chamomile.jpg", hasImage: true },
+    { name: "Earl Grey", price: 150, category: "Tea", image: "earl_grey.jpg", hasImage: true },
+    { name: "Floral Delight", price: 200, category: "Tea", image: "floral_delight.jpg", hasImage: true },
+    { name: "Ginger Honey Lemon", price: 130, category: "Tea", image: "ginger_honey_hot_lemon.jpg", hasImage: true },
+    { name: "Green Tea", price: 120, category: "Tea", image: "green_tea.jpg", hasImage: true },
+    { name: "Hibiscus Tea", price: 180, category: "Tea", image: "hibiscus.jpg", hasImage: true },
+    { name: "Himalayan Green Tea", price: 150, category: "Tea", image: "himalayan_green_tea.jpg", hasImage: true },
+    { name: "Himalayan Herbal", price: 150, category: "Tea", image: "himalayan_herbal.jpg", hasImage: true },
+    { name: "Himalayan Pearl Tea", price: 120, category: "Tea", image: "himalayan_pearl_black_tea.jpg", hasImage: true },
+    { name: "Honey Hot Lemon", price: 125, category: "Tea", image: "honey_hot_lemon.jpg", hasImage: true },
+    { name: "Hot Lemon", price: 75, category: "Tea", image: "hot_lemon.jpg", hasImage: true },
+    { name: "Illam Lemon Grass", price: 150, category: "Tea", image: "illam_with_lemon_grass.jpg", hasImage: true },
+    { name: "Jasmine Tea", price: 150, category: "Tea", image: "jasmine.jpg", hasImage: true },
+    { name: "Lavender Rose", price: 220, category: "Tea", image: "flower_tea.jpg", hasImage: true },
+    { name: "Lemon Tea", price: 150, category: "Tea", image: "lemon_tea.jpg", hasImage: true },
+    { name: "Midnight Red Rose", price: 200, category: "Tea", image: "midnight_red_rose.jpg", hasImage: true },
+    { name: "Organic Black Tea", price: 100, category: "Tea", image: "organic_black_tea.jpg", hasImage: true },
+    { name: "Pearl Green Tea", price: 150, category: "Tea", image: "pearl_green_tea.jpg", hasImage: true },
+    { name: "Peppermint Tea", price: 150, category: "Tea", image: "peppermint.jpg", hasImage: true },
+    { name: "Spearmint Tea", price: 150, category: "Tea", image: "spearmint.jpg", hasImage: true }
 ];
 
 // Categories with icons
@@ -326,13 +323,11 @@ function showLoginRequiredMessage(action) {
     `;
     document.body.appendChild(message);
     
-    // Also show login dialog after 1 second
     setTimeout(() => {
         message.remove();
         showLoginDialog();
     }, 1500);
     
-    // Auto remove after 3 seconds if no action
     setTimeout(() => {
         message.remove();
     }, 3000);
@@ -398,34 +393,25 @@ function loginWithCredentials() {
     if (username === VALID_USERNAME && password === VALID_PASSWORD) {
         console.log("Login successful");
         
-        // Successful login
         currentUser = {
             name: 'Taboche Staff',
             role: 'staff',
             loggedIn: true
         };
         
-        // Save to localStorage
         saveData();
-        
-        // Update UI
         updateUIBasedOnRole();
         closeLoginDialog();
-        
-        // Now render tables and menu
         renderTables();
         renderMenu();
         
-        // Show success message
         showSuccessMessage('Login Successful', 'Welcome Taboche Staff');
     } else {
         console.log("Login failed");
-        // Show error
         document.getElementById('login-error').style.display = 'block';
     }
 }
 
-// Alias for compatibility
 window.handleLogin = loginWithCredentials;
 
 function logout() {
@@ -435,15 +421,12 @@ function logout() {
         loggedIn: false
     };
     
-    // Clear any selected table
     selectedTable = null;
     
-    // Save and update
     saveData();
     updateUIBasedOnRole();
     updateOrderSummary();
     
-    // Clear tables and menu displays
     const tablesDashboard = document.getElementById('tables-dashboard');
     if (tablesDashboard) tablesDashboard.innerHTML = '';
     
@@ -481,12 +464,10 @@ function updateUIBasedOnRole() {
     const overlay = document.getElementById('login-overlay');
     const fabButton = document.getElementById('fab-button');
     
-    // Update user display
     if (userSpan) {
         userSpan.textContent = currentUser.name;
     }
     
-    // Update role badge
     if (roleBadge) {
         if (currentUser.loggedIn) {
             roleBadge.style.display = 'inline-flex';
@@ -497,7 +478,6 @@ function updateUIBasedOnRole() {
         }
     }
     
-    // Update login/logout buttons
     if (loginBtnText) {
         loginBtnText.textContent = currentUser.loggedIn ? 'Switch User' : 'Login';
     }
@@ -506,26 +486,21 @@ function updateUIBasedOnRole() {
         logoutBtn.style.display = currentUser.loggedIn ? 'flex' : 'none';
     }
     
-    // Show/hide login overlay
     if (overlay) {
         overlay.style.display = currentUser.loggedIn ? 'none' : 'flex';
     }
     
-    // Show/hide FAB button
     if (fabButton) {
         fabButton.style.display = (currentUser.loggedIn && window.innerWidth <= 768) ? 'flex' : 'none';
     }
     
-    // Add role class to body
     body.classList.remove('guest-mode', 'staff-mode');
     body.classList.add(`${currentUser.role}-mode`);
     
-    // Show/hide POS container
     if (posContainer) {
         posContainer.style.display = currentUser.loggedIn ? 'flex' : 'none';
     }
     
-    // Update order summary
     updateOrderSummary();
 }
 
@@ -538,10 +513,7 @@ function removeFromOrder(name) {
         return;
     }
     
-    // Store the item name for removal
     pendingRemoval = name;
-    
-    // Show reason dialog
     showRemoveReasonDialog();
 }
 
@@ -549,9 +521,7 @@ function showRemoveReasonDialog() {
     const dialog = document.getElementById('remove-reason-dialog');
     if (!dialog) return;
     
-    // Clear previous input
     document.getElementById('removal-reason').value = '';
-    
     dialog.classList.add('visible');
 }
 
@@ -590,11 +560,10 @@ function submitRemoveWithReason() {
         return;
     }
     
-    // Record removal (whole item/line)
     const removalRecord = {
         id: Date.now(),
         itemName: pendingRemoval,
-        quantity: item.quantity,           // the remaining quantity being removed
+        quantity: item.quantity,
         price: item.price,
         totalAmount: item.price * item.quantity,
         table: selectedTable,
@@ -606,17 +575,9 @@ function submitRemoveWithReason() {
     
     removalHistory.push(removalRecord);
     
-    // Actually remove the item
     delete table.order[pendingRemoval];
     
-    // Recalculate total
-    let total = 0;
-    Object.values(table.order).forEach(i => {
-        total += i.price * i.quantity;
-    });
-    
-    table.totalPrice = parseFloat(total.toFixed(2));
-    table.discountedTotal = parseFloat((table.totalPrice * (1 - (table.discount || 0) / 100)).toFixed(2));
+    recalculateTableTotal(table);
     
     if (Object.keys(table.order).length === 0) {
         table.status = "available";
@@ -633,6 +594,28 @@ function submitRemoveWithReason() {
     showRemovalToast(`Item removed: ${pendingRemoval} (×${item.quantity})`, reason);
     
     closeRemoveReasonDialog();
+}
+
+function recalculateTableTotal(table) {
+    let total = 0;
+    Object.values(table.order).forEach(i => {
+        total += i.price * i.quantity;
+    });
+    
+    table.totalPrice = parseFloat(total.toFixed(2));
+    
+    let discountedTotal = 0;
+    Object.entries(table.order).forEach(([name, item]) => {
+        if (nonDiscountableItems.includes(name)) {
+            discountedTotal += item.price * item.quantity;
+        } else {
+            const discountedPrice = item.price * (1 - (table.discount || 0) / 100);
+            discountedTotal += discountedPrice * item.quantity;
+            item.discountedPrice = discountedPrice;
+        }
+    });
+    
+    table.discountedTotal = parseFloat(discountedTotal.toFixed(2));
 }
 
 function showRemovalToast(message, reason) {
@@ -710,17 +693,14 @@ function initializeTables() {
                 newItemsAdded: false
             };
         } else {
-            // Ensure existing tables have all required properties
             if (!tables[tableName].order) tables[tableName].order = {};
             if (!tables[tableName].payments) tables[tableName].payments = [];
             if (tables[tableName].discount === undefined) tables[tableName].discount = 0;
             if (tables[tableName].discountedTotal === undefined) tables[tableName].discountedTotal = 0;
             
-            // Fix status if table has items but marked available
             if (tables[tableName].status === "available" && Object.keys(tables[tableName].order || {}).length > 0) {
                 tables[tableName].status = "occupied";
             }
-            // Fix status if table has no items but marked occupied
             if (tables[tableName].status === "occupied" && Object.keys(tables[tableName].order || {}).length === 0) {
                 tables[tableName].status = "available";
                 tables[tableName].totalPrice = 0;
@@ -732,6 +712,9 @@ function initializeTables() {
     
     if (!salesData.items) {
         salesData.items = [];
+    }
+    if (!salesData.cardSales) {
+        salesData.cardSales = 0;
     }
     
     saveData();
@@ -746,7 +729,6 @@ function renderTables() {
     
     dashboard.innerHTML = '';
     
-    // Sort tables
     Object.keys(tables).sort((a, b) => {
         const numA = parseInt(a.replace('Table ', ''));
         const numB = parseInt(b.replace('Table ', ''));
@@ -755,14 +737,12 @@ function renderTables() {
         const info = tables[table];
         const tableBtn = document.createElement('button');
         
-        // Set class based on status
         if (info.status === "occupied") {
             tableBtn.className = 'table-btn occupied';
         } else {
             tableBtn.className = 'table-btn available';
         }
         
-        // Add item count badge if occupied
         const itemCount = Object.keys(info.order || {}).length;
         if (itemCount > 0) {
             tableBtn.innerHTML = `${table}<br><small>${itemCount} ${itemCount === 1 ? 'item' : 'items'}</small>`;
@@ -801,7 +781,6 @@ function renderMenu() {
     
     menuContainer.innerHTML = '';
     
-    // Predefined colors for icons
     const categoryColors = {
         'Retail': '#4A90E2',
         'Bakery': '#F5A623',
@@ -824,11 +803,9 @@ function renderMenu() {
         menuItem.setAttribute('data-price', item.price);
         menuItem.setAttribute('data-category', item.category);
         
-        // Get color for this category
         const bgColor = categoryColors[item.category] || '#4A90E2';
         const firstLetter = item.name.charAt(0).toUpperCase();
         
-        // Create hybrid content
         menuItem.innerHTML = `
             <div class="menu-item-image-container">
                 <img src="images/${item.image}" 
@@ -860,7 +837,6 @@ function selectTable(table) {
     
     selectedTable = table;
     
-    // Only set time if there are items
     const tableData = tables[selectedTable];
     if (Object.keys(tableData.order || {}).length > 0 && !tableData.time) {
         tableData.time = new Date().toLocaleTimeString();
@@ -885,7 +861,7 @@ function addToOrder(name, price) {
     }
     
     if (isVoidMode) {
-        removeFromOrder(name);
+        voidItem(name);
         isVoidMode = false;
         return;
     }
@@ -901,29 +877,22 @@ function addToOrder(name, price) {
             price: price, 
             quantity: 1, 
             finalized: false,
-            timeAdded: Date.now()
+            timeAdded: Date.now(),
+            originalPrice: price,
+            discountedPrice: price
         };
     } else {
         table.order[name].quantity += 1;
     }
     
-    // Update totals
-    let total = 0;
-    Object.values(table.order).forEach(item => {
-        total += item.price * item.quantity;
-    });
+    recalculateTableTotal(table);
     
-    table.totalPrice = parseFloat(total.toFixed(2));
-    table.discountedTotal = parseFloat((table.totalPrice * (1 - (table.discount || 0) / 100)).toFixed(2));
-    
-    // Set status to occupied
     table.status = "occupied";
     if (!table.time) {
         table.time = new Date().toLocaleTimeString();
     }
     table.newItemsAdded = true;
     
-    // Add animation feedback
     const menuItem = document.querySelector(`.menu-item[data-name="${name}"]`);
     if (menuItem) {
         menuItem.classList.add('item-added');
@@ -945,30 +914,18 @@ function adjustQuantity(name, delta) {
     
     if (!item || item.finalized) return;
     
-    // Calculate new quantity
     let newQuantity = item.quantity + delta;
     
     if (newQuantity <= 0) {
-        // Going to zero or below → treat as full removal → ask reason
         pendingRemoval = name;
         showRemoveReasonDialog();
-        // Do NOT delete here yet – wait for reason confirmation
         return;
     }
     
-    // Normal decrease (quantity stays ≥ 1) – no reason needed
     item.quantity = newQuantity;
     
-    // Recalculate totals
-    let total = 0;
-    Object.values(table.order).forEach(i => {
-        total += i.price * i.quantity;
-    });
+    recalculateTableTotal(table);
     
-    table.totalPrice = parseFloat(total.toFixed(2));
-    table.discountedTotal = parseFloat((table.totalPrice * (1 - (table.discount || 0) / 100)).toFixed(2));
-    
-    // If somehow empty (shouldn't happen here)
     if (Object.keys(table.order).length === 0) {
         table.status = "available";
         table.time = null;
@@ -980,6 +937,52 @@ function adjustQuantity(name, delta) {
     updateOrderSummary();
     renderTables();
     saveData();
+}
+
+function voidItem(itemName) {
+    if (!checkLoginAndExecute('canVoid')) return;
+    
+    if (!selectedTable) return;
+    
+    const reason = prompt("Enter void reason:", "");
+    if (!reason) return;
+    
+    const table = tables[selectedTable];
+    const item = table.order[itemName];
+    
+    if (!item) return;
+    
+    voidHistory.push({
+        id: Date.now(),
+        name: itemName,
+        quantity: item.quantity,
+        price: item.price,
+        totalAmount: item.price * item.quantity,
+        table: selectedTable,
+        reason: reason,
+        voidedBy: currentUser.name,
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString()
+    });
+    
+    delete table.order[itemName];
+    
+    recalculateTableTotal(table);
+    
+    if (Object.keys(table.order).length === 0) {
+        table.status = "available";
+        table.time = null;
+        table.discount = 0;
+        table.discountedTotal = 0;
+        table.payments = [];
+    }
+    
+    saveData();
+    updateOrderSummary();
+    renderTables();
+    
+    alert(`Item ${itemName} voided successfully`);
 }
 
 // ===== COMMENT FUNCTIONS =====
@@ -1062,7 +1065,9 @@ function displayOrderItems(orderItems) {
             li.classList.add('finalized');
         }
         
-        const itemTotal = (item.price * item.quantity).toFixed(2);
+        const displayPrice = item.discountedPrice || item.price;
+        const itemTotal = (displayPrice * item.quantity).toFixed(2);
+        const originalTotal = (item.price * item.quantity).toFixed(2);
         
         li.innerHTML = `
             <div class="item-info">
@@ -1070,13 +1075,17 @@ function displayOrderItems(orderItems) {
                     ${name} ${item.comments ? ' <i class="fas fa-comment" style="color: #4A90E2;"></i>' : ''}
                 </span>
                 ${item.comments ? `<span class="item-comments">📝 ${item.comments}</span>` : ''}
+                ${displayPrice !== item.price ? `<span class="item-discount">(-${tables[selectedTable]?.discount || 0}%)</span>` : ''}
             </div>
             <div class="item-quantity">
                 <button onclick="adjustQuantity('${name}', -1)" ${item.finalized || !perm.canRemoveItems ? 'disabled' : ''}>-</button>
                 <span>${item.quantity}</span>
                 <button onclick="adjustQuantity('${name}', 1)" ${item.finalized || !perm.canAddItems ? 'disabled' : ''}>+</button>
             </div>
-            <span class="item-total">Rs ${itemTotal}</span>
+            <span class="item-total">
+                ${displayPrice !== item.price ? `<span style="text-decoration: line-through; color: #999; margin-right: 5px;">Rs ${originalTotal}</span>` : ''}
+                Rs ${itemTotal}
+            </span>
             ${perm.canRemoveItems ? 
                 `<button class="remove-item" onclick="removeFromOrder('${name}')" ${item.finalized ? 'disabled' : ''}>
                     <i class="fas fa-trash"></i>
@@ -1087,7 +1096,6 @@ function displayOrderItems(orderItems) {
         container.appendChild(li);
     });
     
-    // Enable mobile swipe features
     if (window.innerWidth <= 768) {
         enableSwipeToRemove();
     }
@@ -1156,7 +1164,6 @@ function filterCategory(category) {
         }
     });
     
-    // Update active category button
     document.querySelectorAll('.categories button').forEach(btn => {
         btn.classList.remove('active');
         if (btn.textContent.includes(category === 'all' ? 'All' : category)) {
@@ -1175,7 +1182,6 @@ function showPaymentDialog() {
     updateTotalAmount();
     dialog.classList.add('visible');
     
-    // Auto-focus on mobile
     if (window.innerWidth <= 768) {
         setTimeout(() => {
             document.getElementById('numeric-input').focus();
@@ -1189,7 +1195,6 @@ function closePaymentDialog() {
     
     dialog.classList.remove('visible');
     
-    // Reset payment summary
     document.getElementById('payment-summary').innerHTML = '';
     document.getElementById('change-amount').textContent = '0';
     document.getElementById('insufficient-amount').classList.add('hidden');
@@ -1198,7 +1203,7 @@ function closePaymentDialog() {
     if (selectedTable && tables[selectedTable]) {
         tables[selectedTable].payments = [];
         tables[selectedTable].discount = 0;
-        tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
+        recalculateTableTotal(tables[selectedTable]);
         saveData();
     }
 }
@@ -1258,21 +1263,7 @@ function applyDiscount(percentage) {
     const table = tables[selectedTable];
     table.discount = Math.min(Math.max(percentage, 0), 100);
     
-    // Calculate discountable and non-discountable totals
-    let discountableTotal = 0;
-    let nonDiscountableTotal = 0;
-    
-    Object.entries(table.order).forEach(([name, item]) => {
-        const itemTotal = item.price * item.quantity;
-        if (nonDiscountableItems.includes(name)) {
-            nonDiscountableTotal += itemTotal;
-        } else {
-            discountableTotal += itemTotal;
-        }
-    });
-    
-    const discountedAmount = discountableTotal * (1 - table.discount / 100);
-    table.discountedTotal = parseFloat((discountedAmount + nonDiscountableTotal).toFixed(2));
+    recalculateTableTotal(table);
     
     updateTotalAmount();
     updateOrderSummary();
@@ -1288,19 +1279,19 @@ function addPayment(method) {
     const amount = parseFloat(input.value) || 0;
     const table = tables[selectedTable];
     const totalPaid = table.payments.reduce((sum, p) => sum + p.amount, 0);
-    const remaining = (table.discountedTotal || table.totalPrice) - totalPaid;
+    const totalDue = (table.discountedTotal || table.totalPrice);
+    const remaining = totalDue - totalPaid;
     
     if (amount <= 0) {
         alert("Please enter a valid amount.");
         return;
     }
     
-    if (method === 'Mobile Payment' && (totalPaid + amount) > remaining) {
-        alert(`Amount exceeds remaining balance. Max allowed: Rs ${remaining.toFixed(2)}`);
-        return;
-    }
-    
     if (method === 'Mobile Payment') {
+        if (amount > remaining) {
+            alert(`Mobile payment cannot exceed remaining balance. Max allowed: Rs ${remaining.toFixed(2)}`);
+            return;
+        }
         showQRCodeDialog();
     }
     
@@ -1323,7 +1314,6 @@ function updatePaymentSummary() {
     const totalDue = table.discountedTotal || table.totalPrice;
     const difference = totalPaid - totalDue;
     
-    // Update payment summary list
     summaryElem.innerHTML = '';
     table.payments.forEach(payment => {
         const li = document.createElement('li');
@@ -1348,7 +1338,7 @@ function resetPaymentDialog() {
     
     tables[selectedTable].payments = [];
     tables[selectedTable].discount = 0;
-    tables[selectedTable].discountedTotal = tables[selectedTable].totalPrice;
+    recalculateTableTotal(tables[selectedTable]);
     
     document.getElementById('payment-summary').innerHTML = '';
     document.getElementById('change-amount').textContent = '0';
@@ -1374,55 +1364,52 @@ function completeOrder() {
         return;
     }
     
-    // Calculate discount amount
-    let discountableTotal = 0;
+    const change = (totalPaid - totalDue).toFixed(2);
+    
+    const detailedOrder = {};
     Object.entries(table.order).forEach(([name, item]) => {
-        if (!nonDiscountableItems.includes(name)) {
-            discountableTotal += item.price * item.quantity;
-        }
-    });
-    const discountAmount = discountableTotal * (table.discount / 100);
-    
-    // Update sales data
-    salesData.totalSales = (salesData.totalSales || 0) + totalDue;
-    salesData.totalDiscounts = (salesData.totalDiscounts || 0) + discountAmount;
-    salesData.totalOrders = (salesData.totalOrders || 0) + 1;
-    
-    table.payments.forEach(payment => {
-        if (payment.method === 'Cash') {
-            salesData.cashSales = (salesData.cashSales || 0) + payment.amount;
-        } else {
-            salesData.mobileSales = (salesData.mobileSales || 0) + payment.amount;
-        }
+        detailedOrder[name] = {
+            ...item,
+            originalPrice: item.price,
+            discountedPrice: item.discountedPrice || item.price,
+            discountApplied: (item.price - (item.discountedPrice || item.price))
+        };
     });
     
-    // Update item sales
-    Object.entries(table.order).forEach(([name, item]) => {
-        const existingItem = salesData.items.find(i => i.name === name);
-        if (existingItem) {
-            existingItem.qty = (existingItem.qty || 0) + item.quantity;
-            existingItem.totalSold = (existingItem.totalSold || 0) + (item.price * item.quantity);
-        } else {
-            salesData.items.push({
-                name: name,
-                qty: item.quantity,
-                totalSold: item.price * item.quantity
-            });
-        }
-    });
-    
-    // Save to order history
     orderHistory.push({
         table: selectedTable,
-        order: { ...table.order },
-        totalPrice: table.totalPrice,
+        order: detailedOrder,
+        originalTotal: table.totalPrice,
         discountedTotal: totalDue,
         discount: table.discount,
+        discountAmount: table.totalPrice - totalDue,
         payments: [...table.payments],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        completedBy: currentUser.name,
+        change: parseFloat(change)
     });
     
-    // Reset table
+    salesData.totalSales = (salesData.totalSales || 0) + totalDue;
+    salesData.totalDiscounts = (salesData.totalDiscounts || 0) + (table.totalPrice - totalDue);
+    salesData.totalOrders = (salesData.totalOrders || 0) + 1;
+    
+    let remainingDue = totalDue;
+    
+    table.payments.forEach(payment => {
+        if (remainingDue <= 0) return;
+        
+        const amountTowardBill = Math.min(payment.amount, remainingDue);
+        remainingDue -= amountTowardBill;
+        
+        if (payment.method === 'Cash') {
+            salesData.cashSales = (salesData.cashSales || 0) + amountTowardBill;
+        } else if (payment.method === 'Mobile Payment') {
+            salesData.mobileSales = (salesData.mobileSales || 0) + amountTowardBill;
+        } else if (payment.method === 'Card') {
+            salesData.cardSales = (salesData.cardSales || 0) + amountTowardBill;
+        }
+    });
+    
     table.order = {};
     table.totalPrice = 0;
     table.discountedTotal = 0;
@@ -1432,12 +1419,38 @@ function completeOrder() {
     table.time = null;
     table.newItemsAdded = false;
     
-    const change = (totalPaid - totalDue).toFixed(2);
-    if (parseFloat(change) > 0) {
-        alert(`Order completed! Customer change: Rs ${change}`);
-    } else {
-        alert("Order completed successfully!");
-    }
+    // Show thank you message for staff to read to customer
+    const messageBox = document.createElement('div');
+    messageBox.className = 'customer-message';
+    messageBox.innerHTML = `
+        <div class="message-content">
+            <div class="message-icon">
+                <i class="fas fa-smile"></i>
+            </div>
+            <h3>🎉 Thank You! 🎉</h3>
+            <div class="message-text">
+                <p><strong>SAY TO CUSTOMER:</strong></p>
+                <p class="customer-line">"Thank you for dining with us at Taboche!"</p>
+                <p class="customer-line">"We hope you enjoyed your meal."</p>
+                <p class="customer-line">"Please visit us again soon!"</p>
+                ${parseFloat(change) > 0 ? `<p class="customer-line change-line">"Your change is Rs ${change}. Thank you!"</p>` : ''}
+            </div>
+            <div class="message-footer">
+                <p>🙏 धन्यवाद! फेरि भेटौंला! 🙏</p>
+                <button onclick="this.closest('.customer-message').remove()" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Got it!
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(messageBox);
+    
+    setTimeout(() => {
+        if (messageBox.parentNode) {
+            messageBox.remove();
+        }
+    }, 10000);
     
     closePaymentDialog();
     closeQRCodeDialog();
@@ -1584,50 +1597,229 @@ function addExtraItem(name, price, type) {
     closeAddItemModal();
 }
 
-// ===== REPORT FUNCTIONS =====
-function generateSalesReport() {
-    const totalDiscounts = salesData.totalDiscounts || 0;
-    const totalOrders = salesData.totalOrders || 0;
-    const cashSales = salesData.cashSales || 0;
-    const mobileSales = salesData.mobileSales || 0;
-    const totalSales = salesData.totalSales || 0;
-    const items = salesData.items || [];
+// ===== IMPROVED SALES REPORT FUNCTION =====
+function generateSalesReport(timePeriod = 'all') {
+    let filteredOrders = [...orderHistory];
+    const now = new Date();
     
-    const itemRows = items.map(item => `
+    if (timePeriod === 'today') {
+        const today = now.toDateString();
+        filteredOrders = orderHistory.filter(order => 
+            new Date(order.timestamp).toDateString() === today
+        );
+    } else if (timePeriod === 'week') {
+        const weekAgo = new Date(now.setDate(now.getDate() - 7));
+        filteredOrders = orderHistory.filter(order => 
+            new Date(order.timestamp) >= weekAgo
+        );
+    } else if (timePeriod === 'month') {
+        const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
+        filteredOrders = orderHistory.filter(order => 
+            new Date(order.timestamp) >= monthAgo
+        );
+    }
+    
+    let totalSales = 0;
+    let totalDiscounts = 0;
+    let totalOrders = filteredOrders.length;
+    let cashSales = 0;
+    let mobileSales = 0;
+    let cardSales = 0;
+    
+    const itemSales = {};
+    const categorySales = {};
+    
+    filteredOrders.forEach(order => {
+        totalSales += order.discountedTotal || order.originalTotal;
+        totalDiscounts += (order.originalTotal - (order.discountedTotal || order.originalTotal));
+        
+        let remainingDue = order.discountedTotal || order.originalTotal;
+        
+        order.payments.forEach(payment => {
+            if (remainingDue <= 0) return;
+            
+            const amountTowardBill = Math.min(payment.amount, remainingDue);
+            remainingDue -= amountTowardBill;
+            
+            if (payment.method === 'Cash') {
+                cashSales += amountTowardBill;
+            } else if (payment.method === 'Mobile Payment') {
+                mobileSales += amountTowardBill;
+            } else if (payment.method === 'Card') {
+                cardSales += amountTowardBill;
+            }
+        });
+        
+        Object.entries(order.order).forEach(([name, item]) => {
+            const menuItem = menuItems.find(m => m.name === name);
+            const category = menuItem ? menuItem.category : 'Other';
+            
+            const itemOriginalTotal = item.originalPrice * item.quantity;
+            const itemDiscountedTotal = (item.discountedPrice || item.originalPrice) * item.quantity;
+            
+            if (!itemSales[name]) {
+                itemSales[name] = {
+                    name: name,
+                    category: category,
+                    quantity: 0,
+                    originalTotal: 0,
+                    discountedTotal: 0,
+                    discountAmount: 0,
+                    avgPrice: item.originalPrice
+                };
+            }
+            
+            itemSales[name].quantity += item.quantity;
+            itemSales[name].originalTotal += itemOriginalTotal;
+            itemSales[name].discountedTotal += itemDiscountedTotal;
+            itemSales[name].discountAmount += (itemOriginalTotal - itemDiscountedTotal);
+            
+            if (!categorySales[category]) {
+                categorySales[category] = {
+                    category: category,
+                    quantity: 0,
+                    originalTotal: 0,
+                    discountedTotal: 0,
+                    discountAmount: 0
+                };
+            }
+            
+            categorySales[category].quantity += item.quantity;
+            categorySales[category].originalTotal += itemOriginalTotal;
+            categorySales[category].discountedTotal += itemDiscountedTotal;
+            categorySales[category].discountAmount += (itemOriginalTotal - itemDiscountedTotal);
+        });
+    });
+    
+    const sortedItems = Object.values(itemSales).sort((a, b) => 
+        b.discountedTotal - a.discountedTotal
+    );
+    
+    const sortedCategories = Object.values(categorySales).sort((a, b) => 
+        b.discountedTotal - a.discountedTotal
+    );
+    
+    const itemRows = sortedItems.map(item => `
         <tr>
             <td>${item.name}</td>
-            <td>${item.qty || 0}</td>
-            <td>Rs ${(item.totalSold || 0).toFixed(2)}</td>
+            <td>${item.category}</td>
+            <td>${item.quantity}</td>
+            <td>Rs ${item.originalTotal.toFixed(2)}</td>
+            <td>Rs ${item.discountAmount.toFixed(2)}</td>
+            <td>Rs ${item.discountedTotal.toFixed(2)}</td>
         </tr>
     `).join('');
     
+    const categoryRows = sortedCategories.map(cat => `
+        <tr>
+            <td><strong>${cat.category}</strong></td>
+            <td>${cat.quantity}</td>
+            <td>Rs ${cat.originalTotal.toFixed(2)}</td>
+            <td>Rs ${cat.discountAmount.toFixed(2)}</td>
+            <td>Rs ${cat.discountedTotal.toFixed(2)}</td>
+        </tr>
+    `).join('');
+    
+    const averageOrderValue = totalOrders > 0 ? (totalSales / totalOrders).toFixed(2) : 0;
+    const discountPercentage = totalSales > 0 ? ((totalDiscounts / (totalSales + totalDiscounts)) * 100).toFixed(1) : 0;
+    
     return `
+        <div class="report-filters" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="generateAndShowReport('today')" class="btn btn-sm">Today</button>
+            <button onclick="generateAndShowReport('week')" class="btn btn-sm">This Week</button>
+            <button onclick="generateAndShowReport('month')" class="btn btn-sm">This Month</button>
+            <button onclick="generateAndShowReport('all')" class="btn btn-sm">All Time</button>
+        </div>
+    
         <div class="report-summary">
-            <h3>Summary</h3>
-            <p><strong>Total Sales:</strong> Rs ${totalSales.toFixed(2)}</p>
-            <p><strong>Total Discounts:</strong> Rs ${totalDiscounts.toFixed(2)}</p>
-            <p><strong>Total Orders:</strong> ${totalOrders}</p>
-            <p><strong>Cash Sales:</strong> Rs ${cashSales.toFixed(2)}</p>
-            <p><strong>Mobile Payments:</strong> Rs ${mobileSales.toFixed(2)}</p>
+            <h3>Sales Summary</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="summary-card">
+                    <i class="fas fa-rupee-sign"></i>
+                    <div>
+                        <strong>Total Sales</strong>
+                        <span>Rs ${totalSales.toFixed(2)}</span>
+                    </div>
+                </div>
+             <div class="summary-card">
+    <i class="fas fa-percent"></i>
+    <div>
+        <strong>Total Discounts</strong>
+        <span>Rs ${totalDiscounts.toFixed(2)}</span>
+    </div>
+</div>
+                <div class="summary-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <div>
+                        <strong>Total Orders</strong>
+                        <span>${totalOrders}</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <strong>Avg Order Value</strong>
+                        <span>Rs ${averageOrderValue}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h4 style="margin-top: 20px;">Payment Breakdown</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                <div><strong>Cash:</strong> Rs ${cashSales.toFixed(2)}</div>
+                <div><strong>Mobile:</strong> Rs ${mobileSales.toFixed(2)}</div>
+                ${cardSales ? `<div><strong>Card:</strong> Rs ${cardSales.toFixed(2)}</div>` : ''}
+            </div>
         </div>
         
-        <h3>Item Sales Details</h3>
+        <h3>Category-wise Sales</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Original</th>
+                    <th>Discount</th>
+                    <th>Net Sales</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${categoryRows || '<tr><td colspan="5">No sales data</td></tr>'}
+            </tbody>
+        </table>
+        
+        <h3>Item-wise Sales Details</h3>
         <table class="items-table">
             <thead>
                 <tr>
                     <th>Item Name</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Original</th>
+                    <th>Discount</th>
+                    <th>Net Sales</th>
                 </tr>
             </thead>
             <tbody>
-                ${itemRows || '<tr><td colspan="3">No items sold yet</td></tr>'}
+                ${itemRows || '<tr><td colspan="6">No items sold yet</td></tr>'}
             </tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background: #f0f0f0;">
+                    <td colspan="3">Totals</td>
+                    <td>Rs ${Object.values(itemSales).reduce((sum, i) => sum + i.originalTotal, 0).toFixed(2)}</td>
+                    <td>Rs ${Object.values(itemSales).reduce((sum, i) => sum + i.discountAmount, 0).toFixed(2)}</td>
+                    <td>Rs ${totalSales.toFixed(2)}</td>
+                </tr>
+            </tfoot>
         </table>
+        
+        <div style="margin-top: 20px; font-style: italic; color: #666;">
+            Report generated: ${new Date().toLocaleString()}
+        </div>
     `;
 }
 
-function showSalesReportsContent() {
+function generateAndShowReport(timePeriod = 'all') {
     if (!checkLoginAndExecute('canViewReports')) return;
     
     const modal = document.getElementById('salesReportModal');
@@ -1635,28 +1827,174 @@ function showSalesReportsContent() {
     
     if (!modal || !content) return;
     
-    content.innerHTML = generateSalesReport();
+    content.innerHTML = generateSalesReport(timePeriod);
     modal.style.display = 'flex';
     
-    // Add removal history button to reports modal
-    enhanceReportsModal();
+    if (!document.getElementById('report-summary-css')) {
+        const style = document.createElement('style');
+        style.id = 'report-summary-css';
+        style.textContent = `
+            .summary-card {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-left: 4px solid #3498db;
+            }
+            .summary-card i {
+                font-size: 24px;
+                color: #3498db;
+            }
+            .summary-card div {
+                display: flex;
+                flex-direction: column;
+            }
+            .summary-card span {
+                font-size: 20px;
+                font-weight: bold;
+            }
+            .btn-sm {
+                padding: 5px 10px;
+                font-size: 12px;
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .btn-sm:hover {
+                background: #2980b9;
+            }
+            .customer-message {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+                animation: fadeIn 0.3s ease;
+            }
+            .message-content {
+                background: white;
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                animation: slideUp 0.3s ease;
+            }
+            .message-icon {
+                font-size: 60px;
+                color: #4CAF50;
+                margin-bottom: 20px;
+            }
+            .message-content h3 {
+                color: #333;
+                font-size: 28px;
+                margin-bottom: 20px;
+                font-weight: bold;
+            }
+            .message-text {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 15px;
+                margin: 20px 0;
+            }
+            .message-text p:first-child {
+                color: #666;
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+            .customer-line {
+                font-size: 18px;
+                color: #2c3e50;
+                margin: 10px 0;
+                font-weight: 500;
+                line-height: 1.6;
+            }
+            .change-line {
+                color: #27ae60;
+                font-weight: bold;
+                font-size: 20px;
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 2px dashed #ddd;
+            }
+            .message-footer {
+                margin-top: 20px;
+            }
+            .message-footer p {
+                font-size: 20px;
+                color: #e67e22;
+                margin-bottom: 20px;
+                font-weight: bold;
+            }
+            .message-footer button {
+                padding: 12px 30px;
+                font-size: 16px;
+                border: none;
+                border-radius: 50px;
+                background: #3498db;
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .message-footer button:hover {
+                background: #2980b9;
+                transform: scale(1.05);
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideUp {
+                from {
+                    transform: translateY(50px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            @media (max-width: 768px) {
+                .message-content {
+                    padding: 20px;
+                    width: 95%;
+                }
+                .message-icon {
+                    font-size: 50px;
+                }
+                .message-content h3 {
+                    font-size: 24px;
+                }
+                .customer-line {
+                    font-size: 16px;
+                }
+                .change-line {
+                    font-size: 18px;
+                }
+                .message-footer p {
+                    font-size: 18px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
     toggleSidebar();
 }
 
-function enhanceReportsModal() {
-    const buttonContainer = document.querySelector('#salesReportModal .button-container');
-    if (buttonContainer) {
-        // Check if button already exists
-        if (!document.querySelector('#removal-history-btn')) {
-            const removalHistoryBtn = document.createElement('button');
-            removalHistoryBtn.id = 'removal-history-btn';
-            removalHistoryBtn.className = 'btn btn-danger';
-            removalHistoryBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Removal History';
-            removalHistoryBtn.onclick = showRemovalHistory;
-            buttonContainer.appendChild(removalHistoryBtn);
-        }
-    }
+function showSalesReportsContent() {
+    if (!checkLoginAndExecute('canViewReports')) return;
+    generateAndShowReport('all');
 }
 
 function closeModal() {
@@ -1673,43 +2011,29 @@ function resetSalesReport() {
         return;
     }
     
-    // Reset all major histories
     salesData = {
         totalSales: 0,
         totalDiscounts: 0,
         totalOrders: 0,
         cashSales: 0,
         mobileSales: 0,
+        cardSales: 0,
         items: []
     };
     
     orderHistory = [];
     voidHistory = [];
-    removalHistory = [];               // ← Add this line
-    
-    // Optional: also clear all table orders if you want full reset
-    // Object.keys(tables).forEach(table => {
-    //     tables[table] = {
-    //         order: {},
-    //         totalPrice: 0,
-    //         status: "available",
-    //         payments: [],
-    //         discount: 0,
-    //         discountedTotal: 0,
-    //         time: null,
-    //         newItemsAdded: false
-    //     };
-    // });
+    removalHistory = [];
     
     saveData();
     showSalesReportsContent();
-    alert("All reports and history (including Item Removal History) have been reset.");
+    alert("All reports and history have been reset.");
 }
 
 function printReport() {
     if (!checkLoginAndExecute('canPrint')) return;
     
-    const reportContent = generateSalesReport();
+    const reportContent = generateSalesReport('all');
     const restaurantName = "Taboche Restaurant";
     const now = new Date();
     const date = now.toLocaleDateString();
@@ -1729,6 +2053,7 @@ function printReport() {
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                     th { background-color: #3498db; color: white; }
                     .summary { background: #ecf0f1; padding: 15px; border-radius: 5px; }
+                    .summary-card { background: #f8f9fa; padding: 15px; border-radius: 8px; display: inline-block; margin: 5px; }
                 </style>
             </head>
             <body>
@@ -1784,14 +2109,18 @@ function renderOrderHistory() {
         const formattedDate = date.toLocaleDateString();
         const formattedTime = date.toLocaleTimeString();
         
-        const itemsList = Object.entries(order.order).map(([name, item]) => `
+        const itemsList = Object.entries(order.order).map(([name, item]) => {
+            const displayPrice = item.discountedPrice || item.originalPrice;
+            return `
             <tr>
                 <td>${name}</td>
-                <td>Rs ${item.price}</td>
+                <td>Rs ${item.originalPrice}</td>
                 <td>${item.quantity}</td>
-                <td>Rs ${(item.price * item.quantity).toFixed(2)}</td>
+                <td>Rs ${(item.originalPrice * item.quantity).toFixed(2)}</td>
+                <td>${item.discountApplied ? 'Yes' : 'No'}</td>
+                <td>Rs ${(displayPrice * item.quantity).toFixed(2)}</td>
             </tr>
-        `).join('');
+        `}).join('');
         
         const paymentsList = order.payments.map(p => 
             `${p.method}: Rs ${p.amount.toFixed(2)}`
@@ -1803,19 +2132,23 @@ function renderOrderHistory() {
                 <span>${formattedDate} ${formattedTime}</span>
             </div>
             <p><strong>Table:</strong> ${order.table}</p>
-            <p><strong>Total:</strong> Rs ${order.totalPrice.toFixed(2)}</p>
-            <p><strong>Discount:</strong> ${order.discount}%</p>
-            <p><strong>Discounted Total:</strong> Rs ${order.discountedTotal}</p>
+            <p><strong>Original Total:</strong> Rs ${order.originalTotal.toFixed(2)}</p>
+            <p><strong>Discount:</strong> ${order.discount}% (Rs ${order.discountAmount.toFixed(2)})</p>
+            <p><strong>Final Total:</strong> Rs ${order.discountedTotal.toFixed(2)}</p>
             <p><strong>Payments:</strong> ${paymentsList}</p>
+            <p><strong>Change Given:</strong> Rs ${order.change ? order.change.toFixed(2) : '0.00'}</p>
+            <p><strong>Completed By:</strong> ${order.completedBy || 'Staff'}</p>
             <details>
-                <summary>View Items</summary>
+                <summary>View Items (${Object.keys(order.order).length} items)</summary>
                 <table class="items-table">
                     <thead>
                         <tr>
                             <th>Item</th>
                             <th>Price</th>
                             <th>Qty</th>
-                            <th>Total</th>
+                            <th>Original</th>
+                            <th>Discounted</th>
+                            <th>Final</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1840,13 +2173,14 @@ function openVoidHistoryDialog() {
     if (voidHistory.length === 0) {
         output.innerHTML = '<p class="empty-history">No void history available</p>';
     } else {
-        output.innerHTML = voidHistory.map(entry => `
+        output.innerHTML = voidHistory.slice().reverse().map(entry => `
             <div class="void-entry">
                 <p><strong>${entry.date} ${entry.time}</strong></p>
-                <p>Item: ${entry.name}</p>
-                <p>Amount: Rs ${entry.amount.toFixed(2)}</p>
+                <p>Item: ${entry.name} x${entry.quantity}</p>
+                <p>Amount: Rs ${entry.totalAmount.toFixed(2)}</p>
                 <p>Table: ${entry.table}</p>
-                <p>Reason: ${entry.comment}</p>
+                <p>Reason: ${entry.reason}</p>
+                <p>Voided By: ${entry.voidedBy}</p>
                 <hr>
             </div>
         `).join('');
@@ -1956,7 +2290,6 @@ function toggleSidebar() {
 
 function showHomeContent() {
     toggleSidebar();
-    // Home is already visible, just close sidebar
 }
 
 function showMenuManagementContent() {
@@ -1993,7 +2326,6 @@ function changeTable() {
         return;
     }
     
-    // Transfer order
     tables[newTableName].order = { ...tables[selectedTable].order };
     tables[newTableName].totalPrice = tables[selectedTable].totalPrice;
     tables[newTableName].discountedTotal = tables[selectedTable].discountedTotal;
@@ -2003,7 +2335,6 @@ function changeTable() {
     tables[newTableName].time = tables[selectedTable].time || new Date().toLocaleTimeString();
     tables[newTableName].newItemsAdded = tables[selectedTable].newItemsAdded;
     
-    // Clear old table
     tables[selectedTable] = {
         order: {},
         totalPrice: 0,
@@ -2043,12 +2374,14 @@ function printReceipt() {
             <head>
                 <title>Receipt - ${restaurantName}</title>
                 <style>
-                    body { font-family: 'Courier New', monospace; margin: 20px; }
+                    body { font-family: 'Courier New', monospace; margin: 20px; font-size: 14px; }
                     .header { text-align: center; margin-bottom: 20px; }
                     .items { margin: 20px 0; }
                     .item { display: flex; justify-content: space-between; margin: 5px 0; }
                     .total { border-top: 2px dashed #000; padding-top: 10px; margin-top: 10px; }
                     .footer { text-align: center; margin-top: 30px; font-style: italic; }
+                    .discount-note { color: #666; font-size: 12px; }
+                    .thankyou { text-align: center; margin-top: 20px; font-size: 16px; color: #27ae60; }
                 </style>
             </head>
             <body>
@@ -2061,23 +2394,34 @@ function printReceipt() {
                 </div>
                 
                 <div class="items">
-                    ${Object.entries(table.order).map(([name, item]) => `
-                        <div class="item">
-                            <span>${name} x${item.quantity}</span>
-                            <span>Rs ${(item.price * item.quantity).toFixed(2)}</span>
-                        </div>
-                    `).join('')}
+                    ${Object.entries(table.order).map(([name, item]) => {
+                        const displayPrice = item.discountedPrice || item.price;
+                        const itemTotal = displayPrice * item.quantity;
+                        return `
+                            <div class="item">
+                                <span>${name} x${item.quantity}</span>
+                                <span>Rs ${itemTotal.toFixed(2)}</span>
+                            </div>
+                            ${item.comments ? `<div style="font-size: 12px; color: #666; margin-left: 20px;">Note: ${item.comments}</div>` : ''}
+                        `;
+                    }).join('')}
                 </div>
                 
                 <div class="total">
                     <div class="item"><strong>Subtotal:</strong> <span>Rs ${table.totalPrice.toFixed(2)}</span></div>
-                    <div class="item"><strong>Discount (${table.discount}%):</strong> <span>-Rs ${(table.totalPrice - table.discountedTotal).toFixed(2)}</span></div>
+                    ${table.discount > 0 ? `
+                        <div class="item"><strong>Discount (${table.discount}%):</strong> <span>-Rs ${(table.totalPrice - table.discountedTotal).toFixed(2)}</span></div>
+                    ` : ''}
                     <div class="item"><strong>Total:</strong> <span>Rs ${(table.discountedTotal || table.totalPrice).toFixed(2)}</span></div>
                 </div>
                 
+                <div class="thankyou">
+                    <p>🙏 Thank you! Please visit again! 🙏</p>
+                    <p>धन्यवाद! फेरि भेटौंला!</p>
+                </div>
+                
                 <div class="footer">
-                    <p>Thank you for dining with us!</p>
-                    <p>Please visit again</p>
+                    <p>Thank you for dining with us at Taboche!</p>
                 </div>
             </body>
         </html>
@@ -2141,7 +2485,6 @@ function handleSwipe(element, startX, endX) {
     
     if (Math.abs(diff) > swipeThreshold) {
         if (diff > 0) {
-            // Swipe left - show remove option
             const itemName = element.querySelector('.item-name').textContent.split(' ')[0];
             if (confirm(`Remove ${itemName} from order?`)) {
                 removeFromOrder(itemName);
@@ -2156,11 +2499,9 @@ function setupLongPressForQuantity() {
         
         btn.addEventListener('touchstart', (e) => {
             pressTimer = setTimeout(() => {
-                // Rapid increment/decrement
                 const action = btn.textContent === '+' ? 'increment' : 'decrement';
                 const itemName = btn.closest('.order-item').querySelector('.item-name').textContent;
                 
-                // Trigger multiple times
                 for (let i = 0; i < 5; i++) {
                     setTimeout(() => {
                         adjustQuantity(itemName, action === 'increment' ? 1 : -1);
@@ -2182,7 +2523,6 @@ function setupLongPressForQuantity() {
 function showMobileBottomSheet() {
     if (window.innerWidth > 768 || !currentUser.loggedIn) return;
     
-    // Remove existing bottom sheet if any
     const existingSheet = document.querySelector('.bottom-sheet');
     if (existingSheet) {
         existingSheet.remove();
@@ -2214,12 +2554,10 @@ function showMobileBottomSheet() {
     
     document.body.appendChild(bottomSheet);
     
-    // Show bottom sheet
     setTimeout(() => {
         bottomSheet.classList.add('active');
     }, 100);
     
-    // Hide on swipe down
     let touchStart = 0;
     bottomSheet.addEventListener('touchstart', (e) => {
         touchStart = e.touches[0].clientY;
@@ -2238,29 +2576,21 @@ function showMobileBottomSheet() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM loaded, initializing...");
     
-    // Initialize tables
     initializeTables();
-    
-    // Render categories (always visible but filtered by login)
     renderCategories();
-    
-    // Update date/time
     updateDateTime();
     setInterval(updateDateTime, 1000);
     
-    // Load removal history
     removalHistory = JSON.parse(localStorage.getItem('removalHistory')) || [];
+    voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || [];
     
-    // Initialize user interface based on login state
     updateUIBasedOnRole();
     
-    // If logged in, render tables and menu
     if (currentUser.loggedIn) {
         renderTables();
         renderMenu();
     }
     
-    // Add click outside to close modals
     window.onclick = function(event) {
         const modals = document.querySelectorAll('.modal, .dialog.visible');
         modals.forEach(modal => {
@@ -2274,7 +2604,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    // Handle fullscreen change
     document.addEventListener('fullscreenchange', () => {
         const btn = document.querySelector('.fullscreen-btn i');
         if (btn) {
@@ -2289,20 +2618,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Add mobile detection
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     if (isMobile) {
         document.body.classList.add('is-mobile');
         
-        // Add double-tap to zoom prevention
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) {
                 e.preventDefault();
             }
         }, { passive: false });
         
-        // Add viewport height fix for iOS
         const setVH = () => {
             const vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -2337,6 +2663,7 @@ window.completeOrder = completeOrder;
 window.showQRCodeDialog = showQRCodeDialog;
 window.closeQRCodeDialog = closeQRCodeDialog;
 window.voidSelectedItem = voidSelectedItem;
+window.voidItem = voidItem;
 window.openAddItemModal = openAddItemModal;
 window.closeAddItemModal = closeAddItemModal;
 window.selectItem = selectItem;
@@ -2373,3 +2700,5 @@ window.closeRemoveReasonDialog = closeRemoveReasonDialog;
 window.showRemovalHistory = showRemovalHistory;
 window.closeRemovalHistoryDialog = closeRemovalHistoryDialog;
 window.showMobileBottomSheet = showMobileBottomSheet;
+window.generateAndShowReport = generateAndShowReport;
+window.recalculateTableTotal = recalculateTableTotal;
