@@ -137,7 +137,6 @@ const menuItems = [
     { name: "Egg Fried Rice", price: 280, category: "Fast Food", image: "egg_fried_rice.jpg", hasImage: true },
     { name: "Fries", price: 350, category: "Fast Food", image: "fries.jpg", hasImage: true },
     { name: "Spicy Wings", price: 480, category: "Fast Food", image: "spicy_wings.jpg", hasImage: true },
-    { name: "Veg Burger", price: 280, category: "Fast Food", image: "burger_veg.jpg", hasImage: true },
     { name: "Veg Chilly", price: 280, category: "Fast Food", image: "veg_chilly.jpg", hasImage: true },
     { name: "Veg Fried Rice", price: 200, category: "Fast Food", image: "veg_fried_rice.jpg", hasImage: true },
     { name: "Veg Jhol Momo", price: 220, category: "Fast Food", image: "veg_jhol_momo.jpg", hasImage: true },
