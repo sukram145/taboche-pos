@@ -118,7 +118,7 @@ const menuItems = [
     { name: "Toast", price: 100, category: "Breakfast", image: "toast.jpg", hasImage: true },
     { name: "Veg Burger", price: 280, category: "Breakfast", image: "veg_burger.jpg", hasImage: true },
     { name: "Veg Sandwich", price: 300, category: "Breakfast", image: "veg_sandwich.jpg", hasImage: true },
-    
+    { name: "Buff Burger", price: 350, category: "Breakfast", image: "buff_burger.jpg", hasImage: true },
     // Fast Food Items
     { name: "Chips Chilly", price: 360, category: "Fast Food", image: "chips_chilly.jpg", hasImage: true },
     { name: "Chi Sausage", price: 300, category: "Fast Food", image: "chi_sausage.jpg", hasImage: true },
@@ -128,7 +128,6 @@ const menuItems = [
     { name: "Buff Jhol Momo", price: 250, category: "Fast Food", image: "buff_jhol_momo.jpg", hasImage: true },
     { name: "Buff Momo", price: 200, category: "Fast Food", image: "buff_momo.jpg", hasImage: true },
     { name: "Buff Wraps", price: 280, category: "Fast Food", image: "wraps_buff.jpg", hasImage: true },
-    { name: "Chicken Burger", price: 370, category: "Fast Food", image: "burger_chicken.jpg", hasImage: true },
     { name: "Chicken Chilly Momo", price: 300, category: "Fast Food", image: "chicken_chilly_momo.jpg", hasImage: true },
     { name: "Chicken Fried Rice", price: 340, category: "Fast Food", image: "chicken_fried_rice.jpg", hasImage: true },
     { name: "Chicken Jhol Momo", price: 250, category: "Fast Food", image: "chicken_jhol_momo.jpg", hasImage: true },
