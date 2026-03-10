@@ -76,19 +76,23 @@ const permissions = {
 
 // ===== MENU ITEMS DATABASE =====
 const menuItems = [
-    // Retail Items
-    { name: "Butterfly Pea Packet", price: 350, category: "Retail", image: "butterfly_pea PKT.jpg", hasImage: true },
-    { name: "Calming Tea Packet", price: 400, category: "Retail", image: "calming_teaPKT.jpg", hasImage: true },
-    { name: "Chamomile Packet", price: 350, category: "Retail", image: "chamomilePKT.jpg", hasImage: true },
-    { name: "Coffee Bag Packet", price: 1350, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
-    { name: "Herbal Tea Packet", price: 300, category: "Retail", image: "herbal_teaPKT.jpg", hasImage: true },
-    { name: "Hibiscus Packet", price: 450, category: "Retail", image: "hibiscusPKT.jpg", hasImage: true },
-    { name: "Lavender Packet", price: 300, category: "Retail", image: "lavenderPKT.jpg", hasImage: true },
-    { name: "Peppermint Packet", price: 300, category: "Retail", image: "peppermintPKT.jpg", hasImage: true },
-    { name: "Strainer 1", price: 250, category: "Retail", image: "strainer1.jpg", hasImage: true },
-    { name: "Strainer 2", price: 300, category: "Retail", image: "strainer2.jpg", hasImage: true },
-    { name: "Strainer 3", price: 450, category: "Retail", image: "strainer3.jpg", hasImage: true },
-
+// Retail Items
+{ name: "Butterfly Pea Packet", price: 350, category: "Retail", image: "butterfly_peaPKT.jpg", hasImage: true },
+{ name: "Calming Tea Packet", price: 400, category: "Retail", image: "calming_teaPKT.jpg", hasImage: true },
+{ name: "Chamomile Packet", price: 350, category: "Retail", image: "chamomilePKT.jpg", hasImage: true },
+{ name: "Coffee Packet (500gm)", price: 1350, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
+{ name: "Coffee Packet (250gm)", price: 950, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
+{ name: "Coffee Packet (100gm)", price: 500, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
+{ name: "Herbal Tea Packet", price: 300, category: "Retail", image: "herbal_teaPKT.jpg", hasImage: true },
+{ name: "Hibiscus Packet", price: 450, category: "Retail", image: "hibiscusPKT.jpg", hasImage: true },
+{ name: "Lavender Packet", price: 300, category: "Retail", image: "lavenderPKT.jpg", hasImage: true },
+{ name: "Peppermint Packet", price: 300, category: "Retail", image: "peppermintPKT.jpg", hasImage: true },
+{ name: "Spearmint Packet", price: 300, category: "Retail", image: "spearmintPKT.jpg", hasImage: true },
+{ name: "Floral Delight Packet", price: 450, category: "Retail", image: "floral_delightPKT.jpg", hasImage: true },
+{ name: "Himalayan Tea Packet", price: 300, category: "Retail", image: "himalayan_teaPKT.jpg", hasImage: true },
+{ name: "Strainer 1", price: 250, category: "Retail", image: "strainer1.jpg", hasImage: true },
+{ name: "Strainer 2", price: 300, category: "Retail", image: "strainer2.jpg", hasImage: true },
+{ name: "Strainer 3", price: 450, category: "Retail", image: "strainer3.jpg", hasImage: true },
     // Bakery Items
     { name: "Chocolate Muffin", price: 150, category: "Bakery", image: "chocolate_muffin.jpg", hasImage: true },
     { name: "Banana Muffin", price: 150, category: "Bakery", image: "banana_muffin.jpg", hasImage: true },
