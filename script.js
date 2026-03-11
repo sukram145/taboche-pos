@@ -74,6 +74,166 @@ const permissions = {
     }
 };
 
+// ===== MULTI-WINDOW SYNCHRONIZATION SYSTEM =====
+// BroadcastChannel for real-time communication between windows
+let syncChannel = null;
+let lastSyncTime = Date.now();
+const SYNC_DEBOUNCE = 100; // Prevent rapid updates
+
+// Initialize BroadcastChannel if supported
+function initializeSyncChannel() {
+    if (typeof BroadcastChannel !== 'undefined') {
+        try {
+            syncChannel = new BroadcastChannel('taboche_pos_sync');
+            syncChannel.onmessage = (event) => {
+                handleSyncFromOtherWindow(event.data);
+            };
+            console.log('✓ Multi-window sync enabled via BroadcastChannel');
+        } catch (e) {
+            console.log('BroadcastChannel not available, using storage events');
+        }
+    }
+}
+
+// Send sync message to other windows
+function broadcastSync(type, data) {
+    if (syncChannel) {
+        syncChannel.postMessage({
+            type: type,
+            data: data,
+            timestamp: Date.now(),
+            windowId: window.name || 'main'
+        });
+    }
+}
+
+// Handle sync messages from other windows
+function handleSyncFromOtherWindow(message) {
+    const now = Date.now();
+    
+    // Debounce: ignore if update received too soon
+    if (now - lastSyncTime < SYNC_DEBOUNCE) {
+        return;
+    }
+    
+    lastSyncTime = now;
+    
+    switch(message.type) {
+        case 'table_updated':
+            syncTableData();
+            break;
+        case 'order_added':
+            syncOrderData();
+            break;
+        case 'checkout_completed':
+            syncAllData();
+            break;
+        case 'user_logged_in':
+            syncUserData();
+            break;
+        case 'full_sync':
+            syncAllData();
+            break;
+    }
+}
+
+// Sync table data from localStorage
+function syncTableData() {
+    const newTables = JSON.parse(localStorage.getItem('tables')) || {};
+    tables = newTables;
+    if (selectedTable && tables[selectedTable]) {
+        renderTables();
+        updateTableDisplay();
+    }
+}
+
+// Sync order and sales data from localStorage
+function syncOrderData() {
+    const newSalesData = JSON.parse(localStorage.getItem('salesData')) || salesData;
+    const newOrderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    salesData = newSalesData;
+    orderHistory = newOrderHistory;
+    renderTables();
+}
+
+// Sync user data from localStorage
+function syncUserData() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateUIBasedOnRole();
+    }
+}
+
+// Full sync of all data from localStorage
+function syncAllData() {
+    tables = JSON.parse(localStorage.getItem('tables')) || tables;
+    salesData = JSON.parse(localStorage.getItem('salesData')) || salesData;
+    orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || orderHistory;
+    voidHistory = JSON.parse(localStorage.getItem('voidHistory')) || voidHistory;
+    removalHistory = JSON.parse(localStorage.getItem('removalHistory')) || removalHistory;
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+    }
+    renderTables();
+    renderMenu();
+    updateUIBasedOnRole();
+}
+
+// Fallback: Listen for storage changes from other tabs/windows
+window.addEventListener('storage', (e) => {
+    const now = Date.now();
+    if (now - lastSyncTime < SYNC_DEBOUNCE) return;
+    
+    lastSyncTime = now;
+    
+    // Handle specific data updates
+    if (e.key === 'tables') {
+        tables = JSON.parse(e.newValue || '{}');
+        renderTables();
+        showSyncNotification('Tables updated from another window');
+    } else if (e.key === 'salesData') {
+        salesData = JSON.parse(e.newValue || '{}');
+        showSyncNotification('Sales data updated from another window');
+    } else if (e.key === 'orderHistory') {
+        orderHistory = JSON.parse(e.newValue || '[]');
+        renderTables();
+    } else if (e.key === 'currentUser') {
+        currentUser = JSON.parse(e.newValue || '{}');
+        updateUIBasedOnRole();
+        showSyncNotification(`User switched: ${currentUser.name}`);
+    }
+    
+    console.log(`[SYNC] Updated from other window: ${e.key}`);
+});
+
+// Show sync notification
+function showSyncNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'sync-notification';
+    notification.innerHTML = `<i class="fas fa-sync-alt"></i> ${message}`;
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #17a2b8;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 6px;
+        z-index: 10000;
+        font-size: 12px;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 2500);
+}
+
 // ===== MENU ITEMS DATABASE =====
 const menuItems = [
 // Retail Items
@@ -355,6 +515,28 @@ function saveData() {
     localStorage.setItem('voidHistory', JSON.stringify(voidHistory));
     localStorage.setItem('removalHistory', JSON.stringify(removalHistory));
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    // Broadcast to other windows
+    lastSyncTime = Date.now();
+    broadcastSync('table_updated', {
+        tablesCount: Object.keys(tables).length,
+        timestamp: lastSyncTime
+    });
+}
+
+// For critical operations, broadcast immediately
+function broadcastCheckoutComplete() {
+    broadcastSync('checkout_completed', {
+        timestamp: Date.now(),
+        totalOrders: salesData.totalOrders
+    });
+}
+
+function broadcastOrderAdded() {
+    broadcastSync('order_added', {
+        timestamp: Date.now(),
+        ordersCount: Object.keys(tables).length
+    });
 }
 
 function updateDateTime() {
@@ -426,6 +608,12 @@ function logout() {
     selectedTable = null;
     
     saveData();
+    
+    // Broadcast user logout to other windows
+    broadcastSync('user_logged_in', {
+        user: currentUser,
+        timestamp: Date.now()
+    });
     updateUIBasedOnRole();
     updateOrderSummary();
     
@@ -1459,6 +1647,9 @@ function completeOrder() {
     renderTables();
     updateOrderSummary();
     saveData();
+    
+    // Broadcast checkout completion to other windows
+    broadcastCheckoutComplete();
 }
 
 // ===== QR CODE DIALOG =====
@@ -2577,6 +2768,9 @@ function showMobileBottomSheet() {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM loaded, initializing...");
+    
+    // Initialize multi-window sync
+    initializeSyncChannel();
     
     initializeTables();
     renderCategories();

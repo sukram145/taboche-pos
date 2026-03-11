@@ -601,12 +601,14 @@
                 updateUIBasedOnRole();
             }
             
-            // Add service worker unregister to prevent caching
-            if ('serviceWorker' in navigator) {
+            // Add service worker unregister to prevent caching (only for http/https)
+            if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for(let registration of registrations) {
                         registration.unregister();
                     }
+                }).catch(function(error) {
+                    console.log('ServiceWorker cleanup not available:', error);
                 });
             }
         });

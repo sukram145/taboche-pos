@@ -2267,3 +2267,67 @@ header {
         font-size: 0.85rem;
     }
 }
+
+/* ===== MULTI-WINDOW SYNC NOTIFICATIONS ===== */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+.sync-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    z-index: 10000;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sync-notification i {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .sync-notification {
+        bottom: 10px;
+        right: 10px;
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+}
