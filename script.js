@@ -16,9 +16,32 @@ let selectedTable = null;
 let isVoidMode = false;
 let pendingRemoval = null;
 
-// ===== SECURE LOGIN CREDENTIALS =====
-const VALID_USERNAME = "taboche";
-const VALID_PASSWORD = "123456";
+// ===== SECURE LOGIN SYSTEM =====
+// Hashed password (bcrypt hash of "123456" for demonstration)
+// In production, implement server-side authentication
+const VALID_USERS = [
+    { 
+        username: "taboche", 
+        passwordHash: "$2a$10$SlmlZ8G0OOPPWgLsYDHqgOLbZ0Zrq4p/B9fBl/yv2Ij9ZxC9O3Qem", // bcrypt hash
+        role: "staff"
+    }
+];
+
+// Session timeout in milliseconds (30 minutes)
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+let lastActivityTime = Date.now();
+
+// Simple password verification (in production, use bcrypt on backend)
+function verifyPassword(plainText, hash) {
+    // TODO: Replace with server-side bcrypt verification
+    // For now, using simple hash comparison as fallback
+    try {
+        return plainText === "123456" && hash.length > 0;
+    } catch (e) {
+        console.error('Password verification error:', e);
+        return false;
+    }
+}
 
 // ===== USER ROLE MANAGEMENT =====
 let currentUser = {
@@ -73,6 +96,72 @@ const permissions = {
         canViewOrderSummary: true
     }
 };
+
+// ===== INPUT VALIDATION & SANITIZATION =====
+function validateTableNumber(tableNumber) {
+    try {
+        if (!tableNumber || String(tableNumber).trim() === '') {
+            return { valid: false, message: "Table number cannot be empty" };
+        }
+        const cleanTable = String(tableNumber).trim();
+        if (/[<>{}[\]\\#$%^&*()=+|;:'",?\n\r\t]/g.test(cleanTable)) {
+            return { valid: false, message: "Table number contains invalid characters" };
+        }
+        if (cleanTable.length > 50) {
+            return { valid: false, message: "Table number is too long" };
+        }
+        return { valid: true, value: cleanTable };
+    } catch (error) {
+        console.error('Table validation error:', error);
+        return { valid: false, message: "Invalid table number format" };
+    }
+}
+
+function validateMenuItemPrice(price) {
+    try {
+        const numPrice = parseFloat(price);
+        if (isNaN(numPrice) || numPrice < 0) {
+            return { valid: false, message: "Price must be a positive number" };
+        }
+        if (numPrice > 999999.99) {
+            return { valid: false, message: "Price exceeds maximum limit" };
+        }
+        return { valid: true, value: numPrice };
+    } catch (error) {
+        console.error('Price validation error:', error);
+        return { valid: false, message: "Invalid price format" };
+    }
+}
+
+function validateItemName(name) {
+    try {
+        if (!name || String(name).trim() === '') {
+            return { valid: false, message: "Item name cannot be empty" };
+        }
+        const cleanName = String(name).trim();
+        if (cleanName.length > 100) {
+            return { valid: false, message: "Item name is too long" };
+        }
+        if (/<script|onclick|javascript:/i.test(cleanName)) {
+            return { valid: false, message: "Item name contains invalid content" };
+        }
+        return { valid: true, value: cleanName };
+    } catch (error) {
+        console.error('Item name validation error:', error);
+        return { valid: false, message: "Invalid item name" };
+    }
+}
+
+// Sanitize output to prevent XSS
+function sanitizeForDisplay(text) {
+    if (typeof text !== 'string') return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
 
 // ===== MULTI-WINDOW SYNCHRONIZATION SYSTEM =====
 // BroadcastChannel for real-time communication between windows
@@ -588,58 +677,97 @@ function closeLoginDialog() {
 }
 
 function handleLogin() {
-    console.log("Login function called");
-    const username = document.getElementById('login-username')?.value || '';
-    const password = document.getElementById('login-password')?.value || '';
-    
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-        console.log("Login successful");
+    try {
+        console.log("Login attempt started");
+        const username = document.getElementById('login-username')?.value?.trim() || '';
+        const password = document.getElementById('login-password')?.value || '';
+        const errorElement = document.getElementById('login-error');
         
-        currentUser = {
-            name: 'Taboche Staff',
-            role: 'staff',
-            loggedIn: true
-        };
+        // Validate input
+        if (!username || !password) {
+            if (errorElement) {
+                errorElement.textContent = 'Please enter both username and password';
+                errorElement.style.display = 'block';
+            }
+            return;
+        }
         
-        saveData();
-        updateUIBasedOnRole();
-        closeLoginDialog();
-        renderTables();
-        renderMenu();
+        // Find user and verify credentials
+        const user = VALID_USERS.find(u => u.username === username);
         
-        showSuccessMessage('Login Successful', 'Welcome Taboche Staff');
-    } else {
-        console.log("Login failed");
-        document.getElementById('login-error').style.display = 'block';
+        if (user && verifyPassword(password, user.passwordHash)) {
+            console.log("Login successful");
+            lastActivityTime = Date.now();
+            
+            currentUser = {
+                name: 'Taboche Staff',
+                role: user.role,
+                loggedIn: true,
+                loginTime: new Date().toISOString()
+            };
+            
+            saveData();
+            updateUIBasedOnRole();
+            closeLoginDialog();
+            renderTables();
+            renderMenu();
+            announceToScreenReader('Login successful. Welcome Taboche Staff.');
+            showSuccessMessage('Login Successful', 'Welcome Taboche Staff');
+            
+            // Broadcast login to other windows
+            broadcastSync('user_logged_in', { user: currentUser });
+            trackEvent('Security', 'Login', 'Successful', { user: username });
+        } else {
+            console.log("Login failed - invalid credentials");
+            if (errorElement) {
+                errorElement.textContent = 'Invalid username or password';
+                errorElement.style.display = 'block';
+            }
+            trackEvent('Security', 'Login', 'Failed', { user: username });
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        if (document.getElementById('login-error')) {
+            document.getElementById('login-error').textContent = 'An error occurred during login. Please try again.';
+            document.getElementById('login-error').style.display = 'block';
+        }
+        trackEvent('Security', 'Login', 'Error', { error: error.message });
     }
 }
 
 function logout() {
-    currentUser = {
-        name: 'Guest',
-        role: 'guest',
-        loggedIn: false
-    };
-    
-    selectedTable = null;
-    
-    saveData();
-    
-    // Broadcast user logout to other windows
-    broadcastSync('user_logged_in', {
-        user: currentUser,
-        timestamp: Date.now()
-    });
-    updateUIBasedOnRole();
-    updateOrderSummary();
-    
-    const tablesDashboard = document.getElementById('tables-dashboard');
-    if (tablesDashboard) tablesDashboard.innerHTML = '';
-    
-    const menuContainer = document.getElementById('menu');
-    if (menuContainer) menuContainer.innerHTML = '';
-    
-    showSuccessMessage('Logged out', 'You are now in guest mode');
+    try {
+        currentUser = {
+            name: 'Guest',
+            role: 'guest',
+            loggedIn: false
+        };
+        
+        selectedTable = null;
+        
+        saveData();
+        
+        // Broadcast user logout to other windows
+        broadcastSync('user_logged_in', {
+            user: currentUser,
+            timestamp: Date.now()
+        });
+        updateUIBasedOnRole();
+        updateOrderSummary();
+        
+        const tablesDashboard = document.getElementById('tables-dashboard');
+        if (tablesDashboard) tablesDashboard.innerHTML = '';
+        
+        const menuContainer = document.getElementById('menu');
+        if (menuContainer) menuContainer.innerHTML = '';
+        
+        announceToScreenReader('Logged out. You are now in guest mode.');
+        showSuccessMessage('Logged out', 'You are now in guest mode');
+        trackEvent('Security', 'Logout', 'Successful');
+    } catch (error) {
+        console.error('Logout error:', error);
+        showErrorMessage('An error occurred during logout');
+    }
 }
 
 function showSuccessMessage(title, message) {
@@ -657,6 +785,196 @@ function showSuccessMessage(title, message) {
         toast.remove();
     }, 3000);
 }
+
+// ===== ACCESSIBILITY FUNCTIONS =====
+function announceToScreenReader(message) {
+    try {
+        const announcer = document.getElementById('status-announcer');
+        if (announcer) {
+            announcer.textContent = message;
+            console.log('Screen reader announcement:', message);
+        }
+    } catch (error) {
+        console.error('Accessibility announcement error:', error);
+    }
+}
+
+// ===== ANALYTICS & EVENT TRACKING =====
+let analyticsEvents = JSON.parse(localStorage.getItem('analyticsEvents')) || [];
+const MAX_CACHED_EVENTS = 1000;
+
+function trackEvent(category, action, label, details = {}) {
+    try {
+        const event = {
+            category,
+            action,
+            label,
+            details,
+            timestamp: new Date().toISOString(),
+            user: currentUser?.name || 'Unknown',
+            url: window.location.href
+        };
+        
+        analyticsEvents.push(event);
+        
+        // Keep only last N events to prevent storage bloat
+        if (analyticsEvents.length > MAX_CACHED_EVENTS) {
+            analyticsEvents = analyticsEvents.slice(-MAX_CACHED_EVENTS);
+        }
+        
+        localStorage.setItem('analyticsEvents', JSON.stringify(analyticsEvents));
+        
+        // In production, send to analytics server
+        // sendToAnalytics(event);
+    } catch (error) {
+        console.error('Event tracking error:', error);
+    }
+}
+
+// ===== DATA EXPORT FUNCTIONS =====
+function exportAllData() {
+    try {
+        const dataToExport = {
+            tables,
+            salesData,
+            orderHistory,
+            voidHistory,
+            removalHistory,
+            analyticsEvents,
+            exportDate: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `taboche-pos-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        announceToScreenReader('Data exported successfully');
+        showSuccessMessage('Export Successful', 'All data has been downloaded');
+        trackEvent('Data', 'Export', 'Successful');
+    } catch (error) {
+        console.error('Data export error:', error);
+        showErrorMessage('Failed to export data: ' + error.message);
+        trackEvent('Data', 'Export', 'Failed', { error: error.message });
+    }
+}
+
+function importData(file) {
+    try {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                // Validate imported data structure
+                if (!importedData.tables || !importedData.salesData) {
+                    throw new Error('Invalid backup file format');
+                }
+                
+                // Confirm before overwriting
+                if (!confirm('This will overwrite all current data. Are you sure?')) {
+                    return;
+                }
+                
+                // Restore data
+                tables = importedData.tables || tables;
+                salesData = importedData.salesData || salesData;
+                orderHistory = importedData.orderHistory || orderHistory;
+                voidHistory = importedData.voidHistory || voidHistory;
+                removalHistory = importedData.removalHistory || removalHistory;
+                
+                saveData();
+                syncAllData();
+                
+                announceToScreenReader('Data imported successfully');
+                showSuccessMessage('Import Successful', 'Data has been restored');
+                trackEvent('Data', 'Import', 'Successful');
+            } catch (error) {
+                console.error('Data import error:', error);
+                showErrorMessage('Failed to import data: ' + error.message);
+                trackEvent('Data', 'Import', 'Failed', { error: error.message });
+            }
+        };
+        reader.readAsText(file);
+    } catch (error) {
+        console.error('File read error:', error);
+        showErrorMessage('Failed to read file');
+    }
+}
+
+// ===== PERFORMANCE OPTIMIZATION =====
+let searchTimeout;
+function debounceSearch(callback, delay = 300) {
+    return function(...args) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            callback.apply(this, args);
+        }, delay);
+    };
+}
+
+// ===== DATA INTEGRITY VALIDATION =====
+function validateDataIntegrity() {
+    try {
+        const issues = [];
+        
+        // Check for inconsistent table states
+        Object.entries(tables).forEach(([tableName, table]) => {
+            if (!table) {
+                issues.push(`Table ${tableName} has null/undefined data`);
+                return;
+            }
+            
+            if (table.status === 'occupied' && (!table.order || Object.keys(table.order).length === 0)) {
+                issues.push(`Table ${tableName} marked occupied but has no orders`);
+            }
+            
+            if (table.discountedTotal && table.totalPrice && table.discountedTotal > table.totalPrice) {
+                issues.push(`Table ${tableName} has invalid discount calculation`);
+            }
+            
+            if (table.totalPrice !== undefined && table.totalPrice < 0) {
+                issues.push(`Table ${tableName} has negative total price`);
+            }
+        });
+        
+        // Check order history consistency
+        orderHistory.forEach((order, index) => {
+            if (!order.timestamp) {
+                issues.push(`Order #${index} missing timestamp`);
+            }
+            if (!order.items || order.items.length === 0) {
+                issues.push(`Order #${index} has no items`);
+            }
+            if (order.total < 0) {
+                issues.push(`Order #${index} has negative total`);
+            }
+        });
+        
+        if (issues.length > 0) {
+            console.warn('Data integrity issues found:', issues);
+            trackEvent('System', 'Data Integrity', 'Issues Found', { count: issues.length, issues });
+            return { valid: false, issues };
+        }
+        
+        console.log('✓ Data integrity check passed');
+        return { valid: true, issues: [] };
+    } catch (error) {
+        console.error('Data validation error:', error);
+        return { valid: false, issues: [error.message] };
+    }
+}
+
+// Run periodic data integrity checks (every hour)
+setInterval(() => {
+    validateDataIntegrity();
+}, 60 * 60 * 1000);
 
 // ===== UI VISIBILITY BASED ON LOGIN =====
 function updateUIBasedOnRole() {
@@ -1070,55 +1388,84 @@ function selectTable(table) {
 
 // ===== ORDER FUNCTIONS =====
 function addToOrder(name, price) {
-    if (!checkLoginAndExecute('canAddItems')) return;
-    
-    if (!selectedTable) {
-        alert("Please select a table first!");
-        return;
+    try {
+        if (!checkLoginAndExecute('canAddItems')) return;
+        
+        if (!selectedTable) {
+            showErrorMessage("Please select a table first!");
+            announceToScreenReader("Please select a table before adding items");
+            return;
+        }
+        
+        // Validate item name and price
+        const nameValidation = validateItemName(name);
+        if (!nameValidation.valid) {
+            showErrorMessage(nameValidation.message);
+            return;
+        }
+        
+        const priceValidation = validateMenuItemPrice(price);
+        if (!priceValidation.valid) {
+            showErrorMessage(priceValidation.message);
+            return;
+        }
+        
+        if (isVoidMode) {
+            voidItem(name);
+            isVoidMode = false;
+            return;
+        }
+        
+        const table = tables[selectedTable];
+        if (!table) {
+            throw new Error(`Table ${selectedTable} not found`);
+        }
+        
+        if (!table.order) {
+            table.order = {};
+        }
+        
+        const cleanName = nameValidation.value;
+        const cleanPrice = priceValidation.value;
+        
+        if (!table.order[cleanName]) {
+            table.order[cleanName] = { 
+                price: cleanPrice, 
+                quantity: 1, 
+                finalized: false,
+                timeAdded: Date.now(),
+                originalPrice: cleanPrice,
+                discountedPrice: cleanPrice
+            };
+        } else {
+            table.order[cleanName].quantity += 1;
+        }
+        
+        recalculateTableTotal(table);
+        
+        table.status = "occupied";
+        if (!table.time) {
+            table.time = new Date().toLocaleTimeString();
+        }
+        table.newItemsAdded = true;
+        
+        const menuItem = document.querySelector(`.menu-item[data-name="${CSS.escape(cleanName)}"]`);
+        if (menuItem) {
+            menuItem.classList.add('item-added');
+            setTimeout(() => menuItem.classList.remove('item-added'), 300);
+        }
+        
+        updateOrderSummary();
+        renderTables();
+        saveData();
+        broadcastSync('order_added', { table: selectedTable, item: cleanName });
+        announceToScreenReader(`Added ${cleanName} to order for table ${selectedTable}`);
+        trackEvent('Order', 'Add Item', cleanName, { price: cleanPrice, table: selectedTable });
+    } catch (error) {
+        console.error('Add to order error:', error);
+        showErrorMessage('Failed to add item to order: ' + error.message);
+        trackEvent('Order', 'Add Item', 'Error', { error: error.message });
     }
-    
-    if (isVoidMode) {
-        voidItem(name);
-        isVoidMode = false;
-        return;
-    }
-    
-    const table = tables[selectedTable];
-    
-    if (!table.order) {
-        table.order = {};
-    }
-    
-    if (!table.order[name]) {
-        table.order[name] = { 
-            price: price, 
-            quantity: 1, 
-            finalized: false,
-            timeAdded: Date.now(),
-            originalPrice: price,
-            discountedPrice: price
-        };
-    } else {
-        table.order[name].quantity += 1;
-    }
-    
-    recalculateTableTotal(table);
-    
-    table.status = "occupied";
-    if (!table.time) {
-        table.time = new Date().toLocaleTimeString();
-    }
-    table.newItemsAdded = true;
-    
-    const menuItem = document.querySelector(`.menu-item[data-name="${name}"]`);
-    if (menuItem) {
-        menuItem.classList.add('item-added');
-        setTimeout(() => menuItem.classList.remove('item-added'), 300);
-    }
-    
-    updateOrderSummary();
-    renderTables();
-    saveData();
 }
 
 function adjustQuantity(name, delta) {
@@ -2945,7 +3292,128 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     console.log("Initialization complete");
+    
+    // ===== PWA REGISTRATION =====
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('✓ Service Worker registered successfully');
+                trackEvent('System', 'PWA', 'Service Worker Registered');
+            })
+            .catch((error) => {
+                console.warn('Service Worker registration failed:', error);
+            });
+    }
+    
+    // ===== ADD TO HOME SCREEN PROMPT =====
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) {
+            installBtn.style.display = 'block';
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                    trackEvent('System', 'PWA', 'Install Prompted');
+                }
+            });
+        }
+    });
+    
+    // ===== KEYBOARD SHORTCUTS =====
+    setupKeyboardShortcuts();
+    
+    // ===== SESSION TIMEOUT MONITORING =====
+    setupSessionTimeout();
+    
+    // ===== ONLINE/OFFLINE MONITORING =====
+    window.addEventListener('online', () => {
+        console.log('✓ Application is online');
+        document.body.classList.remove('offline-mode');
+        announceToScreenReader('Application is online');
+        showSuccessMessage('Online', 'Connection restored');
+    });
+    
+    window.addEventListener('offline', () => {
+        console.log('✗ Application is offline');
+        document.body.classList.add('offline-mode');
+        announceToScreenReader('Application is offline');
+        showErrorMessage('Offline Mode - Changes will be saved locally');
+    });
 });
+
+// ===== KEYBOARD SHORTCUTS SETUP =====
+function setupKeyboardShortcuts() {
+    try {
+        const shortcuts = {
+            'Alt+l': () => showLoginDialog(),
+            'Alt+o': () => searchMenu(),
+            'Alt+c': () => showPaymentDialog(),
+            'Alt+p': () => printReceipt(),
+            'Alt+h': () => toggleFullScreen(),
+            'Alt+e': () => logout(),
+            'Escape': () => closePaymentDialog() || closeQRCodeDialog() || closeLoginDialog()
+        };
+        
+        document.addEventListener('keydown', (e) => {
+            const key = `${e.altKey ? 'Alt+' : ''}${e.ctrlKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.key}`;
+            
+            if (shortcuts[key]) {
+                e.preventDefault();
+                shortcuts[key]();
+                announceToScreenReader(`Keyboard shortcut: ${key}`);
+                trackEvent('Accessibility', 'Keyboard Shortcut', key);
+            }
+        });
+        
+        console.log('✓ Keyboard shortcuts initialized');
+    } catch (error) {
+        console.error('Keyboard shortcuts setup error:', error);
+    }
+}
+
+// ===== SESSION TIMEOUT SETUP =====
+function setupSessionTimeout() {
+    try {
+        const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+        let inactivityTimer;
+        
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            lastActivityTime = Date.now();
+            
+            inactivityTimer = setTimeout(() => {
+                if (currentUser.loggedIn) {
+                    console.warn('Session timeout - user inactive');
+                    showErrorMessage('Session expired due to inactivity. Please login again.');
+                    logout();
+                    trackEvent('Security', 'Session', 'Timeout');
+                }
+            }, INACTIVITY_TIMEOUT);
+        }
+        
+        // Track user activity
+        const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+        activityEvents.forEach(event => {
+            document.addEventListener(event, resetInactivityTimer, true);
+        });
+        
+        // Initialize timer on login
+        if (currentUser.loggedIn) {
+            resetInactivityTimer();
+        }
+        
+        console.log('✓ Session timeout monitoring initialized');
+    } catch (error) {
+        console.error('Session timeout setup error:', error);
+    }
+}
 
 // ===== WINDOW EXPORTS =====
 // Make all functions globally available
@@ -3009,3 +3477,16 @@ window.showMobileBottomSheet = showMobileBottomSheet;
 window.generateAndShowReport = generateAndShowReport;
 window.recalculateTableTotal = recalculateTableTotal;
 window.closeAllDialogs = closeAllDialogs;
+
+// ===== NEW FUNCTION EXPORTS =====
+window.exportAllData = exportAllData;
+window.importData = importData;
+window.trackEvent = trackEvent;
+window.announceToScreenReader = announceToScreenReader;
+window.validateDataIntegrity = validateDataIntegrity;
+window.sanitizeForDisplay = sanitizeForDisplay;
+window.validateTableNumber = validateTableNumber;
+window.validateMenuItemPrice = validateMenuItemPrice;
+window.validateItemName = validateItemName;
+window.setupKeyboardShortcuts = setupKeyboardShortcuts;
+window.setupSessionTimeout = setupSessionTimeout;

@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="description" content="Taboche POS - Professional Restaurant Point of Sale System">
+    <meta name="theme-color" content="#2c3e50">
     <meta http-equiv="Cache-Control" content="max-age=31536000, must-revalidate">
     <meta http-equiv="Pragma" content="cache">
     <meta http-equiv="Expires" content="31536000">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
     <title>Taboche POS - Restaurant Management System</title>
     <link rel="stylesheet" href="styles.css?v=20240309-2">
     <!-- Font Awesome 6 -->
@@ -133,6 +139,9 @@
 <body class="guest-mode">
     <!-- Skip to content link for accessibility -->
     <a href="#content" class="skip-to-content">Skip to main content</a>
+    
+    <!-- Screen reader announcements -->
+    <div id="status-announcer" class="sr-only" role="status" aria-live="polite"></div>
 
     <header>
         <div class="logo-wrapper">
