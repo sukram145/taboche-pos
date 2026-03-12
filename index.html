@@ -318,13 +318,11 @@
 
     <!-- QR Code Dialog -->
     <div id="qr-code-dialog" class="dialog" role="dialog" aria-label="QR code payment dialog">
-        <div class="dialog-content">
+        <div class="dialog-content qr-dialog-content">
             <span class="close" onclick="closeQRCodeDialog()" aria-label="Close QR dialog">&times;</span>
-            <h3>Scan to Pay with Mobile Payment</h3>
             <div class="qr-container">
-                <img id="qr-code-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Taboche%20Restaurant" alt="QR Code for mobile payment">
+                <img id="qr-code-image" src="images/qr.jpg" alt="QR Code for mobile payment">
             </div>
-            <p class="qr-instruction">Scan this QR code with your mobile payment app</p>
             <button class="done-btn" onclick="closeQRCodeDialog()" aria-label="Done">
                 <i class="fas fa-check" aria-hidden="true"></i> Done
             </button>
