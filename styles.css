@@ -94,7 +94,23 @@ header {
     gap: 1rem;
 }
 
-.login-btn, .fullscreen-btn {
+#role-badge {
+    background: var(--secondary);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+#role-badge i {
+    font-size: 0.7rem;
+}
+
+.login-btn, .logout-btn, .fullscreen-btn {
     padding: 0.6rem 1.2rem;
     border: none;
     border-radius: 20px;
@@ -116,6 +132,16 @@ header {
     transform: translateY(-2px);
 }
 
+.logout-btn {
+    background: var(--danger);
+    color: white;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
 .fullscreen-btn {
     background: var(--success);
     color: white;
@@ -126,7 +152,6 @@ header {
     transform: translateY(-2px);
 }
 
-/* Remove the display: none and media query hiding logic */
 .hamburger-menu {
     display: flex;
     font-size: 2rem;
@@ -138,23 +163,115 @@ header {
     justify-content: center;
     border-radius: 8px;
     transition: background 0.3s ease;
-    margin-left: 1rem;          /* ← space between logo and hamburger */
+    margin-left: 1rem;
 }
 
 .hamburger-menu:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Optional: hide it again ONLY on very wide screens if you want both layouts */
-@media (min-width: 1400px) {
-    .hamburger-menu {
-        display: none;
-    }
-}
-
 .menu-icon {
     font-size: 2rem;
     line-height: 1;
+}
+
+/* ===== FULL SCREEN MODE FIXES ===== */
+:fullscreen header,
+:-webkit-full-screen header,
+:-moz-full-screen header,
+:-ms-fullscreen header {
+    padding: 1rem 2rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+}
+
+:fullscreen .logo-wrapper,
+:-webkit-full-screen .logo-wrapper,
+:-moz-full-screen .logo-wrapper,
+:-ms-fullscreen .logo-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+    min-width: auto !important;
+}
+
+:fullscreen .restaurant-name,
+:-webkit-full-screen .restaurant-name,
+:-moz-full-screen .restaurant-name,
+:-ms-fullscreen .restaurant-name {
+    display: block !important;
+    font-size: 1.5rem !important;
+    white-space: nowrap !important;
+}
+
+:fullscreen .datetime,
+:-webkit-full-screen .datetime,
+:-moz-full-screen .datetime,
+:-ms-fullscreen .datetime {
+    display: block !important;
+    font-size: 0.95rem !important;
+    padding: 0.5rem 1rem !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    margin: 0 !important;
+    width: auto !important;
+    order: 0 !important;
+}
+
+:fullscreen #current-user,
+:-webkit-full-screen #current-user,
+:-moz-full-screen #current-user,
+:-ms-fullscreen #current-user {
+    display: inline !important;
+}
+
+:fullscreen .login-btn span,
+:-webkit-full-screen .login-btn span,
+:-moz-full-screen .login-btn span,
+:-ms-fullscreen .login-btn span,
+:fullscreen .logout-btn span,
+:-webkit-full-screen .logout-btn span,
+:-moz-full-screen .logout-btn span,
+:-ms-fullscreen .logout-btn span {
+    display: inline !important;
+}
+
+:fullscreen .login-btn,
+:-webkit-full-screen .login-btn,
+:-moz-full-screen .login-btn,
+:-ms-fullscreen .login-btn,
+:fullscreen .logout-btn,
+:-webkit-full-screen .logout-btn,
+:-moz-full-screen .logout-btn,
+:-ms-fullscreen .logout-btn,
+:fullscreen .fullscreen-btn,
+:-webkit-full-screen .fullscreen-btn,
+:-moz-full-screen .fullscreen-btn,
+:-ms-fullscreen .fullscreen-btn {
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 20px !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+:fullscreen .hamburger-menu,
+:-webkit-full-screen .hamburger-menu,
+:-moz-full-screen .hamburger-menu,
+:-ms-fullscreen .hamburger-menu {
+    display: none !important;
+}
+
+:fullscreen .user-info,
+:-webkit-full-screen .user-info,
+:-moz-full-screen .user-info,
+:-ms-fullscreen .user-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    flex-wrap: nowrap !important;
 }
 
 /* ===== SIDEBAR ===== */
@@ -268,7 +385,6 @@ header {
     overflow-y: auto;
 }
 
-/* Table Buttons - Only Green and Red */
 .table-btn {
     padding: 12px 5px;
     border: none;
@@ -285,11 +401,11 @@ header {
 }
 
 .table-btn.available {
-    background-color: var(--success); /* Green for available */
+    background-color: var(--success);
 }
 
 .table-btn.occupied {
-    background-color: var(--danger); /* Red for occupied */
+    background-color: var(--danger);
 }
 
 .table-btn:hover {
@@ -322,7 +438,6 @@ header {
     box-shadow: var(--shadow);
 }
 
-/* Search Bar */
 .search-bar {
     position: relative;
     margin-bottom: 1.5rem;
@@ -351,7 +466,6 @@ header {
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
-/* Categories */
 .categories {
     display: flex;
     gap: 0.5rem;
@@ -402,7 +516,6 @@ header {
     color: white;
 }
 
-/* ===== MENU GRID ===== */
 .menu {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -514,7 +627,6 @@ header {
     animation: itemAdded 0.3s ease;
 }
 
-/* ===== IMPROVED ORDER SUMMARY - HANDLES MANY ITEMS ===== */
 .order-summary {
     flex: 1;
     min-width: 320px;
@@ -581,7 +693,6 @@ header {
     box-shadow: 0 2px 4px rgba(52, 152, 219, 0.1);
 }
 
-/* Scrollable order items container */
 .order-items-container {
     flex: 1;
     overflow-y: auto;
@@ -590,7 +701,6 @@ header {
     padding-right: 5px;
 }
 
-/* Custom scrollbar for order items */
 .order-items-container::-webkit-scrollbar {
     width: 6px;
 }
@@ -627,7 +737,6 @@ header {
     font-size: 0.9rem;
 }
 
-/* Compact order item design - perfect for many items */
 .order-item {
     display: grid;
     grid-template-columns: 1fr auto auto auto;
@@ -674,7 +783,6 @@ header {
     font-size: 0.9rem;
 }
 
-/* Item info section */
 .item-info {
     grid-column: 1;
     min-width: 120px;
@@ -722,7 +830,6 @@ header {
     max-width: 100%;
 }
 
-/* Quantity controls */
 .item-quantity {
     grid-column: 2;
     display: flex;
@@ -772,14 +879,6 @@ header {
     color: var(--primary);
 }
 
-.item-quantity span {
-    font-weight: 600;
-    min-width: 20px;
-    text-align: center;
-    font-size: 0.85rem;
-}
-
-/* Item total price */
 .item-total {
     grid-column: 3;
     font-weight: 700;
@@ -794,7 +893,6 @@ header {
     border: 1px solid rgba(52, 152, 219, 0.2);
 }
 
-/* Remove button */
 .remove-item {
     grid-column: 4;
     width: 26px;
@@ -829,7 +927,6 @@ header {
     transform: none;
 }
 
-/* Order total section */
 .order-total {
     display: flex;
     justify-content: space-between;
@@ -864,7 +961,6 @@ header {
     }
 }
 
-/* Order action buttons */
 .order-actions {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1577,30 +1673,89 @@ header {
     }
 }
 
+/* Mobile styles */
 @media screen and (max-width: 768px) {
     header {
-        padding: 0.8rem;
+        padding: 0.5rem 0.8rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .logo-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     .logo-container {
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
     }
     
     .restaurant-name {
-        font-size: 1.2rem;
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
     }
     
     .datetime {
-        display: none;
+        display: block;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        order: 3;
+        width: 100%;
+        text-align: center;
+        margin-top: 0.2rem;
     }
     
     .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-left: auto;
+    }
+    
+    #current-user {
         display: none;
+    }
+    
+    .login-btn, .logout-btn, .fullscreen-btn {
+        padding: 0.4rem;
+        font-size: 0.8rem;
+        min-width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        justify-content: center;
+    }
+    
+    .login-btn span, .logout-btn span {
+        display: none;
+    }
+    
+    .login-btn i, .logout-btn i, .fullscreen-btn i {
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    #role-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        white-space: nowrap;
     }
     
     .hamburger-menu {
         display: flex;
+        width: 40px;
+        height: 40px;
+        font-size: 1.8rem;
+        margin-left: 0.2rem;
     }
     
     .close-btn {
@@ -1702,9 +1857,92 @@ header {
         padding: 0.5rem 0.8rem;
         font-size: 0.75rem;
     }
+    
+    /* Override full screen mobile styles */
+    :fullscreen .restaurant-name,
+    :-webkit-full-screen .restaurant-name,
+    :-moz-full-screen .restaurant-name,
+    :-ms-fullscreen .restaurant-name {
+        display: block !important;
+        max-width: none !important;
+        font-size: 1.5rem !important;
+    }
+    
+    :fullscreen .datetime,
+    :-webkit-full-screen .datetime,
+    :-moz-full-screen .datetime,
+    :-ms-fullscreen .datetime {
+        display: block !important;
+        width: auto !important;
+        margin-top: 0 !important;
+        font-size: 0.95rem !important;
+    }
+    
+    :fullscreen #current-user,
+    :-webkit-full-screen #current-user,
+    :-moz-full-screen #current-user,
+    :-ms-fullscreen #current-user {
+        display: inline !important;
+    }
+    
+    :fullscreen .login-btn span,
+    :-webkit-full-screen .login-btn span,
+    :-moz-full-screen .login-btn span,
+    :-ms-fullscreen .login-btn span,
+    :fullscreen .logout-btn span,
+    :-webkit-full-screen .logout-btn span,
+    :-moz-full-screen .logout-btn span,
+    :-ms-fullscreen .logout-btn span {
+        display: inline !important;
+    }
+    
+    :fullscreen .login-btn,
+    :-webkit-full-screen .login-btn,
+    :-moz-full-screen .login-btn,
+    :-ms-fullscreen .login-btn,
+    :fullscreen .logout-btn,
+    :-webkit-full-screen .logout-btn,
+    :-moz-full-screen .logout-btn,
+    :-ms-fullscreen .logout-btn,
+    :fullscreen .fullscreen-btn,
+    :-webkit-full-screen .fullscreen-btn,
+    :-moz-full-screen .fullscreen-btn,
+    :-ms-fullscreen .fullscreen-btn {
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 20px !important;
+        width: auto !important;
+        height: auto !important;
+    }
 }
 
+/* Extra small devices */
 @media screen and (max-width: 480px) {
+    header {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .restaurant-name {
+        max-width: 100px;
+        font-size: 0.9rem;
+    }
+    
+    .datetime {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .login-btn, .logout-btn, .fullscreen-btn {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+    }
+    
+    .hamburger-menu {
+        width: 36px;
+        height: 36px;
+        font-size: 1.6rem;
+    }
+    
     .menu {
         grid-template-columns: repeat(3, 1fr);
         gap: 4px;
@@ -1730,29 +1968,41 @@ header {
     
     .order-item {
         grid-template-columns: 1fr auto;
-        font-size: 0.75rem;
+        padding: 8px 6px;
+        gap: 6px;
+    }
+    
+    .item-info {
+        grid-column: 1;
     }
     
     .item-name {
         max-width: none;
+        font-size: 0.8rem;
     }
     
     .item-quantity {
         grid-column: 2;
+        grid-row: 1;
     }
     
     .item-total {
-        grid-column: 1;
+        grid-column: 1 / -1;
         grid-row: 2;
-        text-align: left;
-        margin-left: 10px;
+        text-align: right;
+        margin-top: 4px;
+        padding: 4px 8px;
+        background: #e3f2fd;
+        border-radius: 4px;
+        width: 100%;
     }
     
     .remove-item {
         grid-column: 2;
-        grid-row: 2;
-        width: 20px;
-        height: 20px;
+        grid-row: 1;
+        width: 24px;
+        height: 24px;
+        margin-left: auto;
     }
     
     .order-actions button {
@@ -1762,6 +2012,25 @@ header {
     
     .order-actions button i {
         font-size: 0.8rem;
+    }
+}
+
+/* Very small devices */
+@media screen and (max-width: 360px) {
+    .restaurant-name {
+        display: none;
+    }
+    
+    .datetime {
+        font-size: 0.6rem;
+        order: 2;
+        width: auto;
+        margin: 0;
+    }
+    
+    .logo-container {
+        width: 30px;
+        height: 30px;
     }
 }
 
@@ -1884,7 +2153,6 @@ header {
     box-shadow: var(--shadow-hover);
 }
 
-/* Removal history indicator */
 .item-removed {
     background: #fff3f3 !important;
     border-left: 3px solid var(--danger);
@@ -1902,7 +2170,6 @@ header {
     gap: 4px;
 }
 
-/* Removal history in reports */
 .removal-history-item {
     background: #fff3f3;
     border-left: 4px solid var(--danger);
@@ -1926,7 +2193,7 @@ header {
     margin-top: 5px;
 }
 
-/* Login Dialog Styles */
+/* ===== LOGIN DIALOG STYLES ===== */
 .login-dialog {
     max-width: 400px !important;
 }
@@ -1978,25 +2245,6 @@ header {
     background: #2980b9;
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover);
-}
-
-.hamburger-menu {
-    display: flex;
-    font-size: 2.2rem;
-    color: white;
-    width: 48px;
-    height: 48px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-left: 1rem;
-    transition: all 0.2s ease;
-}
-
-.hamburger-menu:hover {
-    background: rgba(255,255,255,0.12);
-    transform: scale(1.08);
 }
 
 /* ===== CUSTOMER THANK YOU MESSAGE ===== */
@@ -2204,68 +2452,39 @@ header {
     transform: translateY(-1px);
 }
 
-/* Responsive adjustments for thank you message */
-@media screen and (max-width: 768px) {
-    .message-content {
-        padding: 2rem 1.5rem;
-        width: 95%;
-    }
-    
-    .message-content h3 {
-        font-size: 1.8rem;
-    }
-    
-    .message-icon {
-        font-size: 3.5rem;
-    }
-    
-    .customer-line {
-        font-size: 0.95rem;
-        padding: 0.7rem 1rem;
-    }
-    
-    .message-footer p {
-        font-size: 1rem;
-    }
-    
-    .message-footer .btn-primary {
-        padding: 0.8rem 2rem;
-        font-size: 0.95rem;
-    }
+/* ===== LOADING SPINNER ===== */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: var(--secondary);
+    animation: spin 1s ease-in-out infinite;
 }
 
-@media screen and (max-width: 480px) {
-    .message-content {
-        padding: 1.5rem 1.2rem;
-    }
-    
-    .message-content h3 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .message-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .message-text p {
-        font-size: 0.9rem;
-    }
-    
-    .customer-line {
-        font-size: 0.85rem;
-        padding: 0.6rem 0.9rem;
-    }
-    
-    .message-footer p {
-        font-size: 0.9rem;
-    }
-    
-    .message-footer .btn-primary {
-        padding: 0.7rem 1.5rem;
-        font-size: 0.85rem;
-    }
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn.loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
 }
 
 /* ===== MULTI-WINDOW SYNC NOTIFICATIONS ===== */
@@ -2314,12 +2533,56 @@ header {
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--secondary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--secondary);
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    z-index: 10000;
+}
+
+.skip-to-content:focus {
+    top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
-    to {
-        transform: rotate(360deg);
+}
+
+@media (prefers-contrast: high) {
+    :root {
+        --primary: #000000;
+        --secondary: #0000EE;
+        --success: #008000;
+        --danger: #FF0000;
+        --text: #000000;
+        --background: #FFFFFF;
+    }
+    
+    .table-btn,
+    button,
+    .dialog-content {
+        border: 2px solid currentColor;
     }
 }
 

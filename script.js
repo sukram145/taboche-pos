@@ -236,23 +236,23 @@ function showSyncNotification(message) {
 
 // ===== MENU ITEMS DATABASE =====
 const menuItems = [
-// Retail Items
-{ name: "Butterfly Pea Packet", price: 350, category: "Retail", image: "butterfly_peaPKT.jpg", hasImage: true },
-{ name: "Calming Tea Packet", price: 400, category: "Retail", image: "calming_teaPKT.jpg", hasImage: true },
-{ name: "Chamomile Packet", price: 350, category: "Retail", image: "chamomilePKT.jpg", hasImage: true },
-{ name: "Coffee Packet (500gm)", price: 1350, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
-{ name: "Coffee Packet (250gm)", price: 950, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
-{ name: "Coffee Packet (100gm)", price: 500, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
-{ name: "Herbal Tea Packet", price: 300, category: "Retail", image: "herbal_teaPKT.jpg", hasImage: true },
-{ name: "Hibiscus Packet", price: 450, category: "Retail", image: "hibiscusPKT.jpg", hasImage: true },
-{ name: "Lavender Packet", price: 300, category: "Retail", image: "lavenderPKT.jpg", hasImage: true },
-{ name: "Peppermint Packet", price: 300, category: "Retail", image: "peppermintPKT.jpg", hasImage: true },
-{ name: "Spearmint Packet", price: 300, category: "Retail", image: "spearmintPKT.jpg", hasImage: true },
-{ name: "Floral Delight Packet", price: 450, category: "Retail", image: "floral_delightPKT.jpg", hasImage: true },
-{ name: "Himalayan Tea Packet", price: 300, category: "Retail", image: "himalayan_teaPKT.jpg", hasImage: true },
-{ name: "Strainer 1", price: 250, category: "Retail", image: "strainer1.jpg", hasImage: true },
-{ name: "Strainer 2", price: 300, category: "Retail", image: "strainer2.jpg", hasImage: true },
-{ name: "Strainer 3", price: 450, category: "Retail", image: "strainer3.jpg", hasImage: true },
+    // Retail Items
+    { name: "Butterfly Pea Packet", price: 350, category: "Retail", image: "butterfly_peaPKT.jpg", hasImage: true },
+    { name: "Calming Tea Packet", price: 400, category: "Retail", image: "calming_teaPKT.jpg", hasImage: true },
+    { name: "Chamomile Packet", price: 350, category: "Retail", image: "chamomilePKT.jpg", hasImage: true },
+    { name: "Coffee Packet (500gm)", price: 1350, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
+    { name: "Coffee Packet (250gm)", price: 950, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
+    { name: "Coffee Packet (100gm)", price: 500, category: "Retail", image: "coffee_bagPKT.jpg", hasImage: true },
+    { name: "Herbal Tea Packet", price: 300, category: "Retail", image: "herbal_teaPKT.jpg", hasImage: true },
+    { name: "Hibiscus Packet", price: 450, category: "Retail", image: "hibiscusPKT.jpg", hasImage: true },
+    { name: "Lavender Packet", price: 300, category: "Retail", image: "lavenderPKT.jpg", hasImage: true },
+    { name: "Peppermint Packet", price: 300, category: "Retail", image: "peppermintPKT.jpg", hasImage: true },
+    { name: "Spearmint Packet", price: 300, category: "Retail", image: "spearmintPKT.jpg", hasImage: true },
+    { name: "Floral Delight Packet", price: 450, category: "Retail", image: "floral_delightPKT.jpg", hasImage: true },
+    { name: "Himalayan Tea Packet", price: 300, category: "Retail", image: "himalayan_teaPKT.jpg", hasImage: true },
+    { name: "Strainer 1", price: 250, category: "Retail", image: "strainer1.jpg", hasImage: true },
+    { name: "Strainer 2", price: 300, category: "Retail", image: "strainer2.jpg", hasImage: true },
+    { name: "Strainer 3", price: 450, category: "Retail", image: "strainer3.jpg", hasImage: true },
     // Bakery Items
     { name: "Chocolate Muffin", price: 150, category: "Bakery", image: "chocolate_muffin.jpg", hasImage: true },
     { name: "Banana Muffin", price: 150, category: "Bakery", image: "banana_muffin.jpg", hasImage: true },
@@ -509,19 +509,24 @@ function showPermissionError(action) {
 
 // ===== UTILITY FUNCTIONS =====
 function saveData() {
-    localStorage.setItem('tables', JSON.stringify(tables));
-    localStorage.setItem('salesData', JSON.stringify(salesData));
-    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-    localStorage.setItem('voidHistory', JSON.stringify(voidHistory));
-    localStorage.setItem('removalHistory', JSON.stringify(removalHistory));
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    
-    // Broadcast to other windows
-    lastSyncTime = Date.now();
-    broadcastSync('table_updated', {
-        tablesCount: Object.keys(tables).length,
-        timestamp: lastSyncTime
-    });
+    try {
+        localStorage.setItem('tables', JSON.stringify(tables));
+        localStorage.setItem('salesData', JSON.stringify(salesData));
+        localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+        localStorage.setItem('voidHistory', JSON.stringify(voidHistory));
+        localStorage.setItem('removalHistory', JSON.stringify(removalHistory));
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Broadcast to other windows
+        lastSyncTime = Date.now();
+        broadcastSync('table_updated', {
+            tablesCount: Object.keys(tables).length,
+            timestamp: lastSyncTime
+        });
+    } catch (error) {
+        console.error('Error saving data:', error);
+        showErrorMessage('Failed to save data. Storage might be full.');
+    }
 }
 
 // For critical operations, broadcast immediately
@@ -551,6 +556,18 @@ function updateDateTime() {
     datetimeElem.textContent = `${day}, ${date} ${time}`;
 }
 
+function showErrorMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'permission-toast';
+    toast.style.background = '#dc3545';
+    toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
 // ===== LOGIN FUNCTIONS =====
 function showLoginDialog() {
     const dialog = document.getElementById('login-dialog');
@@ -566,10 +583,11 @@ function closeLoginDialog() {
     const dialog = document.getElementById('login-dialog');
     if (dialog) {
         dialog.classList.remove('visible');
+        document.getElementById('login-password').value = ''; // Clear password for security
     }
 }
 
-function loginWithCredentials() {
+function handleLogin() {
     console.log("Login function called");
     const username = document.getElementById('login-username')?.value || '';
     const password = document.getElementById('login-password')?.value || '';
@@ -595,8 +613,6 @@ function loginWithCredentials() {
         document.getElementById('login-error').style.display = 'block';
     }
 }
-
-window.handleLogin = loginWithCredentials;
 
 function logout() {
     currentUser = {
@@ -926,6 +942,7 @@ function renderTables() {
     }).forEach(table => {
         const info = tables[table];
         const tableBtn = document.createElement('button');
+        tableBtn.setAttribute('aria-label', `Table ${table} ${info.status}`);
         
         if (info.status === "occupied") {
             tableBtn.className = 'table-btn occupied';
@@ -954,6 +971,7 @@ function renderCategories() {
     categories.forEach(cat => {
         const button = document.createElement('button');
         button.innerHTML = `<i class="fas ${cat.icon}"></i> ${cat.name}`;
+        button.setAttribute('aria-label', `Filter by ${cat.name}`);
         button.onclick = () => {
             if (checkLoginAndExecute('canViewMenu')) {
                 filterCategory(cat.filter);
@@ -992,6 +1010,9 @@ function renderMenu() {
         menuItem.setAttribute('data-name', item.name);
         menuItem.setAttribute('data-price', item.price);
         menuItem.setAttribute('data-category', item.category);
+        menuItem.setAttribute('role', 'button');
+        menuItem.setAttribute('tabindex', '0');
+        menuItem.setAttribute('aria-label', `${item.name} - Rs ${item.price}`);
         
         const bgColor = categoryColors[item.category] || '#4A90E2';
         const firstLetter = item.name.charAt(0).toUpperCase();
@@ -1012,6 +1033,12 @@ function renderMenu() {
         `;
         
         menuItem.onclick = () => addToOrder(item.name, item.price);
+        menuItem.onkeypress = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                addToOrder(item.name, item.price);
+            }
+        };
         
         menuContainer.appendChild(menuItem);
     });
@@ -1261,23 +1288,23 @@ function displayOrderItems(orderItems) {
         
         li.innerHTML = `
             <div class="item-info">
-                <span class="item-name clickable" onclick="promptAndAddComment('${name}')" title="Click to add comment">
+                <span class="item-name clickable" onclick="promptAndAddComment('${name}')" title="Click to add comment" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){promptAndAddComment('${name}')}">
                     ${name} ${item.comments ? ' <i class="fas fa-comment" style="color: #4A90E2;"></i>' : ''}
                 </span>
                 ${item.comments ? `<span class="item-comments">📝 ${item.comments}</span>` : ''}
                 ${displayPrice !== item.price ? `<span class="item-discount">(-${tables[selectedTable]?.discount || 0}%)</span>` : ''}
             </div>
             <div class="item-quantity">
-                <button onclick="adjustQuantity('${name}', -1)" ${item.finalized || !perm.canRemoveItems ? 'disabled' : ''}>-</button>
+                <button onclick="adjustQuantity('${name}', -1)" ${item.finalized || !perm.canRemoveItems ? 'disabled' : ''} aria-label="Decrease quantity">-</button>
                 <span>${item.quantity}</span>
-                <button onclick="adjustQuantity('${name}', 1)" ${item.finalized || !perm.canAddItems ? 'disabled' : ''}>+</button>
+                <button onclick="adjustQuantity('${name}', 1)" ${item.finalized || !perm.canAddItems ? 'disabled' : ''} aria-label="Increase quantity">+</button>
             </div>
             <span class="item-total">
                 ${displayPrice !== item.price ? `<span style="text-decoration: line-through; color: #999; margin-right: 5px;">Rs ${originalTotal}</span>` : ''}
                 Rs ${itemTotal}
             </span>
             ${perm.canRemoveItems ? 
-                `<button class="remove-item" onclick="removeFromOrder('${name}')" ${item.finalized ? 'disabled' : ''}>
+                `<button class="remove-item" onclick="removeFromOrder('${name}')" ${item.finalized ? 'disabled' : ''} aria-label="Remove item">
                     <i class="fas fa-trash"></i>
                 </button>` : 
                 ''}
@@ -1540,116 +1567,123 @@ function resetPaymentDialog() {
 }
 
 function completeOrder() {
-    if (!checkLoginAndExecute('canCheckout')) return;
-    
-    if (!selectedTable) return;
-    
-    const table = tables[selectedTable];
-    const totalPaid = table.payments.reduce((sum, p) => sum + p.amount, 0);
-    const totalDue = table.discountedTotal || table.totalPrice;
-    
-    if (totalPaid < totalDue) {
-        const short = (totalDue - totalPaid).toFixed(2);
-        alert(`Payment insufficient! Short by Rs ${short}`);
-        return;
+    try {
+        if (!checkLoginAndExecute('canCheckout')) return;
+        
+        if (!selectedTable) {
+            throw new Error("No table selected");
+        }
+        
+        const table = tables[selectedTable];
+        const totalPaid = table.payments.reduce((sum, p) => sum + p.amount, 0);
+        const totalDue = table.discountedTotal || table.totalPrice;
+        
+        if (totalPaid < totalDue) {
+            const short = (totalDue - totalPaid).toFixed(2);
+            alert(`Payment insufficient! Short by Rs ${short}`);
+            return;
+        }
+        
+        const change = (totalPaid - totalDue).toFixed(2);
+        
+        const detailedOrder = {};
+        Object.entries(table.order).forEach(([name, item]) => {
+            detailedOrder[name] = {
+                ...item,
+                originalPrice: item.price,
+                discountedPrice: item.discountedPrice || item.price,
+                discountApplied: (item.price - (item.discountedPrice || item.price))
+            };
+        });
+        
+        orderHistory.push({
+            table: selectedTable,
+            order: detailedOrder,
+            originalTotal: table.totalPrice,
+            discountedTotal: totalDue,
+            discount: table.discount,
+            discountAmount: table.totalPrice - totalDue,
+            payments: [...table.payments],
+            timestamp: new Date().toISOString(),
+            completedBy: currentUser.name,
+            change: parseFloat(change)
+        });
+        
+        salesData.totalSales = (salesData.totalSales || 0) + totalDue;
+        salesData.totalDiscounts = (salesData.totalDiscounts || 0) + (table.totalPrice - totalDue);
+        salesData.totalOrders = (salesData.totalOrders || 0) + 1;
+        
+        let remainingDue = totalDue;
+        
+        table.payments.forEach(payment => {
+            if (remainingDue <= 0) return;
+            
+            const amountTowardBill = Math.min(payment.amount, remainingDue);
+            remainingDue -= amountTowardBill;
+            
+            if (payment.method === 'Cash') {
+                salesData.cashSales = (salesData.cashSales || 0) + amountTowardBill;
+            } else if (payment.method === 'Mobile Payment') {
+                salesData.mobileSales = (salesData.mobileSales || 0) + amountTowardBill;
+            } else if (payment.method === 'Card') {
+                salesData.cardSales = (salesData.cardSales || 0) + amountTowardBill;
+            }
+        });
+        
+        table.order = {};
+        table.totalPrice = 0;
+        table.discountedTotal = 0;
+        table.status = "available";
+        table.payments = [];
+        table.discount = 0;
+        table.time = null;
+        table.newItemsAdded = false;
+        
+        // Show thank you message for staff to read to customer
+        const messageBox = document.createElement('div');
+        messageBox.className = 'customer-message';
+        messageBox.innerHTML = `
+            <div class="message-content">
+                <div class="message-icon">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <h3>🎉 Thank You! 🎉</h3>
+                <div class="message-text">
+                    <p><strong>SAY TO CUSTOMER:</strong></p>
+                    <p class="customer-line">"Thank you for dining with us at Taboche!"</p>
+                    <p class="customer-line">"We hope you enjoyed your meal."</p>
+                    <p class="customer-line">"Please visit us again soon!"</p>
+                    ${parseFloat(change) > 0 ? `<p class="customer-line change-line">"Your change is Rs ${change}. Thank you!"</p>` : ''}
+                </div>
+                <div class="message-footer">
+                    <p>🙏 धन्यवाद! फेरि भेटौंला! 🙏</p>
+                    <button onclick="this.closest('.customer-message').remove()" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Got it!
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(messageBox);
+        
+        setTimeout(() => {
+            if (messageBox.parentNode) {
+                messageBox.remove();
+            }
+        }, 10000);
+        
+        closePaymentDialog();
+        closeQRCodeDialog();
+        renderTables();
+        updateOrderSummary();
+        saveData();
+        
+        // Broadcast checkout completion to other windows
+        broadcastCheckoutComplete();
+    } catch (error) {
+        console.error('Checkout failed:', error);
+        alert(`❌ Checkout failed: ${error.message}`);
     }
-    
-    const change = (totalPaid - totalDue).toFixed(2);
-    
-    const detailedOrder = {};
-    Object.entries(table.order).forEach(([name, item]) => {
-        detailedOrder[name] = {
-            ...item,
-            originalPrice: item.price,
-            discountedPrice: item.discountedPrice || item.price,
-            discountApplied: (item.price - (item.discountedPrice || item.price))
-        };
-    });
-    
-    orderHistory.push({
-        table: selectedTable,
-        order: detailedOrder,
-        originalTotal: table.totalPrice,
-        discountedTotal: totalDue,
-        discount: table.discount,
-        discountAmount: table.totalPrice - totalDue,
-        payments: [...table.payments],
-        timestamp: new Date().toISOString(),
-        completedBy: currentUser.name,
-        change: parseFloat(change)
-    });
-    
-    salesData.totalSales = (salesData.totalSales || 0) + totalDue;
-    salesData.totalDiscounts = (salesData.totalDiscounts || 0) + (table.totalPrice - totalDue);
-    salesData.totalOrders = (salesData.totalOrders || 0) + 1;
-    
-    let remainingDue = totalDue;
-    
-    table.payments.forEach(payment => {
-        if (remainingDue <= 0) return;
-        
-        const amountTowardBill = Math.min(payment.amount, remainingDue);
-        remainingDue -= amountTowardBill;
-        
-        if (payment.method === 'Cash') {
-            salesData.cashSales = (salesData.cashSales || 0) + amountTowardBill;
-        } else if (payment.method === 'Mobile Payment') {
-            salesData.mobileSales = (salesData.mobileSales || 0) + amountTowardBill;
-        } else if (payment.method === 'Card') {
-            salesData.cardSales = (salesData.cardSales || 0) + amountTowardBill;
-        }
-    });
-    
-    table.order = {};
-    table.totalPrice = 0;
-    table.discountedTotal = 0;
-    table.status = "available";
-    table.payments = [];
-    table.discount = 0;
-    table.time = null;
-    table.newItemsAdded = false;
-    
-    // Show thank you message for staff to read to customer
-    const messageBox = document.createElement('div');
-    messageBox.className = 'customer-message';
-    messageBox.innerHTML = `
-        <div class="message-content">
-            <div class="message-icon">
-                <i class="fas fa-smile"></i>
-            </div>
-            <h3>🎉 Thank You! 🎉</h3>
-            <div class="message-text">
-                <p><strong>SAY TO CUSTOMER:</strong></p>
-                <p class="customer-line">"Thank you for dining with us at Taboche!"</p>
-                <p class="customer-line">"We hope you enjoyed your meal."</p>
-                <p class="customer-line">"Please visit us again soon!"</p>
-                ${parseFloat(change) > 0 ? `<p class="customer-line change-line">"Your change is Rs ${change}. Thank you!"</p>` : ''}
-            </div>
-            <div class="message-footer">
-                <p>🙏 धन्यवाद! फेरि भेटौंला! 🙏</p>
-                <button onclick="this.closest('.customer-message').remove()" class="btn btn-primary">
-                    <i class="fas fa-check"></i> Got it!
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(messageBox);
-    
-    setTimeout(() => {
-        if (messageBox.parentNode) {
-            messageBox.remove();
-        }
-    }, 10000);
-    
-    closePaymentDialog();
-    closeQRCodeDialog();
-    renderTables();
-    updateOrderSummary();
-    saveData();
-    
-    // Broadcast checkout completion to other windows
-    broadcastCheckoutComplete();
 }
 
 // ===== QR CODE DIALOG =====
@@ -1703,37 +1737,37 @@ function selectItem(type) {
     
     if (type === 'food') {
         optionsHTML = `
-            <div class="extra-item" onclick="addExtraItem('Cheese', 75, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Cheese', 75, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Cheese', 75, 'food')}">
                 <div class="extra-item-icon" style="background-color: #FFD700">🧀</div>
                 <span>Cheese</span>
                 <span class="extra-price">Rs 75</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Sausage', 40, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Sausage', 40, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Sausage', 40, 'food')}">
                 <div class="extra-item-icon" style="background-color: #CD5C5C">🌭</div>
                 <span>Sausage</span>
                 <span class="extra-price">Rs 40</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Extra Chicken', 120, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Extra Chicken', 120, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Extra Chicken', 120, 'food')}">
                 <div class="extra-item-icon" style="background-color: #F4A460">🍗</div>
                 <span>Extra Chicken</span>
                 <span class="extra-price">Rs 120</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Extra Buff', 100, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Extra Buff', 100, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Extra Buff', 100, 'food')}">
                 <div class="extra-item-icon" style="background-color: #8B4513">🥩</div>
                 <span>Extra Buff</span>
                 <span class="extra-price">Rs 100</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Egg', 50, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Egg', 50, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Egg', 50, 'food')}">
                 <div class="extra-item-icon" style="background-color: #F0E68C">🥚</div>
                 <span>Egg</span>
                 <span class="extra-price">Rs 50</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Salad', 75, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Salad', 75, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Salad', 75, 'food')}">
                 <div class="extra-item-icon" style="background-color: #90EE90">🥗</div>
                 <span>Salad</span>
                 <span class="extra-price">Rs 75</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Toast', 50, 'food')">
+            <div class="extra-item" onclick="addExtraItem('Toast', 50, 'food')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Toast', 50, 'food')}">
                 <div class="extra-item-icon" style="background-color: #D2691E">🍞</div>
                 <span>Toast</span>
                 <span class="extra-price">Rs 50</span>
@@ -1741,32 +1775,32 @@ function selectItem(type) {
         `;
     } else {
         optionsHTML = `
-            <div class="extra-item" onclick="addExtraItem('Boba', 50, 'drink')">
+            <div class="extra-item" onclick="addExtraItem('Boba', 50, 'drink')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Boba', 50, 'drink')}">
                 <div class="extra-item-icon" style="background-color: #DEB887">🧋</div>
                 <span>Boba</span>
                 <span class="extra-price">Rs 50</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Flavour', 50, 'drink')">
+            <div class="extra-item" onclick="addExtraItem('Flavour', 50, 'drink')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Flavour', 50, 'drink')}">
                 <div class="extra-item-icon" style="background-color: #DDA0DD">🍯</div>
                 <span>Flavour</span>
                 <span class="extra-price">Rs 50</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Extra Coil', 50, 'drink')">
+            <div class="extra-item" onclick="addExtraItem('Extra Coil', 50, 'drink')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Extra Coil', 50, 'drink')}">
                 <div class="extra-item-icon" style="background-color: #C0C0C0">🌀</div>
                 <span>Extra Coil</span>
                 <span class="extra-price">Rs 50</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Extra Flavour', 250, 'drink')">
+            <div class="extra-item" onclick="addExtraItem('Extra Flavour', 250, 'drink')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Extra Flavour', 250, 'drink')}">
                 <div class="extra-item-icon" style="background-color: #DA70D6">✨</div>
                 <span>Extra Flavour</span>
                 <span class="extra-price">Rs 250</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Extra Ice', 10, 'drink')">
+            <div class="extra-item" onclick="addExtraItem('Extra Ice', 10, 'drink')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Extra Ice', 10, 'drink')}">
                 <div class="extra-item-icon" style="background-color: #ADD8E6">🧊</div>
                 <span>Extra Ice</span>
                 <span class="extra-price">Rs 10</span>
             </div>
-            <div class="extra-item" onclick="addExtraItem('Extra Coffee', 50, 'drink')">
+            <div class="extra-item" onclick="addExtraItem('Extra Coffee', 50, 'drink')" role="button" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' '){addExtraItem('Extra Coffee', 50, 'drink')}">
                 <div class="extra-item-icon" style="background-color: #8B4513">☕</div>
                 <span>Extra Coffee</span>
                 <span class="extra-price">Rs 50</span>
@@ -2200,7 +2234,18 @@ function closeModal() {
 function resetSalesReport() {
     if (!checkLoginAndExecute('canManageTables')) return;
     
-    if (!confirm("This will RESET ALL data including sales, orders, voids, AND ITEM REMOVAL HISTORY. Cannot be undone! Continue?")) {
+    // Stronger confirmation
+    const userConfirm = prompt(
+        "⚠️ WARNING: This will PERMANENTLY DELETE:\n" +
+        "- All sales data\n" +
+        "- All order history\n" +
+        "- All void history\n" +
+        "- All item removal history\n\n" +
+        "Type 'RESET' to confirm:"
+    );
+    
+    if (userConfirm !== 'RESET') {
+        alert("Reset cancelled - incorrect confirmation text");
         return;
     }
     
@@ -2220,7 +2265,7 @@ function resetSalesReport() {
     
     saveData();
     showSalesReportsContent();
-    alert("All reports and history have been reset.");
+    alert("✅ All reports and history have been reset.");
 }
 
 function printReport() {
@@ -2413,8 +2458,15 @@ function addTable() {
     const input = document.getElementById('add-table-input');
     const tableNumber = input.value.trim();
     
+    // Validate input
     if (!tableNumber) {
         alert("Please enter a table number");
+        return;
+    }
+    
+    // Check for invalid characters (only letters, numbers, and hyphens allowed)
+    if (/[^a-zA-Z0-9-]/.test(tableNumber)) {
+        alert("Table number can only contain letters, numbers, and hyphens");
         return;
     }
     
@@ -2460,8 +2512,13 @@ function removeTable() {
         return;
     }
     
+    // Add confirmation
+    if (!confirm(`⚠️ Are you sure you want to remove ${tableName}? This action cannot be undone.`)) {
+        return;
+    }
+    
     if (tables[tableName].status === "occupied") {
-        if (!confirm("This table is occupied. Are you sure you want to remove it?")) {
+        if (!confirm("⚠️ WARNING: This table is occupied and has active orders. Removing it will delete all orders for this table. Continue?")) {
             return;
         }
     }
@@ -2479,6 +2536,13 @@ function toggleSidebar() {
     if (!sidebar) return;
     
     sidebar.classList.toggle('active');
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.remove('active');
+    }
 }
 
 function showHomeContent() {
@@ -2765,6 +2829,46 @@ function showMobileBottomSheet() {
     });
 }
 
+// ===== CLOSE ALL DIALOGS =====
+function closeAllDialogs() {
+    document.querySelectorAll('.dialog.visible, .modal').forEach(el => {
+        if (el.classList.contains('modal')) {
+            el.style.display = 'none';
+        } else {
+            el.classList.remove('visible');
+        }
+    });
+}
+
+// ===== ONLINE/OFFLINE DETECTION =====
+window.addEventListener('online', function() {
+    const indicator = document.getElementById('offline-indicator');
+    if (indicator) {
+        indicator.classList.remove('active');
+        indicator.innerHTML = '<i class="fas fa-wifi"></i> Back online - data synced';
+        indicator.style.background = '#28a745';
+        setTimeout(() => {
+            indicator.classList.remove('active');
+        }, 3000);
+    }
+    // Attempt to sync with server if needed
+    syncWithServer();
+});
+
+window.addEventListener('offline', function() {
+    const indicator = document.getElementById('offline-indicator');
+    if (indicator) {
+        indicator.classList.add('active');
+        indicator.innerHTML = '<i class="fas fa-wifi-slash"></i> You are offline - changes saved locally';
+        indicator.style.background = '#dc3545';
+    }
+});
+
+function syncWithServer() {
+    console.log('Online - checking for data to sync...');
+    // You can implement actual sync logic here if you add a backend
+}
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM loaded, initializing...");
@@ -2785,6 +2889,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentUser.loggedIn) {
         renderTables();
         renderMenu();
+    }
+    
+    // Check initial online status
+    if (!navigator.onLine) {
+        document.getElementById('offline-indicator').classList.add('active');
     }
     
     window.onclick = function(event) {
@@ -2838,6 +2947,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Initialization complete");
 });
 
+// ===== WINDOW EXPORTS =====
 // Make all functions globally available
 window.selectTable = selectTable;
 window.addToOrder = addToOrder;
@@ -2865,6 +2975,7 @@ window.closeAddItemModal = closeAddItemModal;
 window.selectItem = selectItem;
 window.addExtraItem = addExtraItem;
 window.toggleSidebar = toggleSidebar;
+window.closeSidebar = closeSidebar;
 window.showHomeContent = showHomeContent;
 window.showMenuManagementContent = showMenuManagementContent;
 window.showSalesReportsContent = showSalesReportsContent;
@@ -2878,8 +2989,7 @@ window.changeTable = changeTable;
 window.toggleFullScreen = toggleFullScreen;
 window.showLoginDialog = showLoginDialog;
 window.closeLoginDialog = closeLoginDialog;
-window.loginWithCredentials = loginWithCredentials;
-window.handleLogin = loginWithCredentials;
+window.handleLogin = handleLogin;
 window.logout = logout;
 window.openOrderHistoryDialog = openOrderHistoryDialog;
 window.closeOrderHistoryDialog = closeOrderHistoryDialog;
@@ -2898,3 +3008,4 @@ window.closeRemovalHistoryDialog = closeRemovalHistoryDialog;
 window.showMobileBottomSheet = showMobileBottomSheet;
 window.generateAndShowReport = generateAndShowReport;
 window.recalculateTableTotal = recalculateTableTotal;
+window.closeAllDialogs = closeAllDialogs;

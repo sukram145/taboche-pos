@@ -131,6 +131,9 @@
     </style>
 </head>
 <body class="guest-mode">
+    <!-- Skip to content link for accessibility -->
+    <a href="#content" class="skip-to-content">Skip to main content</a>
+
     <header>
         <div class="logo-wrapper">
             <div class="logo-container">
@@ -144,26 +147,26 @@
         <div class="user-info">
             <span id="current-user">Guest</span>
             <span id="role-badge" class="role-badge" style="display: none;">Staff</span>
-            <button class="login-btn" onclick="showLoginDialog()">
+            <button class="login-btn" onclick="showLoginDialog()" aria-label="Login">
                 <i class="fas fa-user"></i> <span id="login-btn-text">Login</span>
             </button>
-            <button class="logout-btn" id="logout-btn" style="display: none;" onclick="logout()">
+            <button class="logout-btn" id="logout-btn" style="display: none;" onclick="logout()" aria-label="Logout">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </button>
-            <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Full Screen">
+            <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Full Screen" aria-label="Toggle fullscreen">
                 <i class="fas fa-expand"></i>
             </button>
         </div>
         <!-- Hamburger Menu - Always visible on mobile -->
-        <div class="hamburger-menu" onclick="toggleSidebar()">
+        <div class="hamburger-menu" onclick="toggleSidebar()" aria-label="Menu" role="button" tabindex="0">
             <span class="menu-icon">☰</span>
         </div>
     </header>
 
     <!-- Sidebar Navigation -->
     <div class="sidebar" id="sidebar">
-        <button class="close-btn" onclick="toggleSidebar()">✕</button>
-        <nav class="sidebar-nav">
+        <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+        <nav class="sidebar-nav" aria-label="Main navigation">
             <ul>
                 <li><button id="homeBtn" onclick="showHomeContent()"><i class="fas fa-home"></i> <span>Home</span></button></li>
                 <li><button id="menuManagementBtn" onclick="showMenuManagementContent()"><i class="fas fa-utensils"></i> <span>Menu Management</span></button></li>
@@ -182,24 +185,24 @@
             <div class="tables-header">
                 
             </div>
-            <div class="tables-dashboard" id="tables-dashboard"></div>
+            <div class="tables-dashboard" id="tables-dashboard" aria-label="Table selection"></div>
         </div>
 
         <main class="order-container">
             <div class="order-section" id="order-section">
                 <div class="search-bar">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="search" placeholder="Search menu items..." onkeyup="searchMenu()">
+                    <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                    <input type="text" id="search" placeholder="Search menu items..." onkeyup="searchMenu()" aria-label="Search menu items">
                 </div>
                 
-                <div class="categories" id="categories"></div>
+                <div class="categories" id="categories" aria-label="Menu categories"></div>
                 
-                <div class="menu" id="menu"></div>
+                <div class="menu" id="menu" aria-label="Menu items"></div>
             </div>
 
-            <div class="order-summary" id="order-summary-panel">
+            <div class="order-summary" id="order-summary-panel" aria-label="Order summary">
                 <div class="order-header">
-                    <h3><i class="fas fa-receipt"></i> Order for <span id="selected-table">None</span></h3>
+                    <h3><i class="fas fa-receipt" aria-hidden="true"></i> Order for <span id="selected-table">None</span></h3>
                     <div class="order-time" id="selected-time">Time: --:--</div>
                 </div>
                 
@@ -213,23 +216,23 @@
                 </div>
                 
                 <div class="order-actions">
-                    <button class="finalize-btn" onclick="finalizeOrder()">
-                        <i class="fas fa-check-circle"></i> Finalize
+                    <button class="finalize-btn" onclick="finalizeOrder()" aria-label="Finalize order">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i> Finalize
                     </button>
-                    <button class="checkout-btn" onclick="showPaymentDialog()">
-                        <i class="fas fa-credit-card"></i> Checkout
+                    <button class="checkout-btn" onclick="showPaymentDialog()" aria-label="Checkout">
+                        <i class="fas fa-credit-card" aria-hidden="true"></i> Checkout
                     </button>
-                    <button class="change-table-btn" onclick="changeTable()">
-                        <i class="fas fa-exchange-alt"></i> Change
+                    <button class="change-table-btn" onclick="changeTable()" aria-label="Change table">
+                        <i class="fas fa-exchange-alt" aria-hidden="true"></i> Change
                     </button>
-                    <button class="void-btn" onclick="voidSelectedItem()">
-                        <i class="fas fa-ban"></i> Void
+                    <button class="void-btn" onclick="voidSelectedItem()" aria-label="Void item">
+                        <i class="fas fa-ban" aria-hidden="true"></i> Void
                     </button>
-                    <button class="print-receipt-btn" onclick="printReceipt()">
-                        <i class="fas fa-print"></i> Print
+                    <button class="print-receipt-btn" onclick="printReceipt()" aria-label="Print receipt">
+                        <i class="fas fa-print" aria-hidden="true"></i> Print
                     </button>
-                    <button class="primary-btn" onclick="openAddItemModal()">
-                        <i class="fas fa-plus-circle"></i> Extras
+                    <button class="primary-btn" onclick="openAddItemModal()" aria-label="Add extras">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i> Extras
                     </button>
                 </div>
             </div>
@@ -237,9 +240,9 @@
     </div>
 
     <!-- Payment Dialog -->
-    <div id="payment-dialog" class="dialog">
+    <div id="payment-dialog" class="dialog" role="dialog" aria-label="Payment dialog">
         <div class="dialog-content">
-            <span class="close" onclick="closePaymentDialog()">&times;</span>
+            <span class="close" onclick="closePaymentDialog()" aria-label="Close payment dialog">&times;</span>
             <div class="payment-section">
                 <div class="total-amount">
                     <strong>Total Amount:</strong> Rs <span id="total-amount">0</span>
@@ -247,24 +250,24 @@
                 
                 <div class="content-section">
                     <div class="numeric-section">
-                        <input type="text" id="numeric-input" class="numeric-input" readonly placeholder="Enter amount">
+                        <input type="text" id="numeric-input" class="numeric-input" readonly placeholder="Enter amount" aria-label="Payment amount">
                         
-                        <div class="keypad">
-                            <button onclick="addNumber(1)">1</button>
-                            <button onclick="addNumber(2)">2</button>
-                            <button onclick="addNumber(3)">3</button>
-                            <button onclick="addNumber(4)">4</button>
-                            <button onclick="addNumber(5)">5</button>
-                            <button onclick="addNumber(6)">6</button>
-                            <button onclick="addNumber(7)">7</button>
-                            <button onclick="addNumber(8)">8</button>
-                            <button onclick="addNumber(9)">9</button>
-                            <button onclick="clearInput()">C</button>
-                            <button onclick="addNumber(0)">0</button>
-                            <button onclick="backspaceInput()">⌫</button>
+                        <div class="keypad" aria-label="Numeric keypad">
+                            <button onclick="addNumber(1)" aria-label="Add 1">1</button>
+                            <button onclick="addNumber(2)" aria-label="Add 2">2</button>
+                            <button onclick="addNumber(3)" aria-label="Add 3">3</button>
+                            <button onclick="addNumber(4)" aria-label="Add 4">4</button>
+                            <button onclick="addNumber(5)" aria-label="Add 5">5</button>
+                            <button onclick="addNumber(6)" aria-label="Add 6">6</button>
+                            <button onclick="addNumber(7)" aria-label="Add 7">7</button>
+                            <button onclick="addNumber(8)" aria-label="Add 8">8</button>
+                            <button onclick="addNumber(9)" aria-label="Add 9">9</button>
+                            <button onclick="clearInput()" aria-label="Clear input">C</button>
+                            <button onclick="addNumber(0)" aria-label="Add 0">0</button>
+                            <button onclick="backspaceInput()" aria-label="Backspace">⌫</button>
                         </div>
                         
-                        <div class="quick-amounts">
+                        <div class="quick-amounts" aria-label="Quick amount buttons">
                             <button class="quick-amount-btn" onclick="addQuickAmount(50)">Rs 50</button>
                             <button class="quick-amount-btn" onclick="addQuickAmount(100)">Rs 100</button>
                             <button class="quick-amount-btn" onclick="addQuickAmount(500)">Rs 500</button>
@@ -274,7 +277,7 @@
                     </div>
                     
                     <div class="action-buttons">
-                        <div class="discount-section">
+                        <div class="discount-section" aria-label="Discount buttons">
                             <button class="discount-btn" onclick="applyDiscount(5)">5%</button>
                             <button class="discount-btn" onclick="applyDiscount(10)">10%</button>
                             <button class="discount-btn" onclick="applyDiscount(25)">25%</button>
@@ -282,31 +285,31 @@
                             <button class="discount-btn" onclick="applyDiscount(100)">100%</button>
                         </div>
                         
-                        <button class="cash-btn" onclick="addPayment('Cash')">
-                            <i class="fas fa-money-bill-wave"></i> Cash
+                        <button class="cash-btn" onclick="addPayment('Cash')" aria-label="Add cash payment">
+                            <i class="fas fa-money-bill-wave" aria-hidden="true"></i> Cash
                         </button>
-                        <button class="mobile-btn" onclick="addPayment('Mobile Payment')">
-                            <i class="fas fa-mobile-alt"></i> Mobile
+                        <button class="mobile-btn" onclick="addPayment('Mobile Payment')" aria-label="Add mobile payment">
+                            <i class="fas fa-mobile-alt" aria-hidden="true"></i> Mobile
                         </button>
-                        <button class="complete-btn" onclick="completeOrder()">
-                            <i class="fas fa-check-double"></i> Complete
+                        <button class="complete-btn" onclick="completeOrder()" aria-label="Complete order">
+                            <i class="fas fa-check-double" aria-hidden="true"></i> Complete
                         </button>
-                        <button onclick="resetPaymentDialog()">
-                            <i class="fas fa-undo"></i> Clear
+                        <button onclick="resetPaymentDialog()" aria-label="Clear all">
+                            <i class="fas fa-undo" aria-hidden="true"></i> Clear
                         </button>
                     </div>
                 </div>
                 
-                <div class="payment-summary">
+                <div class="payment-summary" aria-label="Payment summary">
                     <strong>Payment Summary:</strong>
                     <ul id="payment-summary"></ul>
                 </div>
                 
-                <div class="change" id="change-display">
+                <div class="change" id="change-display" aria-label="Change amount">
                     <strong>Change:</strong> Rs <span id="change-amount">0</span>
                 </div>
                 
-                <div class="insufficient-amount hidden" id="insufficient-amount">
+                <div class="insufficient-amount hidden" id="insufficient-amount" aria-label="Insufficient amount warning">
                     <strong>Insufficient Amount!</strong> Short by Rs <span id="short-amount">0</span>
                 </div>
             </div>
@@ -314,204 +317,202 @@
     </div>
 
     <!-- QR Code Dialog -->
-    <div id="qr-code-dialog" class="dialog">
+    <div id="qr-code-dialog" class="dialog" role="dialog" aria-label="QR code payment dialog">
         <div class="dialog-content">
-            <span class="close" onclick="closeQRCodeDialog()">&times;</span>
+            <span class="close" onclick="closeQRCodeDialog()" aria-label="Close QR dialog">&times;</span>
             <h3>Scan to Pay with Mobile Payment</h3>
             <div class="qr-container">
-                <img id="qr-code-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Taboche%20Restaurant" alt="QR Code">
+                <img id="qr-code-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Taboche%20Restaurant" alt="QR Code for mobile payment">
             </div>
             <p class="qr-instruction">Scan this QR code with your mobile payment app</p>
-            <button class="done-btn" onclick="closeQRCodeDialog()">
-                <i class="fas fa-check"></i> Done
+            <button class="done-btn" onclick="closeQRCodeDialog()" aria-label="Done">
+                <i class="fas fa-check" aria-hidden="true"></i> Done
             </button>
         </div>
     </div>
 
-   <!-- Login Dialog -->
-<div id="login-dialog" class="dialog">
-    <div class="dialog-content login-dialog">
-        <span class="close" onclick="closeLoginDialog()">&times;</span>
-        <h2><i class="fas fa-user-lock"></i> Staff Login</h2>
-        
-        <div class="login-form">
-            <div class="form-group">
-                <label for="login-username">Username</label>
-                <input type="text" id="login-username" placeholder="Enter username" value="taboche">
+    <!-- Login Dialog -->
+    <div id="login-dialog" class="dialog" role="dialog" aria-label="Login dialog">
+        <div class="dialog-content login-dialog">
+            <span class="close" onclick="closeLoginDialog()" aria-label="Close login dialog">&times;</span>
+            <h2><i class="fas fa-user-lock" aria-hidden="true"></i> Staff Login</h2>
+            
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Enter username" value="taboche" aria-required="true">
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter password" value="" aria-required="true">
+                </div>
+                
+                <button class="btn-primary" onclick="handleLogin()" style="width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;" aria-label="Login">
+                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login
+                </button>
+                
+                <div id="login-error" style="color: #dc3545; text-align: center; margin-top: 10px; display: none;" role="alert">
+                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i> Invalid username or password
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; color: #666;">
+                    <small><i class="fas fa-shield-alt" aria-hidden="true"></i> Authorized Personnel Only</small>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" placeholder="Enter password" value="">
+            <div style="text-align: center; margin-top: 10px;">
+                <button class="btn" onclick="closeLoginDialog()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;" aria-label="Cancel">
+                    <i class="fas fa-times" aria-hidden="true"></i> Cancel
+                </button>
             </div>
-            
-            <button class="btn-primary" onclick="handleLogin()" style="width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </button>
-            
-            <div id="login-error" style="color: #dc3545; text-align: center; margin-top: 10px; display: none;">
-                <i class="fas fa-exclamation-circle"></i> Invalid username or password
-            </div>
-            
-            <div style="text-align: center; margin-top: 15px; color: #666;">
-                <small><i class="fas fa-shield-alt"></i> Authorized Personnel Only</small>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 10px;">
-            <button class="btn" onclick="closeLoginDialog()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
-                <i class="fas fa-times"></i> Cancel
-            </button>
         </div>
     </div>
-</div>
 
     <!-- Remove Reason Dialog -->
-    <div id="remove-reason-dialog" class="dialog">
+    <div id="remove-reason-dialog" class="dialog" role="dialog" aria-label="Removal reason dialog">
         <div class="dialog-content reason-dialog">
-            <span class="close" onclick="closeRemoveReasonDialog()">&times;</span>
-            <h3><i class="fas fa-question-circle"></i> Reason for Removal</h3>
+            <span class="close" onclick="closeRemoveReasonDialog()" aria-label="Close removal dialog">&times;</span>
+            <h3><i class="fas fa-question-circle" aria-hidden="true"></i> Reason for Removal</h3>
             
-            <div class="reason-presets">
-                <button class="reason-preset-btn" onclick="setReason('Customer changed mind')">
-                    <i class="fas fa-user"></i> Changed mind
+            <div class="reason-presets" aria-label="Preset reasons">
+                <button class="reason-preset-btn" onclick="setReason('Customer changed mind')" aria-label="Customer changed mind">
+                    <i class="fas fa-user" aria-hidden="true"></i> Changed mind
                 </button>
-                <button class="reason-preset-btn" onclick="setReason('Wrong item ordered')">
-                    <i class="fas fa-times-circle"></i> Wrong item
+                <button class="reason-preset-btn" onclick="setReason('Wrong item ordered')" aria-label="Wrong item ordered">
+                    <i class="fas fa-times-circle" aria-hidden="true"></i> Wrong item
                 </button>
-                <button class="reason-preset-btn" onclick="setReason('Item not available')">
-                    <i class="fas fa-box-open"></i> Not available
+                <button class="reason-preset-btn" onclick="setReason('Item not available')" aria-label="Item not available">
+                    <i class="fas fa-box-open" aria-hidden="true"></i> Not available
                 </button>
-                <button class="reason-preset-btn" onclick="setReason('Duplicate entry')">
-                    <i class="fas fa-copy"></i> Duplicate
+                <button class="reason-preset-btn" onclick="setReason('Duplicate entry')" aria-label="Duplicate entry">
+                    <i class="fas fa-copy" aria-hidden="true"></i> Duplicate
                 </button>
-                <button class="reason-preset-btn" onclick="setReason('Quality issue')">
-                    <i class="fas fa-exclamation-triangle"></i> Quality
+                <button class="reason-preset-btn" onclick="setReason('Quality issue')" aria-label="Quality issue">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Quality
                 </button>
-                <button class="reason-preset-btn" onclick="setReason('Price adjustment')">
-                    <i class="fas fa-tag"></i> Price adj.
+                <button class="reason-preset-btn" onclick="setReason('Price adjustment')" aria-label="Price adjustment">
+                    <i class="fas fa-tag" aria-hidden="true"></i> Price adj.
                 </button>
             </div>
             
-            <textarea id="removal-reason" class="reason-input" placeholder="Or type your reason here..." rows="3"></textarea>
+            <textarea id="removal-reason" class="reason-input" placeholder="Or type your reason here..." rows="3" aria-label="Custom removal reason"></textarea>
             
             <div class="reason-actions">
-                <button class="reason-cancel-btn" onclick="closeRemoveReasonDialog()">
-                    Cancel
-                </button>
-                <button class="reason-submit-btn" onclick="submitRemoveWithReason()">
-                    <i class="fas fa-check"></i> Confirm
+                <button class="reason-cancel-btn" onclick="closeRemoveReasonDialog()" aria-label="Cancel">Cancel</button>
+                <button class="reason-submit-btn" onclick="submitRemoveWithReason()" aria-label="Confirm removal">
+                    <i class="fas fa-check" aria-hidden="true"></i> Confirm
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Sales Reports Modal -->
-    <div id="salesReportModal" class="modal">
+    <div id="salesReportModal" class="modal" role="dialog" aria-label="Sales report modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2><i class="fas fa-chart-bar"></i> Taboche Restaurant - Sales Report</h2>
+            <span class="close" onclick="closeModal()" aria-label="Close report">&times;</span>
+            <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Taboche Restaurant - Sales Report</h2>
             <div id="modalContent" class="report-content"></div>
             
             <div class="button-container">
-                <button class="btn btn-primary" onclick="openOrderHistoryDialog()">
-                    <i class="fas fa-history"></i> History
+                <button class="btn btn-primary" onclick="openOrderHistoryDialog()" aria-label="View order history">
+                    <i class="fas fa-history" aria-hidden="true"></i> History
                 </button>
-                <button class="btn btn-warning" onclick="openVoidHistoryDialog()">
-                    <i class="fas fa-ban"></i> Void History
+                <button class="btn btn-warning" onclick="openVoidHistoryDialog()" aria-label="View void history">
+                    <i class="fas fa-ban" aria-hidden="true"></i> Void History
                 </button>
-                <button class="btn btn-danger" onclick="resetSalesReport()">
-                    <i class="fas fa-sync-alt"></i> Reset
+                <button class="btn btn-danger" onclick="resetSalesReport()" aria-label="Reset sales report">
+                    <i class="fas fa-sync-alt" aria-hidden="true"></i> Reset
                 </button>
-                <button class="btn btn-success" onclick="printReport()">
-                    <i class="fas fa-print"></i> Print
+                <button class="btn btn-success" onclick="printReport()" aria-label="Print report">
+                    <i class="fas fa-print" aria-hidden="true"></i> Print
                 </button>
-                <button class="btn" onclick="closeModal()">
-                    <i class="fas fa-times"></i> Close
+                <button class="btn" onclick="closeModal()" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i> Close
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Order History Dialog -->
-    <div id="order-history-dialog" class="dialog">
+    <div id="order-history-dialog" class="dialog" role="dialog" aria-label="Order history dialog">
         <div class="dialog-content">
-            <span class="close" onclick="closeOrderHistoryDialog()">&times;</span>
-            <h2><i class="fas fa-history"></i> Order History</h2>
+            <span class="close" onclick="closeOrderHistoryDialog()" aria-label="Close order history">&times;</span>
+            <h2><i class="fas fa-history" aria-hidden="true"></i> Order History</h2>
             <div id="order-history-container" class="history-container"></div>
             <div style="text-align: center; margin-top: 15px;">
-                <button onclick="closeOrderHistoryDialog()" class="btn" style="background: #6c757d; color: white;">
-                    <i class="fas fa-times"></i> Close
+                <button onclick="closeOrderHistoryDialog()" class="btn" style="background: #6c757d; color: white;" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i> Close
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Void History Dialog -->
-    <div id="void-history-dialog" class="dialog">
+    <div id="void-history-dialog" class="dialog" role="dialog" aria-label="Void history dialog">
         <div class="dialog-content">
-            <span class="close" onclick="closeVoidHistoryDialog()">&times;</span>
-            <h2><i class="fas fa-ban"></i> Void History</h2>
+            <span class="close" onclick="closeVoidHistoryDialog()" aria-label="Close void history">&times;</span>
+            <h2><i class="fas fa-ban" aria-hidden="true"></i> Void History</h2>
             <div id="voidHistoryOutput" class="history-container"></div>
             <div style="text-align: center; margin-top: 15px;">
-                <button onclick="closeVoidHistoryDialog()" class="btn" style="background: #6c757d; color: white;">
-                    <i class="fas fa-times"></i> Close
+                <button onclick="closeVoidHistoryDialog()" class="btn" style="background: #6c757d; color: white;" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i> Close
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Removal History Dialog -->
-    <div id="removal-history-dialog" class="dialog">
+    <div id="removal-history-dialog" class="dialog" role="dialog" aria-label="Removal history dialog">
         <div class="dialog-content">
-            <span class="close" onclick="closeRemovalHistoryDialog()">&times;</span>
-            <h2><i class="fas fa-trash-alt"></i> Item Removal History</h2>
+            <span class="close" onclick="closeRemovalHistoryDialog()" aria-label="Close removal history">&times;</span>
+            <h2><i class="fas fa-trash-alt" aria-hidden="true"></i> Item Removal History</h2>
             <div id="removal-history-container" class="history-container"></div>
             <div style="text-align: center; margin-top: 15px;">
-                <button onclick="closeRemovalHistoryDialog()" class="btn" style="background: #6c757d; color: white;">
-                    <i class="fas fa-times"></i> Close
+                <button onclick="closeRemovalHistoryDialog()" class="btn" style="background: #6c757d; color: white;" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i> Close
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Add Item Modal -->
-    <div id="addItemModal" class="modal">
+    <div id="addItemModal" class="modal" role="dialog" aria-label="Add extra items modal">
         <div class="modal-content">
-            <span class="close" onclick="closeAddItemModal()">&times;</span>
-            <h2><i class="fas fa-plus-circle"></i> Add Extra Item</h2>
+            <span class="close" onclick="closeAddItemModal()" aria-label="Close add item modal">&times;</span>
+            <h2><i class="fas fa-plus-circle" aria-hidden="true"></i> Add Extra Item</h2>
             
             <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="selectItem('food')">
-                    <i class="fas fa-utensils"></i> Food Extras
+                <button class="btn btn-primary" onclick="selectItem('food')" aria-label="Food extras">
+                    <i class="fas fa-utensils" aria-hidden="true"></i> Food Extras
                 </button>
-                <button class="btn btn-success" onclick="selectItem('drink')">
-                    <i class="fas fa-coffee"></i> Drink Extras
+                <button class="btn btn-success" onclick="selectItem('drink')" aria-label="Drink extras">
+                    <i class="fas fa-coffee" aria-hidden="true"></i> Drink Extras
                 </button>
             </div>
             
             <div id="extraOptions" class="extras-container"></div>
             
             <div class="modal-buttons">
-                <button class="btn" onclick="closeAddItemModal()" style="background: #6c757d; color: white;">
-                    <i class="fas fa-times"></i> Close
+                <button class="btn" onclick="closeAddItemModal()" style="background: #6c757d; color: white;" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i> Close
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
+    <div id="settingsModal" class="modal" role="dialog" aria-label="Settings modal">
         <div class="modal-content">
-            <span class="close" onclick="closeSettingsModal()">&times;</span>
-            <h2><i class="fas fa-cog"></i> Table Management</h2>
+            <span class="close" onclick="closeSettingsModal()" aria-label="Close settings">&times;</span>
+            <h2><i class="fas fa-cog" aria-hidden="true"></i> Table Management</h2>
             
             <div class="settings-section">
                 <h3>Add New Table</h3>
                 <div class="input-group">
-                    <input type="text" id="add-table-input" placeholder="Enter table number">
-                    <button onclick="addTable()" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Add
+                    <input type="text" id="add-table-input" placeholder="Enter table number" aria-label="Table number to add">
+                    <button onclick="addTable()" class="btn btn-success" aria-label="Add table">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add
                     </button>
                 </div>
             </div>
@@ -519,59 +520,59 @@
             <div class="settings-section">
                 <h3>Remove Table</h3>
                 <div class="input-group">
-                    <input type="text" id="remove-table-input" placeholder="Enter table number">
-                    <button onclick="removeTable()" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Remove
+                    <input type="text" id="remove-table-input" placeholder="Enter table number" aria-label="Table number to remove">
+                    <button onclick="removeTable()" class="btn btn-danger" aria-label="Remove table">
+                        <i class="fas fa-trash" aria-hidden="true"></i> Remove
                     </button>
                 </div>
             </div>
             
             <div style="text-align: center; margin-top: 20px;">
-                <button onclick="closeSettingsModal()" class="btn" style="background: #6c757d; color: white;">
-                    <i class="fas fa-times"></i> Close
+                <button onclick="closeSettingsModal()" class="btn" style="background: #6c757d; color: white;" aria-label="Close">
+                    <i class="fas fa-times" aria-hidden="true"></i> Close
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Menu Management Section (Hidden by default) -->
-    <div id="menuManagementContent" class="hidden" style="padding: 20px; max-width: 500px; margin: 0 auto;">
-        <h2><i class="fas fa-utensils"></i> Menu Management</h2>
-        <form id="menuForm" class="menu-form">
+    <div id="menuManagementContent" class="hidden" style="padding: 20px; max-width: 500px; margin: 0 auto;" role="region" aria-label="Menu management">
+        <h2><i class="fas fa-utensils" aria-hidden="true"></i> Menu Management</h2>
+        <form id="menuForm" class="menu-form" onsubmit="return false;">
             <div class="form-group">
-                <input type="text" id="itemName" placeholder="Item Name">
+                <input type="text" id="itemName" placeholder="Item Name" aria-label="Item name">
             </div>
             <div class="form-group">
-                <input type="text" id="itemPrice" placeholder="Item Price">
+                <input type="text" id="itemPrice" placeholder="Item Price" aria-label="Item price">
             </div>
             <div class="form-group">
-                <input type="text" id="itemCategory" placeholder="Item Category">
+                <input type="text" id="itemCategory" placeholder="Item Category" aria-label="Item category">
             </div>
             <div class="form-group">
-                <input type="file" id="itemImage" title="Item Image">
+                <input type="file" id="itemImage" title="Item Image" aria-label="Item image" accept="image/*">
             </div>
             <div class="form-actions">
-                <button type="button" onclick="addItem()" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Add
+                <button type="button" onclick="addItem()" class="btn btn-success" aria-label="Add item">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Add
                 </button>
-                <button type="button" onclick="updateItem()" class="btn btn-primary">
-                    <i class="fas fa-edit"></i> Update
+                <button type="button" onclick="updateItem()" class="btn btn-primary" aria-label="Update item">
+                    <i class="fas fa-edit" aria-hidden="true"></i> Update
                 </button>
-                <button type="button" onclick="deleteItem()" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Delete
+                <button type="button" onclick="deleteItem()" class="btn btn-danger" aria-label="Delete item">
+                    <i class="fas fa-trash" aria-hidden="true"></i> Delete
                 </button>
             </div>
         </form>
     </div>
 
     <!-- Offline Indicator -->
-    <div id="offline-indicator" class="offline-indicator">
-        <i class="fas fa-wifi-slash"></i> You are offline - changes saved locally
+    <div id="offline-indicator" class="offline-indicator" role="status" aria-live="polite">
+        <i class="fas fa-wifi-slash" aria-hidden="true"></i> You are offline - changes saved locally
     </div>
 
     <!-- Floating Action Button for Mobile -->
-    <button class="fab-button" id="fab-button" onclick="showMobileBottomSheet()">
-        <i class="fas fa-plus"></i>
+    <button class="fab-button" id="fab-button" onclick="showMobileBottomSheet()" aria-label="Quick actions menu">
+        <i class="fas fa-plus" aria-hidden="true"></i>
     </button>
 
     <!-- Main Script with Cache-Busting Version -->
@@ -611,7 +612,51 @@
                     console.log('ServiceWorker cleanup not available:', error);
                 });
             }
+
+            // Check initial online status
+            if (!navigator.onLine) {
+                document.getElementById('offline-indicator').classList.add('active');
+            }
+
+            // Add keyboard shortcut listener
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+F for search
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    const searchInput = document.getElementById('search');
+                    if (searchInput) {
+                        searchInput.focus();
+                        searchInput.select();
+                    }
+                }
+                
+                // Esc to close all dialogs
+                if (e.key === 'Escape') {
+                    if (typeof closeAllDialogs === 'function') {
+                        closeAllDialogs();
+                    }
+                }
+            });
         });
+
+        // Define closeSidebar function
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('active');
+            }
+        }
+
+        // Define closeAllDialogs function
+        function closeAllDialogs() {
+            document.querySelectorAll('.dialog.visible, .modal').forEach(el => {
+                if (el.classList.contains('modal')) {
+                    el.style.display = 'none';
+                } else {
+                    el.classList.remove('visible');
+                }
+            });
+        }
     </script>
 </body>
 </html>
