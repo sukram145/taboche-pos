@@ -1,162 +1,166 @@
-// Service Worker for Taboche POS
-// Provides offline functionality and asset caching
-
-const CACHE_NAME = 'taboche-pos-v1';
+const CACHE_NAME = 'taboche-pos-v2'; // Incremented version
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/script.js',
-  '/manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  './',
+  './index.html',
+  './manifest.json',
+  './images/logo.png',
+  './images/logo-print.png',
+  './images/qr.jpeg',
+  // Add CSS and JS if they become external files
 ];
 
-// Install event - cache files
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
+// Install event - cache essential files
+self.addEventListener('install', event => {
+  console.log('[SW] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Caching assets');
-        return cache.addAll(urlsToCache.filter(url => !url.includes('http')));
+      .then(cache => {
+        console.log('[SW] Caching essential files');
+        return cache.addAll(urlsToCache);
       })
-      .catch((error) => {
-        console.error('Cache installation error:', error);
-      })
+      .then(() => self.skipWaiting()) // Activate immediately
   );
-  self.skipWaiting();
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
+self.addEventListener('activate', event => {
+  console.log('[SW] Activating...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Take control immediately
   );
-  self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  // Skip external requests
-  if (!event.request.url.startsWith(self.location.origin) && 
-      !event.request.url.includes('cdnjs') && 
-      !event.request.url.includes('googleapis')) {
+// Fetch event - network first with cache fallback for dynamic content
+self.addEventListener('fetch', event => {
+  const requestUrl = new URL(event.request.url);
+
+  // Skip cross-origin requests
+  if (requestUrl.origin !== location.origin) {
     return;
   }
 
-  // Network first for API calls
-  if (event.request.url.includes('/api/')) {
+  // For HTML pages - network first, then cache
+  if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .then((response) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, response.clone());
+        .then(response => {
+          // Cache the fresh copy
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // If network fails, serve cached version
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // For images and static assets - cache first, then network
+  if (event.request.destination === 'image' ||
+      event.request.url.includes('/images/')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // If not in cache, fetch from network
+          return fetch(event.request).then(response => {
+            // Cache the new image
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
             return response;
           });
         })
         .catch(() => {
-          return caches.match(event.request);
+          // Return a fallback image if available
+          return caches.match('./images/logo.png');
         })
     );
-  } else {
-    // Cache first for assets
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          if (response) {
-            return response;
-          }
-          return fetch(event.request)
-            .then((response) => {
-              if (!response || response.status !== 200 || response.type !== 'basic') {
-                return response;
-              }
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-              return response;
-            })
-            .catch(() => {
-              // Return offline page if available
-              return new Response('Offline - Please check your connection', {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: new Headers({
-                  'Content-Type': 'text/plain'
-                })
-              });
+    return;
+  }
+
+  // For everything else - cache first, then network (stale-while-revalidate)
+  event.respondWith(
+    caches.match(event.request)
+      .then(cachedResponse => {
+        const fetchPromise = fetch(event.request)
+          .then(networkResponse => {
+            // Update cache with fresh response
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, networkResponse.clone());
             });
-        })
-    );
+            return networkResponse;
+          })
+          .catch(error => {
+            console.log('[SW] Fetch failed:', error);
+            // Return cached response even if stale
+            return cachedResponse;
+          });
+
+        // Return cached response immediately if available, otherwise wait for network
+        return cachedResponse || fetchPromise;
+      })
+  );
+});
+
+// Background sync for offline orders
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-orders') {
+    event.waitUntil(syncOrders());
   }
 });
 
-// Handle background sync (not shown purchases)
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-pending-orders') {
-    event.waitUntil(syncPendingOrders());
-  }
-});
+async function syncOrders() {
+  const cache = await caches.open('pending-orders');
+  const requests = await cache.keys();
 
-async function syncPendingOrders() {
-  try {
-    const pendingOrders = await getPendingOrders();
-    for (const order of pendingOrders) {
-      try {
-        const response = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order)
-        });
-        if (response.ok) {
-          await removePendingOrder(order.id);
-        }
-      } catch (error) {
-        console.error('Failed to sync order:', error);
+  for (const request of requests) {
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        await cache.delete(request);
+        console.log('[SW] Synced order successfully');
       }
+    } catch (error) {
+      console.log('[SW] Failed to sync order:', error);
     }
-  } catch (error) {
-    console.error('Sync pending orders error:', error);
   }
 }
 
-// Push notifications (optional)
-self.addEventListener('push', (event) => {
-  const data = event.data.json();
+// Push notification support
+self.addEventListener('push', event => {
   const options = {
-    body: data.body,
-    icon: '/images/logo.png',
-    badge: '/images/logo.png',
-    tag: 'taboche-notification'
+    body: event.data.text(),
+    icon: './images/logo.png',
+    badge: './images/logo.png',
+    vibrate: [200, 100, 200],
+    requireInteraction: true
   };
-  event.waitUntil(self.registration.showNotification(data.title, options));
+
+  event.waitUntil(
+    self.registration.showNotification('Taboche POS', options)
+  );
 });
 
-// Notification click
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (let client of clientList) {
-        if (client.url === '/' && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow('/');
-      }
-    })
+    clients.openWindow('./')
   );
 });
