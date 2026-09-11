@@ -7791,9 +7791,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Service Worker registration (only on web servers, not file://)
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
             .then(registration => {
                 console.log('Service Worker registered with scope:', registration.scope);
+
+            // Ask the browser to check for a newer worker whenever the app opens.
+            registration.update();
 
                 // Check for updates
                 registration.addEventListener('updatefound', () => {
