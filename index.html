@@ -1226,7 +1226,7 @@ body.dark-mode .sidebar-content::-webkit-scrollbar-thumb {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1040; /* Adjusted for bootstrap compatibility */
+    z-index: 1070; /* Keep dialogs above the mobile order drawer. */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -2032,7 +2032,7 @@ body.modal-open {
     display: none; /* Hidden by default */
     justify-content: center;
     align-items: center;
-    z-index: 1060; /* Higher than standard modals but below system alerts */
+    z-index: 1080; /* Keep prompts above all application dialogs. */
     padding: 1rem;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -2652,6 +2652,7 @@ kbd {
             <a href="#" id="nav-void-details"><i class="fas fa-ban" aria-hidden="true"></i>Void Details</a>
             <a href="#" id="nav-kitchen-view"><i class="fas fa-utensils" aria-hidden="true"></i>Kitchen Display</a>
             <a href="#" id="nav-settings"><i class="fas fa-cog" aria-hidden="true"></i>Settings</a>
+            <a href="#" id="nav-shift-close"><i class="fas fa-cash-register" aria-hidden="true"></i>Close Shift (Z-Report)</a>
             <a href="#" id="nav-merge-tables"><i class="fas fa-object-ungroup" aria-hidden="true"></i>Merge Tables</a>
             <a href="#" id="nav-help"><i class="fas fa-circle-question" aria-hidden="true"></i>Help</a>
             <hr>
@@ -2815,7 +2816,10 @@ function migrateStoredData(data = {}) {
             quantity: Number(item.quantity) > 0 ? Number(item.quantity) : 1,
             price: Number(item.price) || 0,
             extras: Array.isArray(item.extras) ? item.extras : [],
-            notes: typeof item.notes === 'string' ? item.notes : ''
+            notes: typeof item.notes === 'string' ? item.notes : '',
+            sentQuantity: Number.isFinite(Number(item.sentQuantity))
+                ? Math.min(Number(item.quantity) || 1, Math.max(0, Number(item.sentQuantity)))
+                : item.finalized ? (Number(item.quantity) || 1) : 0
         }));
     });
     next.orders = normalizedOrders;
@@ -2874,7 +2878,7 @@ function rebuildItemsSoldFromSales() {
             const key = item.name.toLowerCase();
             const entry = rebuilt.get(key) || { name: item.name, quantity: 0, totalRevenue: 0, timestamp: sale.timestamp };
             entry.quantity += Number(item.quantity) || 0;
-            entry.totalRevenue += itemRevenue;
+            entry.totalRevenue = roundToTwo(entry.totalRevenue + itemRevenue);
             rebuilt.set(key, entry);
         });
     });
@@ -3048,6 +3052,8 @@ let isFinalizingOrder = false;
 let orderHistoryShowAll = false;
 let offlineActionQueue = [];
 let kitchenElapsedInterval = null;
+let activeChartInstances = {};
+let suppressMenuItemClickUntil = 0;
 
 // NEW: Menu Navigation State
 let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'itemsOfSection', 'itemsOfCategory'
@@ -3287,6 +3293,22 @@ let menuItems = [
     { name: "Water", price: 50, category: "Misc", section: "Misc", type: "misc", image: "images/water.jpg", discountable: false }
 ];
 
+const savedMenu = getFromLocalStorage('customMenuItems');
+if (Array.isArray(savedMenu) && savedMenu.length > 0) {
+    menuItems = savedMenu;
+}
+
+function toggleItemStock(itemName) {
+    const item = menuItems.find(menuItem => menuItem.name === itemName);
+    if (!item) return;
+    item.isOutOfStock = !item.isOutOfStock;
+    saveToLocalStorage('customMenuItems', menuItems);
+    renderMenuNavigation();
+    notifications.show(`${item.name} is now ${item.isOutOfStock ? 'Sold Out' : 'Available'}`, 'info');
+}
+
+window.toggleItemStock = toggleItemStock;
+
 let extras = [
     // Food Extras
     { name: "Cheese", price: 75, image: "images/cheese.jpg", type: "food" },
@@ -3452,25 +3474,24 @@ async function loadLargeStateFromIndexedDB() {
         const db = await openIndexedDB();
         const tx = db.transaction(IDB_STORE_NAME, 'readonly');
         const store = tx.objectStore(IDB_STORE_NAME);
-        const keys = ['salesHistory', 'orderHistory', 'voidDetails', 'kotHistory', 'itemsSold'];
-        await Promise.all(keys.map(async (key) => {
+        const readStore = key => new Promise(resolve => {
             const request = store.get(key);
-            await new Promise((resolve, reject) => {
-                request.onsuccess = () => {
-                    if (request.result && request.result.value !== undefined) {
-                        switch (key) {
-                            case 'salesHistory': salesHistory = request.result.value; break;
-                            case 'orderHistory': orderHistory = request.result.value; break;
-                            case 'voidDetails': voidDetails = request.result.value; break;
-                            case 'kotHistory': kotHistory = request.result.value; break;
-                            case 'itemsSold': itemsSold = request.result.value; break;
-                        }
-                    }
-                    resolve();
-                };
-                request.onerror = () => reject(request.error);
-            });
-        }));
+            request.onsuccess = () => resolve(request.result ? request.result.value : null);
+            request.onerror = () => resolve(null);
+        });
+        const [loadedSales, loadedOrders, loadedVoids, loadedKots, loadedItems] = await Promise.all([
+            readStore('salesHistory'),
+            readStore('orderHistory'),
+            readStore('voidDetails'),
+            readStore('kotHistory'),
+            readStore('itemsSold')
+        ]);
+
+        if (Array.isArray(loadedSales)) salesHistory = loadedSales;
+        if (Array.isArray(loadedOrders)) orderHistory = loadedOrders;
+        if (Array.isArray(loadedVoids)) voidDetails = loadedVoids;
+        if (Array.isArray(loadedKots)) kotHistory = loadedKots;
+        if (Array.isArray(loadedItems)) itemsSold = loadedItems;
         db.close();
     } catch (error) {
         console.warn('IndexedDB load failed, staying on localStorage.', error);
@@ -4162,6 +4183,27 @@ function getClickAudioContext() {
     return audioContext;
 }
 
+function playKitchenAlertSound() {
+    if (!soundEnabled) return;
+    try {
+        const ctx = getClickAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(587.33, ctx.currentTime);
+        oscillator.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.6);
+    } catch (error) {
+        console.warn('Kitchen alert audio unavailable:', error);
+    }
+}
+
 function getSoundConfig(target) {
     if (typeof target === 'string') {
         return buttonSoundPresets[target] || buttonSoundPresets.default;
@@ -4408,16 +4450,19 @@ function updateTableTimers() {
 
         requestAnimationFrame(() => {
             timerUpdateQueued = false;
-            const now = performance.now();
+            const now = Date.now();
             let changed = false;
 
             Object.entries(tableTimers).forEach(([table, timer]) => {
                 const orderItems = orders[table] && Array.isArray(orders[table]) ? orders[table] : [];
                 if (orderItems.length > 0) {
-                    const lastUpdated = Number(timer?.lastUpdated) || now;
                     const previousElapsed = Number(timer?.elapsed) || 0;
-                    const elapsed = previousElapsed + Math.max(0, now - lastUpdated);
-                    tableTimers[table] = { ...timer, elapsed, lastUpdated: now };
+                    const start = Number(timer?.start);
+                    const normalizedStart = Number.isFinite(start) && start > 1e12
+                        ? start
+                        : now - previousElapsed;
+                    const elapsed = Math.max(previousElapsed, now - normalizedStart);
+                    tableTimers[table] = { ...timer, start: normalizedStart, elapsed, lastUpdated: now };
                     changed = true;
                     const timerElement = document.getElementById(`timer-${table}`);
                     if (timerElement) {
@@ -4675,13 +4720,23 @@ function renderMenuItemsForSection(sectionName) {
 
     filteredItems.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'menu-item';
+        const isSoldOut = Boolean(item.isOutOfStock);
+        div.className = `menu-item${isSoldOut ? ' sold-out' : ''}`;
+        div.style.opacity = isSoldOut ? '0.45' : '1';
         div.innerHTML = `
-            <img src="${item.image}" alt="${item.name}" loading="lazy">
-            <p>${item.name}</p>
-            <div class="price">Rs ${item.price.toFixed(2)}</div>
+            <img src="${item.image}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="handleImageError(this)">
+            <p>${escapeHtml(item.name)}</p>
+            <div class="price">${isSoldOut ? 'SOLD OUT' : `Rs ${item.price.toFixed(2)}`}</div>
         `;
-        div.addEventListener('click', () => addToOrder(item));
+        div.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            suppressMenuItemClickUntil = Date.now() + 450;
+            toggleItemStock(item.name);
+        });
+        div.addEventListener('click', () => {
+            if (Date.now() < suppressMenuItemClickUntil || isSoldOut) return;
+            addToOrder(item);
+        });
         menu.appendChild(div);
     });
 }
@@ -4724,20 +4779,35 @@ function renderMenuItemsForCategory(categoryName = null) {
 
     filteredItems.forEach(item => {
         const div = document.createElement('div');
-        div.className = `menu-item`; 
+        const isSoldOut = Boolean(item.isOutOfStock);
+        div.className = `menu-item${isSoldOut ? ' sold-out' : ''}`;
+        div.style.opacity = isSoldOut ? '0.45' : '1';
         
         div.innerHTML = `
-            <img src="${item.image}" alt="${item.name}" loading="lazy">
-            <p>${item.name}</p>
-            <div class="price">Rs ${item.price.toFixed(2)}</div>
+            <img src="${item.image}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="handleImageError(this)">
+            <p>${escapeHtml(item.name)}</p>
+            <div class="price">${isSoldOut ? 'SOLD OUT' : `Rs ${item.price.toFixed(2)}`}</div>
         `;
 
-        div.addEventListener('click', () => addToOrder(item));
+        div.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            suppressMenuItemClickUntil = Date.now() + 450;
+            toggleItemStock(item.name);
+        });
+        div.addEventListener('click', () => {
+            if (Date.now() < suppressMenuItemClickUntil || isSoldOut) return;
+            addToOrder(item);
+        });
         menu.appendChild(div);
     });
 }
 
 async function addToOrder(item) {
+    if (item?.isOutOfStock) {
+        notifications.show(`${item.name} is sold out.`, 'warning');
+        return;
+    }
+
     if (!currentTable) {
         notifications.show('Please select a table first!', 'warning');
         return;
@@ -4760,6 +4830,7 @@ async function addToOrder(item) {
         orders[currentTable].push({
             ...item,
             quantity: 1,
+            sentQuantity: 0,
             extras: item.extras || [],
             notes: item.notes || '',
             orderSessionId,
@@ -4966,6 +5037,7 @@ async function incrementQuantity(index) {
     const wasFinalizedInitially = itemEntry.finalized;
 
     itemEntry.quantity += 1;
+    itemEntry.sentQuantity = Math.min(Number(itemEntry.sentQuantity) || 0, itemEntry.quantity - 1);
     if (wasFinalizedInitially) {
         itemEntry.finalized = false;
         delete itemEntry.kotNumber;
@@ -4989,12 +5061,13 @@ async function incrementQuantity(index) {
 
 async function decrementQuantity(index) {
     if (!orders[currentTable]?.[index]) return;
-    if (orders[currentTable][index].finalized) {
-        notifications.show("This item has already been finalized and cannot be modified.", 'warning');
+    const item = orders[currentTable][index];
+
+    if ((Number(item.sentQuantity) || 0) > 0) {
+        notifications.show("Portions of this item were already sent to kitchen. Use 'Void' instead.", 'warning');
         return;
     }
 
-    const item = orders[currentTable][index];
     if (item.quantity <= 1) {
         await removeOrderItem(index);
         return;
@@ -5268,6 +5341,8 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
     const modal = document.getElementById('sidebar-content-modal');
     const contentArea = document.getElementById('modal-content-area');
     if (!modal || !contentArea) return;
+
+    closeSidebarContentModal();
     
     // CRITICAL: Clear all previous event listeners to prevent memory leaks
     const newContentArea = contentArea.cloneNode(false);
@@ -5290,11 +5365,13 @@ function closeSidebarContentModal() {
         clearInterval(kitchenElapsedInterval);
         kitchenElapsedInterval = null;
     }
+    Object.values(activeChartInstances).forEach(chart => chart.destroy());
+    activeChartInstances = {};
 }
 
 function loadTableNotes(table) {
     const notesInput = document.getElementById('table-notes');
-    if (notesInput) notesInput.value = localStorage.getItem(`table-notes-${table}`) || '';
+    if (notesInput) notesInput.value = table ? (localStorage.getItem(`table-notes-${table}`) || '') : '';
 }
 
 async function clearAllItems() {
@@ -5708,6 +5785,8 @@ function printSalesSummary() {
 
 function renderSalesCharts(metrics) {
     if (typeof Chart === 'undefined') return;
+    Object.values(activeChartInstances).forEach(chart => chart.destroy());
+    activeChartInstances = {};
     ['payment-chart', 'sales-trend-chart'].forEach(id => {
         const canvas = document.getElementById(id);
         const existingChart = canvas && Chart.getChart(canvas);
@@ -5717,11 +5796,11 @@ function renderSalesCharts(metrics) {
     const paymentValues = [metrics.totalCash, metrics.totalMobile, metrics.paymentTotals.Card || 0];
     const paymentCanvas = document.getElementById('payment-chart');
     const paymentPercentPlugin = { id: 'paymentPercentLabels', afterDraw(chart) { const total = paymentValues.reduce((sum, value) => sum + value, 0); if (!total) return; const context = chart.ctx; const meta = chart.getDatasetMeta(0); context.save(); context.fillStyle = '#fff'; context.font = '700 12px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; meta.data.forEach((arc, index) => { const position = arc.tooltipPosition(); context.fillText(`${((paymentValues[index] / total) * 100).toFixed(0)}%`, position.x, position.y); }); context.restore(); } };
-    if (paymentCanvas) new Chart(paymentCanvas, { type: 'doughnut', data: { labels: paymentLabels, datasets: [{ data: paymentValues, backgroundColor: ['#16a34a', '#2563eb', '#7c3aed'], borderWidth: 3, borderColor: '#fff' }] }, plugins: [paymentPercentPlugin], options: { cutout: '58%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: context => `${context.label}: Rs ${Number(context.raw || 0).toFixed(2)}` } } } } });
+    if (paymentCanvas) activeChartInstances['payment-chart'] = new Chart(paymentCanvas, { type: 'doughnut', data: { labels: paymentLabels, datasets: [{ data: paymentValues, backgroundColor: ['#16a34a', '#2563eb', '#7c3aed'], borderWidth: 3, borderColor: '#fff' }] }, plugins: [paymentPercentPlugin], options: { cutout: '58%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: context => `${context.label}: Rs ${Number(context.raw || 0).toFixed(2)}` } } } } });
     const hours = Object.keys(metrics.hourlyTotals).sort((a, b) => Number(a) - Number(b));
     const peakHour = hours.reduce((peak, hour) => metrics.hourlyTotals[hour] > (metrics.hourlyTotals[peak] || 0) ? hour : peak, hours[0]);
     const trendCanvas = document.getElementById('sales-trend-chart');
-    if (trendCanvas) new Chart(trendCanvas, { type: 'line', data: { labels: hours.map(hour => `${String(hour).padStart(2, '0')}:00`), datasets: [{ label: 'Hourly Revenue', data: hours.map(hour => metrics.hourlyTotals[hour]), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, .12)', pointBackgroundColor: hours.map(hour => hour === peakHour ? '#dc2626' : '#2563eb'), pointRadius: hours.map(hour => hour === peakHour ? 7 : 3), fill: true, tension: .35 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => `Rs ${Number(context.raw || 0).toFixed(2)}` } } }, scales: { y: { beginAtZero: true, ticks: { callback: value => `Rs ${value}` } } } } });
+    if (trendCanvas) activeChartInstances['sales-trend-chart'] = new Chart(trendCanvas, { type: 'line', data: { labels: hours.map(hour => `${String(hour).padStart(2, '0')}:00`), datasets: [{ label: 'Hourly Revenue', data: hours.map(hour => metrics.hourlyTotals[hour]), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, .12)', pointBackgroundColor: hours.map(hour => hour === peakHour ? '#dc2626' : '#2563eb'), pointRadius: hours.map(hour => hour === peakHour ? 7 : 3), fill: true, tension: .35 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => `Rs ${Number(context.raw || 0).toFixed(2)}` } } }, scales: { y: { beginAtZero: true, ticks: { callback: value => `Rs ${value}` } } } } });
 }
 
 function exportSalesExcel() {
@@ -6607,9 +6686,12 @@ function closeCheckoutDialog() {
     const checkoutDialog = document.getElementById('checkout-dialog');
     if (checkoutDialog) checkoutDialog.style.display = 'none';
     document.body.classList.remove('modal-open');
+    closeQRCodeDialog();
     clearCheckoutState();
     resetCheckoutState();
+    loadFromLocalStorage();
     renderOrderItems();
+    initializeTables();
     updateTotal();
 }
 
@@ -6849,11 +6931,11 @@ function removePayment(index) {
 }
 
 function updateChange() {
-    const total = calculateTotal();
-    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const exactTotal = roundToTwo(calculateTotal());
+    const paidSoFar = roundToTwo(paymentMethods.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
 
-    const remainingDue = Math.max(0, total - paidSoFar);
-    const changeAmount = Math.max(0, paidSoFar - total);
+    const remainingDue = Math.max(0, roundToTwo(exactTotal - paidSoFar));
+    const changeAmount = Math.max(0, roundToTwo(paidSoFar - exactTotal));
     
     const remainingDueEl = document.getElementById('remaining-due');
     const changeAmountEl = document.getElementById('change-amount');
@@ -6866,14 +6948,14 @@ function updateChange() {
     // Completion requires both enough recorded payment and a selected method.
     if (completeBtn) {
         const hasPaymentMethod = paymentMethods.length > 0;
-        const canComplete = hasPaymentMethod && paidSoFar >= total - 0.01;
+        const canComplete = hasPaymentMethod && paidSoFar >= exactTotal - 0.01;
         completeBtn.disabled = !canComplete;
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
         completeBtn.style.cursor = canComplete ? 'pointer' : 'not-allowed';
     }
 
     const exactButton = document.querySelector('#quick-amounts button[data-amount="exact"]');
-    if (exactButton) exactButton.disabled = total <= 0.01 || paidSoFar >= total - 0.01;
+    if (exactButton) exactButton.disabled = exactTotal <= 0.01 || paidSoFar >= exactTotal - 0.01;
     
     // Show insufficient message with more clarity
     if (insufficientMsgEl) {
@@ -6889,6 +6971,10 @@ function updateChange() {
 }
 
 // 2. CORE CALCULATION ENGINE
+function roundToTwo(value) {
+    return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
 function calculateTotal() {
     const tableKey = currentTable || 'current';
     const currentItems = orders[tableKey] && Array.isArray(orders[tableKey]) ? orders[tableKey] : [];
@@ -6912,12 +6998,13 @@ function calculateTotal() {
         }
     });
 
-    const afterDiscount = (discountableTotal * (1 - currDiscount / 100)) + nonDiscountableTotal;
-    const serviceCharge = afterDiscount * (serviceChargePercent / 100);
-    const beforeVAT = afterDiscount + serviceCharge;
-    const vat = beforeVAT * (vatPercent / 100);
+    const discountedPortion = roundToTwo(discountableTotal * (1 - currDiscount / 100));
+    const afterDiscount = roundToTwo(discountedPortion + nonDiscountableTotal);
+    const serviceCharge = roundToTwo(afterDiscount * (serviceChargePercent / 100));
+    const beforeVAT = roundToTwo(afterDiscount + serviceCharge);
+    const vat = roundToTwo(beforeVAT * (vatPercent / 100));
     
-    return Number((beforeVAT + vat).toFixed(2));
+    return roundToTwo(beforeVAT + vat);
 }
 
 function calculateOriginalTotal() {
@@ -6985,9 +7072,11 @@ async function completePayment() {
             notifications.show('Select Cash or Mobile before completing payment.', 'warning');
             return;
         }
-        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
-        if (paidSoFar < total - 0.01 && total > 0.01) {
-            notifications.show(`Payment is insufficient. Add the remaining Rs ${(total - paidSoFar).toFixed(2)} or adjust the payment amount.`, 'warning');
+        const paidSoFar = roundToTwo(paymentMethods.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
+        const exactTotal = roundToTwo(total);
+        if (paidSoFar < exactTotal && exactTotal > 0) {
+            const difference = roundToTwo(exactTotal - paidSoFar);
+            notifications.show(`Payment is insufficient. Still due: Rs ${difference.toFixed(2)}`, 'warning');
             renderPaymentMethods();
             updateChange();
             return;
@@ -7022,7 +7111,7 @@ async function completePayment() {
             timestamp: new Date().toISOString(),
             user: currentUser?.email || 'Guest',
             status: 'completed',
-            change: Math.max(0, paidSoFar - total),
+            change: Math.max(0, roundToTwo(paidSoFar - exactTotal)),
             orderType: 'dine-in',
             vatPercent,
             serviceChargePercent
@@ -7116,8 +7205,12 @@ async function finalizeOrder() {
         }
 
         isFinalizingOrder = true;
-        const itemsToFinalize = orders[currentTable].filter(item => !item.finalized);
-    const nonPreparationItems = itemsToFinalize.filter(item => item.section !== 'Kitchen' && item.section !== 'Bar');
+        const itemsToFinalize = orders[currentTable]
+            .map(item => ({ item, deltaQty: Math.max(0, (Number(item.quantity) || 0) - (Number(item.sentQuantity) || 0)) }))
+            .filter(entry => entry.deltaQty > 0);
+    const nonPreparationItems = itemsToFinalize
+        .filter(({ item }) => item.section !== 'Kitchen' && item.section !== 'Bar')
+        .map(({ item }) => item);
     if (itemsToFinalize.length === 0) {
         notifications.show('No new items to send.', 'info');
         return;
@@ -7126,15 +7219,15 @@ async function finalizeOrder() {
     showLoadingSpinner();
     const kotNumberBase = `KOT-${Date.now()}`;
 
-    const kitchenItems = itemsToFinalize.filter(item => item.section === 'Kitchen');
-    const barItems = itemsToFinalize.filter(item => item.section === 'Bar');
+    const kitchenItems = itemsToFinalize.filter(({ item }) => item.section === 'Kitchen');
+    const barItems = itemsToFinalize.filter(({ item }) => item.section === 'Bar');
 
     if (kitchenItems.length > 0) {
         const kitchenKotId = `${kotNumberBase}-KITCHEN`;
         kotHistory.push({
             kotId: kitchenKotId,
             table: currentTable,
-            items: kitchenItems.map(item => ({ ...item, isReady: false })),
+            items: kitchenItems.map(({ item, deltaQty }) => ({ ...item, quantity: deltaQty, isReady: false })),
             timestamp: new Date().toISOString(),
             status: 'pending',
             type: 'kitchen',
@@ -7147,7 +7240,7 @@ async function finalizeOrder() {
         kotHistory.push({
             kotId: barKotId,
             table: currentTable,
-            items: barItems.map(item => ({ ...item, isReady: false })),
+            items: barItems.map(({ item, deltaQty }) => ({ ...item, quantity: deltaQty, isReady: false })),
             timestamp: new Date().toISOString(),
             status: 'pending',
             type: 'bar',
@@ -7155,11 +7248,10 @@ async function finalizeOrder() {
         });
     }
     
-    orders[currentTable].forEach(item => {
-        if (!item.finalized) {
-            item.finalized = true;
-            item.kotNumber = kotNumberBase;
-        }
+    itemsToFinalize.forEach(({ item }) => {
+        item.sentQuantity = Number(item.quantity) || 0;
+        item.finalized = true;
+        item.kotNumber = kotNumberBase;
     });
 
     persistAllData();
@@ -7221,18 +7313,25 @@ async function changeTable() {
         return;
     }
 
+    const oldTable = String(currentTable).trim().toUpperCase();
     const requestedTable = await showPromptModal(
         'Change Table',
-        `Move order from Table ${currentTable} to which table? Enter a table number such as 2 or 8A.`
+        `Move order from Table ${oldTable} to which table? (e.g. 1, 2, 8A, 10B)`
     );
+    if (!requestedTable) return;
+
     const newTable = requestedTable
         ?.trim()
         .replace(/^table\s*/i, '')
         .toUpperCase();
 
-    const oldTable = String(currentTable).trim().toUpperCase();
-    if (!newTable || newTable === oldTable || !tableList.includes(newTable)) {
-        notifications.show('Invalid or cancelled table change.', 'warning');
+    if (!tableList.includes(newTable)) {
+        notifications.show(`Table ${newTable} does not exist.`, 'warning');
+        return;
+    }
+
+    if (newTable === oldTable) {
+        notifications.show('Target table must be different from current table.', 'info');
         return;
     }
 
@@ -7243,23 +7342,35 @@ async function changeTable() {
 
     showLoadingSpinner();
     try {
-        const itemsToMove = orders[oldTable].map(item => ({
-            ...item,
-            finalized: true
-        }));
-        const timerToMove = tableTimers[oldTable]
-            ? { ...tableTimers[oldTable], lastUpdated: performance.now() }
-            : { start: performance.now(), elapsed: 0, lastUpdated: performance.now() };
+        const itemsToMove = orders[oldTable].map(item => ({ ...item }));
+        const now = Date.now();
+        const existingTimer = tableTimers[oldTable];
+        const elapsed = Number(existingTimer?.elapsed) || 0;
+        const timerToMove = existingTimer
+            ? { ...existingTimer, start: Number(existingTimer.start) > 1e12 ? existingTimer.start : now - elapsed, elapsed, lastUpdated: now }
+            : { start: now, elapsed: 0, lastUpdated: now };
 
         orders[newTable] = itemsToMove;
         tableTimers[newTable] = timerToMove;
         delete orders[oldTable];
         delete tableTimers[oldTable];
+        kotHistory.forEach(kot => {
+            if (String(kot.table).trim().toUpperCase() === oldTable) kot.table = newTable;
+        });
+
+        const existingNote = localStorage.getItem(`table-notes-${oldTable}`);
+        if (existingNote !== null) {
+            localStorage.setItem(`table-notes-${newTable}`, existingNote);
+            localStorage.removeItem(`table-notes-${oldTable}`);
+        }
+
         currentTable = newTable;
+        localStorage.setItem('selectedTable', newTable);
 
         persistAllData();
         document.getElementById('selected-table').textContent = currentTable;
         document.getElementById('selected-table-checkout').textContent = currentTable;
+        loadTableNotes(newTable);
         renderOrderItems();
         initializeTables();
         setOrderDrawerOpen(true);
@@ -7286,6 +7397,21 @@ async function voidItem(index) {
     showLoadingSpinner();
     
     const itemToVoid = { ...orders[currentTable][index] };
+    if ((Number(itemToVoid.sentQuantity) || 0) > 0) {
+        kotHistory.forEach(kot => {
+            const sameTable = String(kot.table).trim().toUpperCase() === String(currentTable).trim().toUpperCase();
+            const sameTicket = !itemToVoid.kotNumber || kot.kotNumber === itemToVoid.kotNumber;
+            if (!sameTable || !sameTicket || kot.status !== 'pending') return;
+
+            kot.items.forEach(kotItem => {
+                if (kotItem.name === itemToVoid.name && !kotItem.isCanceled) {
+                    kotItem.isCanceled = true;
+                    kotItem.name = `[CANCELED] ${kotItem.name}`;
+                }
+            });
+        });
+    }
+
     const voidId = `void_${Date.now()}`;
     const timestamp = new Date().toISOString();
     const voidEntry = {
@@ -7726,8 +7852,6 @@ document.addEventListener("DOMContentLoaded", () => {
         trimHistoryIfNeeded();
         renderOrderItems();
         initializeTables();
-        renderOrderHistory();
-        renderVoidDetails();
     }).catch(async (error) => {
         console.warn('IndexedDB data load skipped:', error);
         const shouldReset = await showConfirmModal('IndexedDB issue', 'IndexedDB is unavailable or corrupted. Reset it and continue with local storage?');
@@ -7751,12 +7875,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const channel = new BroadcastChannel('pos-sync');
     channel.onmessage = (event) => {
         if (event.data === 'data-changed') {
+            const checkoutModal = document.getElementById('checkout-dialog');
+            if (isProcessingPayment || checkoutModal?.style.display === 'block') return;
+            const previousPendingKotCount = kotHistory.filter(kot => kot.status === 'pending').length;
             loadFromLocalStorage();
             renderOrderItems();
             updateTotal();
             initializeTables();
             renderOrderHistory();
             renderVoidDetails();
+
+            const currentPendingKotCount = kotHistory.filter(kot => kot.status === 'pending').length;
+            if (currentPendingKotCount > previousPendingKotCount) {
+                playKitchenAlertSound();
+                notifications.show('New Kitchen Order Ticket received!', 'info');
+            }
             
             // AUTO-REFRESH: If Kitchen View is open, refresh it
             const modalContentArea = document.getElementById('modal-content-area');
@@ -7769,6 +7902,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Listen for changes in localStorage from other tabs/windows
     window.addEventListener('storage', (e) => {
         if (e.key === 'orders' || e.key === 'tableTimers' || e.key === 'salesHistory' || e.key === 'orderHistory' || e.key === 'voidDetails' || e.key === 'kotHistory' || e.key === 'itemsSold') {
+            const checkoutModal = document.getElementById('checkout-dialog');
+            if (isProcessingPayment || checkoutModal?.style.display === 'block') return;
             loadFromLocalStorage();
             renderOrderItems();
             updateTotal();
@@ -7840,6 +7975,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("close-sidebar")?.addEventListener("click", closeSidebar);
     document.getElementById("sidebar-overlay")?.addEventListener("click", closeSidebar);
     document.getElementById("theme-toggle")?.addEventListener("click", toggleTheme);
+    document.getElementById('table-notes')?.addEventListener('input', event => {
+        if (currentTable) localStorage.setItem(`table-notes-${currentTable}`, event.target.value);
+    });
 
     // NEW: Back button for menu navigation
     document.getElementById("back-button")?.addEventListener("click", navigateBackMenu);
@@ -7859,6 +7997,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nav-void-details")?.addEventListener("click", showVoidDetailsContent);
     document.getElementById("nav-kitchen-view")?.addEventListener("click", showKitchenView);
     document.getElementById("nav-settings")?.addEventListener("click", showSettings);
+    document.getElementById('nav-shift-close')?.addEventListener('click', event => {
+        event.preventDefault();
+        showShiftCloseModal();
+    });
     document.getElementById("nav-merge-tables")?.addEventListener("click", (e) => {
         e.preventDefault();
         mergeTables();
@@ -8014,7 +8156,9 @@ document.addEventListener('click', function(e) {
     if (customCloseBtn) {
         e.preventDefault();
         const containerToClose = customCloseBtn.closest('.modal, .sidebar, #qr-code-dialog');
-        if (containerToClose) {
+        if (containerToClose?.id === 'sidebar-content-modal') {
+            closeSidebarContentModal();
+        } else if (containerToClose) {
             containerToClose.style.display = 'none';
         }
     }
@@ -8060,6 +8204,17 @@ function initializeTableTimer(table) {
             lastUpdated: Date.now()
         };
         persistAllData();
+        return;
+    }
+
+    const now = Date.now();
+    const timer = tableTimers[table];
+    if (!Number.isFinite(Number(timer.start)) || Number(timer.start) <= 1e12) {
+        tableTimers[table] = {
+            ...timer,
+            start: now - (Number(timer.elapsed) || 0),
+            lastUpdated: now
+        };
     }
 }
 
@@ -8103,13 +8258,23 @@ function searchMenu() {
     
     filteredItems.forEach(item => {
         const div = document.createElement('div');
-        div.className = `menu-item`;
+        const isSoldOut = Boolean(item.isOutOfStock);
+        div.className = `menu-item${isSoldOut ? ' sold-out' : ''}`;
+        div.style.opacity = isSoldOut ? '0.45' : '1';
         div.innerHTML = `
-            <img src="${item.image}" alt="${item.name}">
-            <p>${item.name}</p>
-            <div class="price">Rs ${item.price.toFixed(2)}</div>
+            <img src="${item.image}" alt="${escapeHtml(item.name)}" onerror="handleImageError(this)">
+            <p>${escapeHtml(item.name)}</p>
+            <div class="price">${isSoldOut ? 'SOLD OUT' : `Rs ${item.price.toFixed(2)}`}</div>
         `;
-        div.addEventListener('click', () => addToOrder(item));
+        div.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            suppressMenuItemClickUntil = Date.now() + 450;
+            toggleItemStock(item.name);
+        });
+        div.addEventListener('click', () => {
+            if (Date.now() < suppressMenuItemClickUntil || isSoldOut) return;
+            addToOrder(item);
+        });
         menu.appendChild(div);
     });
 }
@@ -8130,7 +8295,14 @@ function showKitchenView() {
                     pendingKOTs.map(kot => `
                         <div class="kot-card" data-kot-type="${kot.type}">
                             <div class="kot-header"><div class="kot-info"><span class="kot-number">${escapeHtml(kot.kotNumber)}</span><span class="kot-type ${kot.type}">${kot.type}</span></div><span class="kot-table">Table ${escapeHtml(String(kot.table))}</span></div>
-                            <div class="kot-body"><div class="kot-items">${kot.items.map(item => `<div class="kot-item"><span class="kot-item-name">${escapeHtml(item.name)}</span><span class="kot-item-qty">x${item.quantity}</span>${item.extras?.length ? `<span class="kot-item-extras">+ ${item.extras.map(extra => escapeHtml(extra.name)).join(', ')}</span>` : ''}</div>`).join('')}</div><div class="kot-timer" data-created-at="${escapeHtml(kot.timestamp)}"><i class="fas fa-clock"></i> <span>${formatElapsedTime(kot.timestamp)}</span></div></div>
+                            <div class="kot-body"><div class="kot-items">${kot.items.map(item => {
+                                const isCanceled = item.isCanceled || item.name.startsWith('[CANCELED]');
+                                const isDone = Boolean(item.isDone);
+                                const itemStyle = isCanceled
+                                    ? 'text-decoration: line-through; color: #dc2626; font-weight: bold; opacity: 0.6;'
+                                    : isDone ? 'text-decoration: line-through; color: #16a34a;' : '';
+                                return `<div class="kot-item" style="${itemStyle}"><span class="kot-item-name" onclick="toggleKitchenItemDone('${kot.kotId}', ${kot.items.indexOf(item)})" style="cursor: pointer;"><i class="far ${isDone ? 'fa-check-square text-success' : 'fa-square'} me-1"></i>${escapeHtml(item.name)}</span><span class="kot-item-qty">x${item.quantity}</span>${item.extras?.length ? `<span class="kot-item-extras">+ ${item.extras.map(extra => escapeHtml(extra.name)).join(', ')}</span>` : ''}</div>`;
+                            }).join('')}</div><div class="kot-timer" data-created-at="${escapeHtml(kot.timestamp)}"><i class="fas fa-clock"></i> <span>${formatElapsedTime(kot.timestamp)}</span></div></div>
                             <div class="kot-actions">
                                 <button class="btn-ready" onclick="markKOTReady('${kot.kotId}')"><i class="fas fa-check"></i> Ready</button>
                                 <button class="btn-print" onclick="printKOTFromView('${kot.kotId}')"><i class="fas fa-print"></i> Print</button>
@@ -8181,8 +8353,24 @@ function markKOTReady(kotId) {
     }
 }
 
+function toggleKitchenItemDone(kotId, itemIndex) {
+    const kot = kotHistory.find(k => k.kotId === kotId);
+    const item = kot?.items?.[itemIndex];
+    if (!item || item.isCanceled) return;
+
+    item.isDone = !item.isDone;
+    const activeItems = kot.items.filter(kotItem => !kotItem.isCanceled);
+    kot.status = activeItems.length > 0 && activeItems.every(kotItem => kotItem.isDone)
+        ? 'ready'
+        : 'pending';
+
+    persistAllData();
+    showKitchenView();
+}
+
 // Make function globally accessible for onclick handlers
 window.markKOTReady = markKOTReady;
+window.toggleKitchenItemDone = toggleKitchenItemDone;
 
 // Print KOT from Kitchen View
 function printKOTFromView(kotId) {
@@ -8194,6 +8382,53 @@ function printKOTFromView(kotId) {
 
 // Make function globally accessible
 window.printKOTFromView = printKOTFromView;
+
+function showShiftCloseModal() {
+    const lastCloseTime = localStorage.getItem('pos_last_shift_close')
+        || new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const shiftSales = salesHistory.filter(sale =>
+        isActiveSale(sale) && new Date(sale.timestamp) >= new Date(lastCloseTime)
+    );
+
+    let cashTotal = 0;
+    let mobileTotal = 0;
+    shiftSales.forEach(sale => {
+        (sale.paymentMethods || []).forEach(payment => {
+            if (payment.method === 'Cash') cashTotal += Number(payment.amount) || 0;
+            if (payment.method === 'Mobile') mobileTotal += Number(payment.amount) || 0;
+        });
+        cashTotal -= Number(sale.change) || 0;
+    });
+
+    cashTotal = roundToTwo(Math.max(0, cashTotal));
+    mobileTotal = roundToTwo(Math.max(0, mobileTotal));
+
+    const content = `
+        <div class="report-container">
+            <div class="report-header">
+                <h4><i class="fas fa-cash-register me-2 text-primary"></i>Shift Close (Z-Report)</h4>
+                <span class="report-badge">${shiftSales.length} Orders</span>
+            </div>
+            <p class="text-muted small">Sales since: ${new Date(lastCloseTime).toLocaleString()}</p>
+            <div class="summary-grid">
+                <div class="summary-card"><span class="summary-label">Net Cash in Drawer</span><span class="summary-value text-success">Rs ${cashTotal.toFixed(2)}</span></div>
+                <div class="summary-card"><span class="summary-label">Mobile / QR Total</span><span class="summary-value text-primary">Rs ${mobileTotal.toFixed(2)}</span></div>
+                <div class="summary-card"><span class="summary-label">Shift Gross Total</span><span class="summary-value">Rs ${roundToTwo(cashTotal + mobileTotal).toFixed(2)}</span></div>
+            </div>
+            <div class="mt-3"><button id="close-shift-btn" class="btn-primary-action w-100"><i class="fas fa-lock me-2"></i>Close Current Shift</button></div>
+        </div>
+    `;
+
+    showSidebarContentModal('Shift Close', content, () => {
+        document.getElementById('close-shift-btn')?.addEventListener('click', async () => {
+            const confirmed = await showConfirmModal('Close Shift', 'Are you sure you want to close this shift? This will reset the shift baseline.');
+            if (!confirmed) return;
+            localStorage.setItem('pos_last_shift_close', new Date().toISOString());
+            notifications.show('Shift closed successfully.', 'success');
+            closeSidebarContentModal();
+        });
+    });
+}
 
 // Settings Panel
 function showSettings() {
@@ -8299,11 +8534,54 @@ async function mergeTables() {
         execute?.addEventListener('click', async () => {
             const confirmed = await showConfirmModal('Merge Tables', 'Merging tables will combine orders. This action cannot be undone. Continue?');
             if (!confirmed) return;
-            const sourceTable = source.value; const targetTable = target.value;
-            if (!orders[sourceTable]?.length || (orders[targetTable]?.length && sourceTable === targetTable)) return;
+            const sourceTable = source.value;
+            const targetTable = target.value;
+            if (!orders[sourceTable]?.length || sourceTable === targetTable) return;
+
             orders[targetTable] = orders[targetTable] || [];
-            orders[sourceTable].forEach(item => { const existing = orders[targetTable].find(existingItem => existingItem.name === item.name && existingItem.price === item.price); if (existing) existing.quantity += item.quantity; else orders[targetTable].push({ ...item }); });
-            delete orders[sourceTable]; delete tableTimers[sourceTable]; persistAllData(); renderOrderItems(); initializeTables(); updateTotal(); closeSidebarContentModal(); notifications.show(`Table ${sourceTable} merged into ${targetTable}`, 'success');
+            const sourceTimer = tableTimers[sourceTable];
+            orders[sourceTable].forEach(item => {
+                const existing = orders[targetTable].find(existingItem =>
+                    existingItem.name === item.name &&
+                    existingItem.price === item.price &&
+                    JSON.stringify(existingItem.extras || []) === JSON.stringify(item.extras || [])
+                );
+                if (existing) {
+                    existing.quantity += Number(item.quantity) || 0;
+                    existing.sentQuantity = (Number(existing.sentQuantity) || 0) + (Number(item.sentQuantity) || 0);
+                    existing.finalized = existing.quantity === existing.sentQuantity;
+                } else {
+                    orders[targetTable].push({ ...item });
+                }
+            });
+
+            kotHistory.forEach(kot => {
+                if (String(kot.table).trim().toUpperCase() === String(sourceTable).trim().toUpperCase()) {
+                    kot.table = targetTable;
+                }
+            });
+
+            delete orders[sourceTable];
+            delete tableTimers[sourceTable];
+            if (sourceTimer) {
+                const targetTimer = tableTimers[targetTable];
+                tableTimers[targetTable] = targetTimer
+                    ? { ...targetTimer, elapsed: Math.max(Number(targetTimer.elapsed) || 0, Number(sourceTimer.elapsed) || 0) }
+                    : sourceTimer;
+            }
+            if (currentTable === sourceTable) {
+                currentTable = targetTable;
+                localStorage.setItem('selectedTable', targetTable);
+                document.getElementById('selected-table')?.replaceChildren(targetTable);
+                document.getElementById('selected-table-checkout')?.replaceChildren(targetTable);
+                loadTableNotes(targetTable);
+            }
+            persistAllData();
+            renderOrderItems();
+            initializeTables();
+            updateTotal();
+            closeSidebarContentModal();
+            notifications.show(`Table ${sourceTable} merged into Table ${targetTable}`, 'success');
         });
     });
 }
